@@ -1,0 +1,5 @@
+org/kramerlab/cfpservice/api/ModelObj.class
+org/kramerlab/cfpservice/api/FragmentObj.class
+org/kramerlab/cfpservice/api/DepictService.class
+org/kramerlab/cfpservice/api/PredictionObj.class
+org/kramerlab/cfpservice/api/ModelService.class
