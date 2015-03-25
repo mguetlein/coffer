@@ -4,30 +4,23 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.kramerlab.cfpminer.CFPDataLoader;
 import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
 import org.kramerlab.extendedrandomforests.weka.ExtendedRandomForest;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.FileUtil;
-import org.mg.javalib.util.FileUtil.CSVFile;
-import org.openscience.cdk.ChemFile;
-import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IChemFile;
-import org.openscience.cdk.interfaces.IChemObject;
-import org.openscience.cdk.io.ISimpleChemObjectReader;
-import org.openscience.cdk.io.ReaderFactory;
-import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
 public class FilePersistanceAdapter implements PersistanceAdapter
 {
+	CFPDataLoader dataLoader = new CFPDataLoader("persistance/data");
+
 	private static String getModelFile(String id)
 	{
 		return "persistance/model/" + id + ".model";
@@ -46,14 +39,6 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 	public String getModelValidationImageFile(String id)
 	{
 		return "persistance/img/" + id + ".png";
-	}
-
-	private static String getModelDataFile(String id)
-	{
-		if (id.startsWith("CPDBAS"))
-			return "persistance/data/CPDBAS_v5d_1547_20Nov2008.sdf";
-		else
-			return "persistance/data/" + id + ".csv";
 	}
 
 	public String getModelHTMLFile(String modelId)
@@ -79,7 +64,17 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 	public boolean modelExists(String modelId)
 	{
 		return new File(getModelFile(modelId)).exists() && new File(getModelCFPFile(modelId)).exists()
-				&& new File(getModelDataFile(modelId)).exists();
+				&& dataLoader.exists(modelId);
+	}
+
+	public List<String> readTrainingDataEndpoints(String modelId)
+	{
+		return dataLoader.getDataset(modelId).getEndpoints();
+	}
+
+	public List<String> readTrainingDataSmiles(String modelId)
+	{
+		return dataLoader.getDataset(modelId).getSmiles();
 	}
 
 	public ExtendedRandomForest readExtendedRandomForest(String modelId)
@@ -125,68 +120,6 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		for (int i = 0; i < res.length; i++)
 			res[i] = Model.find(FileUtil.getFilename(models[i], false));
 		return res;
-	}
-
-	private static List<String> readFromSDF(String file, String endpoint, String property) throws Exception
-	{
-		List<String> res = new ArrayList<String>();
-		ISimpleChemObjectReader reader = new ReaderFactory().createReader(new InputStreamReader(new FileInputStream(
-				file)));
-		IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
-		for (IAtomContainer a : ChemFileManipulator.getAllAtomContainers(content))
-			if (a.getProperty(endpoint) != null && !a.getProperty(endpoint).toString().equals("unspecified")
-					&& !a.getProperty(endpoint).toString().equals("blank") && a.getProperty("STRUCTURE_SMILES") != null)
-				res.add(a.getProperty(property).toString());
-		reader.close();
-		return res;
-	}
-
-	public List<String> readTrainingDataSmiles(String modelId)
-	{
-		try
-		{
-			List<String> smiles = new ArrayList<String>();
-			if (modelId.startsWith("CPDBAS"))
-			{
-				String endpoint = "ActivityOutcome_" + modelId;
-				smiles = readFromSDF(getModelDataFile(modelId), endpoint, "STRUCTURE_SMILES");
-			}
-			else
-			{
-				CSVFile csv = FileUtil.readCSV(getModelDataFile(modelId));
-				for (int i = 1; i < csv.content.size(); i++)
-					smiles.add(csv.content.get(i)[0]);
-			}
-			return smiles;
-		}
-		catch (Exception e)
-		{
-			throw new PersistanceException(e);
-		}
-	}
-
-	public List<String> readTrainingDataEndpoints(String modelId)
-	{
-		try
-		{
-			List<String> endpoints = new ArrayList<String>();
-			if (modelId.startsWith("CPDBAS"))
-			{
-				String endpoint = "ActivityOutcome_" + modelId;
-				endpoints = readFromSDF(getModelDataFile(modelId), endpoint, endpoint);
-			}
-			else
-			{
-				CSVFile csv = FileUtil.readCSV(getModelDataFile(modelId));
-				for (int i = 1; i < csv.content.size(); i++)
-					endpoints.add(csv.content.get(i)[1]);
-			}
-			return endpoints;
-		}
-		catch (Exception e)
-		{
-			throw new PersistanceException(e);
-		}
 	}
 
 	public Prediction readPrediction(String modelId, String predictionId)

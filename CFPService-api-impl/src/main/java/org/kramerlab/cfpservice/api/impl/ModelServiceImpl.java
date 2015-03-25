@@ -26,7 +26,10 @@ public class ModelServiceImpl implements ModelService
 		{
 			HTMLReport report = new HTMLReport(CFPServiceConfig.title, CFPServiceConfig.header, null,
 					CFPServiceConfig.css, false);
-			report.newSection("List of models");
+			report.newSubsection("Make prediction");
+			report.addForm("/", "compound", "Predict");
+			report.addGap();
+			report.newSubsection("List of models");
 			for (Model m : getModels())
 				report.addParagraph(HTMLReport.encodeLink(m.getId(), m.getId()));
 			return report.close(CFPServiceConfig.footer);

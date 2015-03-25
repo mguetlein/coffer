@@ -18,7 +18,6 @@ import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
 import org.kramerlab.extendedrandomforests.weka.ExtendedRandomForest;
 import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.datamining.ResultSet;
-import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.CountedSet;
 
 import weka.core.Instances;
@@ -159,8 +158,12 @@ public class Model extends ModelObj
 		//		for (Model m : PersistanceAdapter.INSTANCE.readModels())
 		//			System.out.println(m.toString());
 
-		buildModel("CPDBAS_Hamster");
+		//buildModel("CPDBAS_Mutagenicity");
+		buildModel("NCTRER");
 
+		//		Model.find("CPDBAS_Mutagenicity").getValidationChart();
+
+		//CPDBAS_Hamster
 		//buildModel("ChEMBL_61");
 	}
 
@@ -171,13 +174,14 @@ public class Model extends ModelObj
 
 		List<String> endpoints = PersistanceAdapter.INSTANCE.readTrainingDataEndpoints(id);
 		model.miner = new CFPMiner(endpoints);
-		model.miner.setType(CFPMiner.CFPType.ecfp);
+		model.miner.setType(CFPMiner.CFPType.ecfp6);
 		model.miner.setFeatureSelection(CFPMiner.FeatureSelection.filt);
 		model.miner.setHashfoldsize(1024);
+
 		//		model.miner.setpValueThreshold(0.5);
 		//		model.miner.setRelMinFreq(0.001);
 		List<String> smiles = model.getTrainingDataSmiles();
-		model.miner.update(ArrayUtil.toArray(smiles));
+		model.miner.mine(smiles);
 
 		String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(id);
 		CFPMiner.validate(id, 1, outfile, new String[] { "RaF" }, endpoints, model.miner);
