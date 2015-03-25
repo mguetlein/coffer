@@ -41,4 +41,8 @@ public interface PersistanceAdapter
 
 	public String getModelValidationImageFile(String id);
 
+	public boolean predictionExists(String modelId, String predictionId);
+
+	public Model readModel(String id);
+
 }

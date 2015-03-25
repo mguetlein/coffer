@@ -15,6 +15,7 @@ import org.kramerlab.cfpminer.CFPtoArff;
 import org.kramerlab.cfpminer.weka.ValidationResultsProvider;
 import org.kramerlab.cfpservice.api.ModelObj;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
+import org.kramerlab.extendedrandomforests.html.PredictionReport;
 import org.kramerlab.extendedrandomforests.weka.ExtendedRandomForest;
 import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.datamining.ResultSet;
@@ -45,11 +46,7 @@ public class Model extends ModelObj
 
 	public static Model find(String id)
 	{
-		if (!PersistanceAdapter.INSTANCE.modelExists(id))
-			throw new IllegalArgumentException("model not found: " + id);
-		Model m = new Model();
-		m.id = id;
-		return m;
+		return PersistanceAdapter.INSTANCE.readModel(id);
 	}
 
 	public InputStream getHTML()
@@ -78,7 +75,7 @@ public class Model extends ModelObj
 			report.stopInlineTables();
 
 			report.newSubsection("Make prediction");
-			report.addForm(id, "compound", "Predict");
+			report.addForm(id, "compound", "Predict", "Please insert SMILES string");
 
 			//			ValidationResultsProvider val = new ValidationResultsProvider(
 			//					PersistanceAdapter.INSTANCE.getModelValidationResultsFile(id));
@@ -87,12 +84,20 @@ public class Model extends ModelObj
 			String predIds[] = Prediction.findLastPredictions(id);
 			if (predIds.length > 0)
 			{
-				report.newSubsection("Latest predictions");
+				ResultSet res = new ResultSet();
 				for (int i = 0; i < Math.min(predIds.length, 5); i++)
 				{
 					Prediction p = Prediction.find(id, predIds[i]);
-					report.addParagraph(HTMLReport.encodeLink(id + "/prediction/" + predIds[i], p.getSmiles()) + " - "
-							+ p.getPredictedClass());
+					int rIdx = res.addResult();
+					res.setResultValue(rIdx, "Recent predictions",
+							HTMLReport.encodeLink(id + "/prediction/" + predIds[i], p.getSmiles()));
+					res.setResultValue(rIdx, "Prediction", HTMLReport.getHTMLCode(PredictionReport.getPredictionString(
+							p.getPredictedDistribution(), getClassValues(), p.getPredictedIdx(), true)));
+				}
+				if (res.getNumResults() > 0)
+				{
+					report.addGap();
+					report.addTable(res);
 				}
 			}
 
@@ -158,8 +163,9 @@ public class Model extends ModelObj
 		//		for (Model m : PersistanceAdapter.INSTANCE.readModels())
 		//			System.out.println(m.toString());
 
-		//buildModel("CPDBAS_Mutagenicity");
-		buildModel("NCTRER");
+		buildModel("ChEMBL_61");
+		//		buildModel("CPDBAS_Mutagenicity");
+		//buildModel("NCTRER");
 
 		//		Model.find("CPDBAS_Mutagenicity").getValidationChart();
 
@@ -231,6 +237,8 @@ public class Model extends ModelObj
 			endpoint.add(model.miner.getEndpoints().get(c));
 		System.out.println(CountedSet.create(endpoint));
 
+		model.setActiveClassIdx(model.miner.getActiveIdx());
+		model.setClassValues(model.miner.getClassValues());
 		model.saveModel();
 
 		Model m = Model.find(id);

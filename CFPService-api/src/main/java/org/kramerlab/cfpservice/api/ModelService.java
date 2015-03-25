@@ -53,6 +53,10 @@ public interface ModelService
 	@Produces({ MediaType.TEXT_HTML })
 	InputStream getModelHTML(@PathParam("id") String id);
 
+	@Path("")
+	@POST
+	Response predict(@FormParam("compound") String compound);
+
 	@Path("{id}")
 	@POST
 	Response predict(@PathParam("id") String id, @FormParam("compound") String compound);
@@ -66,6 +70,11 @@ public interface ModelService
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
 	PredictionObj getPrediction(@PathParam("id") String modelId, @PathParam("pId") String pId);
+
+	@Path("prediction/{pId}")
+	@GET
+	@Produces({ MediaType.TEXT_HTML })
+	String getPredictionHTML(@PathParam("pId") String pId);
 
 	@Path("{id}/prediction/{pId}")
 	@GET

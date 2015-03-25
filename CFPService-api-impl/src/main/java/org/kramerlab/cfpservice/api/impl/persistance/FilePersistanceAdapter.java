@@ -26,6 +26,11 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		return "persistance/model/" + id + ".model";
 	}
 
+	private static String getModelClassifierFile(String id)
+	{
+		return "persistance/model/" + id + ".classifier";
+	}
+
 	private static String getModelCFPFile(String id)
 	{
 		return "persistance/model/" + id + ".cfp";
@@ -63,8 +68,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 
 	public boolean modelExists(String modelId)
 	{
-		return new File(getModelFile(modelId)).exists() && new File(getModelCFPFile(modelId)).exists()
-				&& dataLoader.exists(modelId);
+		return new File(getModelFile(modelId)).exists();
 	}
 
 	public List<String> readTrainingDataEndpoints(String modelId)
@@ -77,11 +81,26 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		return dataLoader.getDataset(modelId).getSmiles();
 	}
 
-	public ExtendedRandomForest readExtendedRandomForest(String modelId)
+	public Model readModel(String modelId)
 	{
 		try
 		{
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(getModelFile(modelId)));
+			Model m = (Model) ois.readObject();
+			ois.close();
+			return m;
+		}
+		catch (Exception e)
+		{
+			throw new PersistanceException(e);
+		}
+	}
+
+	public ExtendedRandomForest readExtendedRandomForest(String modelId)
+	{
+		try
+		{
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(getModelClassifierFile(modelId)));
 			ExtendedRandomForest erf = (ExtendedRandomForest) ois.readObject();
 			ois.close();
 			return erf;
@@ -113,13 +132,18 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		{
 			public boolean accept(File dir, String name)
 			{
-				return name.endsWith(".model") && new File(getModelCFPFile(FileUtil.getFilename(name, false))).exists();
+				return name.endsWith(".model");
 			}
 		});
 		Model res[] = new Model[models.length];
 		for (int i = 0; i < res.length; i++)
 			res[i] = Model.find(FileUtil.getFilename(models[i], false));
 		return res;
+	}
+
+	public boolean predictionExists(String modelId, String predictionId)
+	{
+		return new File(getPredictionFile(modelId, predictionId)).exists();
 	}
 
 	public Prediction readPrediction(String modelId, String predictionId)
@@ -182,10 +206,17 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		{
 			String file = getModelFile(model.getId());
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
-			oos.writeObject(model.getExtendedRandomForest());
+			oos.writeObject(model);
 			oos.flush();
 			oos.close();
 			System.out.println("model written to " + file);
+
+			file = getModelClassifierFile(model.getId());
+			oos = new ObjectOutputStream(new FileOutputStream(file));
+			oos.writeObject(model.getExtendedRandomForest());
+			oos.flush();
+			oos.close();
+			System.out.println("classifier written to " + file);
 
 			file = getModelCFPFile(model.getId());
 			oos = new ObjectOutputStream(new FileOutputStream(file));

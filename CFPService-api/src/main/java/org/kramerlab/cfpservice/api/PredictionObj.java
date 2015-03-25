@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class PredictionObj implements Serializable
 {
-	private static final long serialVersionUID = 3L;
+	private static final long serialVersionUID = 4L;
 
 	@XmlAttribute
 	protected String id;
@@ -18,7 +18,7 @@ public class PredictionObj implements Serializable
 	@XmlAttribute
 	protected String modelId;
 	@XmlAttribute
-	protected String predictedClass;
+	protected int predictedIdx;
 	@XmlAttribute
 	protected double predictedDistribution[];
 
@@ -52,14 +52,14 @@ public class PredictionObj implements Serializable
 		this.modelId = modelId;
 	}
 
-	public String getPredictedClass()
+	public int getPredictedIdx()
 	{
-		return predictedClass;
+		return predictedIdx;
 	}
 
-	public void setPredictedClass(String predictedClass)
+	public void setPredictedIdx(int predictedIdx)
 	{
-		this.predictedClass = predictedClass;
+		this.predictedIdx = predictedIdx;
 	}
 
 	public double[] getPredictedDistribution()

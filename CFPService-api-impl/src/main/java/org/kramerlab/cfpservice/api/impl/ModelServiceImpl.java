@@ -10,6 +10,8 @@ import org.kramerlab.cfpservice.api.FragmentObj;
 import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.PredictionObj;
 import org.mg.htmlreporting.HTMLReport;
+import org.mg.javalib.datamining.ResultSet;
+import org.mg.javalib.util.StringUtil;
 import org.springframework.stereotype.Service;
 
 @Service("modelService#default")
@@ -27,11 +29,15 @@ public class ModelServiceImpl implements ModelService
 			HTMLReport report = new HTMLReport(CFPServiceConfig.title, CFPServiceConfig.header, null,
 					CFPServiceConfig.css, false);
 			report.newSubsection("Make prediction");
-			report.addForm("/", "compound", "Predict");
+			report.addForm("/", "compound", "Predict", "Please insert SMILES string");
 			report.addGap();
-			report.newSubsection("List of models");
+			ResultSet set = new ResultSet();
 			for (Model m : getModels())
-				report.addParagraph(HTMLReport.encodeLink(m.getId(), m.getId()));
+			{
+				int idx = set.addResult();
+				set.setResultValue(idx, "List of models", HTMLReport.encodeLink(m.getId(), m.getId()));
+			}
+			report.addTable(set);
 			return report.close(CFPServiceConfig.footer);
 		}
 		catch (Exception e)
@@ -48,6 +54,20 @@ public class ModelServiceImpl implements ModelService
 	public InputStream getModelHTML(String id)
 	{
 		return Model.find(id).getHTML();
+	}
+
+	public Response predict(String smiles)
+	{
+		try
+		{
+			for (Model m : Model.listModels())
+				Prediction.createPrediction(m, smiles);
+			return Response.seeOther(new URI("/prediction/" + StringUtil.getMD5(smiles))).build();
+		}
+		catch (URISyntaxException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	public Response predict(String id, String smiles)
@@ -71,6 +91,11 @@ public class ModelServiceImpl implements ModelService
 	public PredictionObj getPrediction(String modelId, String predictionId)
 	{
 		return Prediction.find(modelId, predictionId);
+	}
+
+	public String getPredictionHTML(String predictionId)
+	{
+		return Prediction.getHTML(predictionId);
 	}
 
 	public InputStream getPredictionHTML(String modelId, String predictionId)

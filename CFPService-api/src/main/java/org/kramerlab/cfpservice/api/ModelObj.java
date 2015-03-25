@@ -9,10 +9,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class ModelObj implements Serializable
 {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	@XmlAttribute
 	protected String id;
+	@XmlAttribute
+	protected String classValues[];
+	@XmlAttribute
+	protected int activeClassIdx;
 
 	public String getId()
 	{
@@ -22,5 +26,25 @@ public class ModelObj implements Serializable
 	public void setId(String id)
 	{
 		this.id = id;
+	}
+
+	public int getActiveClassIdx()
+	{
+		return activeClassIdx;
+	}
+
+	public void setActiveClassIdx(int activeClassIdx)
+	{
+		this.activeClassIdx = activeClassIdx;
+	}
+
+	public String[] getClassValues()
+	{
+		return classValues;
+	}
+
+	public void setClassValues(String[] classValues)
+	{
+		this.classValues = classValues;
 	}
 }

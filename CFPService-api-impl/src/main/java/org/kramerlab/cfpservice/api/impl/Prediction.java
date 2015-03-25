@@ -2,6 +2,7 @@ package org.kramerlab.cfpservice.api.impl;
 
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -11,8 +12,11 @@ import org.kramerlab.cfpminer.CDKUtil;
 import org.kramerlab.cfpminer.CFPtoArff;
 import org.kramerlab.cfpservice.api.PredictionObj;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
+import org.kramerlab.extendedrandomforests.html.HtmlReport;
 import org.kramerlab.extendedrandomforests.html.PredictionReport;
 import org.kramerlab.extendedrandomforests.weka.PredictionAttribute;
+import org.mg.htmlreporting.HTMLReport;
+import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.StringUtil;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -65,6 +69,11 @@ public class Prediction extends PredictionObj
 		return PersistanceAdapter.INSTANCE.readPrediction(modelId, predictionId);
 	}
 
+	public static boolean exists(String modelId, String predictionId)
+	{
+		return PersistanceAdapter.INSTANCE.predictionExists(modelId, predictionId);
+	}
+
 	public static void main(String[] args) throws Exception
 	{
 		createPrediction(Model.find("DUD_vegfr2"), "c1c(CC(=O)O)cncc1");
@@ -87,13 +96,62 @@ public class Prediction extends PredictionObj
 
 			p.id = StringUtil.getMD5(smiles);
 			p.modelId = m.getId();
-			p.predictedClass = data.classAttribute().value(maxIdx);
+			p.predictedIdx = maxIdx;
 			p.predictedDistribution = dist;
 			p.setPredictionAttributes(m.getExtendedRandomForest().getPredictionAttributes(inst, dist));
 
 			PersistanceAdapter.INSTANCE.savePrediction(p);
 
 			return p;
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static String getHTML(String predictionId)
+	{
+		try
+		{
+			String smiles = null;
+			ResultSet res = new ResultSet();
+			for (Model m : Model.listModels())
+			{
+				if (Prediction.exists(m.getId(), predictionId))
+				{
+					int idx = res.addResult();
+					res.setResultValue(idx, "Model",
+							HTMLReport.encodeLink("/" + m.getId() + "/prediction/" + predictionId, m.getId()));
+					Prediction p = Prediction.find(m.getId(), predictionId);
+					smiles = p.getSmiles();
+					res.setResultValue(
+							idx,
+							"Prediction",
+							HTMLReport.getHTMLCode(PredictionReport.getPredictionString(p.predictedDistribution,
+									m.getClassValues(), p.getPredictedIdx(), true)));
+					res.setResultValue(idx, "p", p.predictedDistribution[m.getActiveClassIdx()]);
+					//							HTMLReport.encodeLink("/" + m.getId() + "/prediction/" + predictionId,
+					//									p.getPredictedClass())
+				}
+			}
+			res.sortResults("p", new Comparator<Object>()
+			{
+				public int compare(Object o1, Object o2)
+				{
+					return ((Double) o2).compareTo((Double) o1);
+				}
+			});
+			res.removePropery("p");
+
+			HTMLReport rep = new HTMLReport(CFPServiceConfig.title, CFPServiceConfig.header, "Prediction of compound "
+					+ smiles, CFPServiceConfig.css, false);
+			DepictServiceImpl imageProvider = new DepictServiceImpl();
+			rep.addImage(rep.getImage(imageProvider.drawCompound(smiles, HtmlReport.molPicSize),
+					imageProvider.hrefCompound(smiles), true));
+			rep.addGap();
+			rep.addTable(res);
+			return rep.close(CFPServiceConfig.footer);
 		}
 		catch (Exception e)
 		{
