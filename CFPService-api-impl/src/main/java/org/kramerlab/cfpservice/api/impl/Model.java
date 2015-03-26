@@ -1,7 +1,6 @@
 package org.kramerlab.cfpservice.api.impl;
 
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -27,6 +26,8 @@ import weka.core.Instances;
 @XmlRootElement
 public class Model extends ModelObj
 {
+	private static final long serialVersionUID = 1L;
+
 	protected transient CFPMiner miner;
 	protected transient ExtendedRandomForest erf;
 	protected transient List<String> trainingDataSmiles;
@@ -49,16 +50,12 @@ public class Model extends ModelObj
 		return PersistanceAdapter.INSTANCE.readModel(id);
 	}
 
-	public InputStream getHTML()
+	public String getHTML()
 	{
 		try
 		{
-			String file = PersistanceAdapter.INSTANCE.getModelHTMLFile(id);
-			//			if (!new File(file).exists())
-			//			{
-			HTMLReport report = new HTMLReport(CFPServiceConfig.title, CFPServiceConfig.header, "Prediction model",
-					CFPServiceConfig.css, false);
-
+			HTMLReport report = new HTMLReport("Prediction model");
+			CFPServiceConfig.initModelReport(report, id);
 			report.startInlinesTables();
 
 			ResultSet set = new ResultSet();
@@ -70,12 +67,12 @@ public class Model extends ModelObj
 			set.concatCols(getCFPMiner().getSummary(true));
 			report.addList(set);
 
-			report.addImage(report.getImage(id + "/validation"));
+			report.addImage(report.getImage("/" + id + "/validation"));
 
 			report.stopInlineTables();
 
 			report.newSubsection("Make prediction");
-			report.addForm(id, "compound", "Predict", "Please insert SMILES string");
+			report.addForm("/" + id, "compound", "Predict", "Please insert SMILES string");
 
 			//			ValidationResultsProvider val = new ValidationResultsProvider(
 			//					PersistanceAdapter.INSTANCE.getModelValidationResultsFile(id));
@@ -90,7 +87,7 @@ public class Model extends ModelObj
 					Prediction p = Prediction.find(id, predIds[i]);
 					int rIdx = res.addResult();
 					res.setResultValue(rIdx, "Recent predictions",
-							HTMLReport.encodeLink(id + "/prediction/" + predIds[i], p.getSmiles()));
+							HTMLReport.encodeLink("/" + id + "/prediction/" + predIds[i], p.getSmiles()));
 					res.setResultValue(rIdx, "Prediction", HTMLReport.getHTMLCode(PredictionReport.getPredictionString(
 							p.getPredictedDistribution(), getClassValues(), p.getPredictedIdx(), true)));
 				}
@@ -101,9 +98,7 @@ public class Model extends ModelObj
 				}
 			}
 
-			report.close(CFPServiceConfig.footer, file);
-			//			}
-			return new FileInputStream(file);
+			return report.close();
 		}
 		catch (IOException e)
 		{
@@ -163,9 +158,9 @@ public class Model extends ModelObj
 		//		for (Model m : PersistanceAdapter.INSTANCE.readModels())
 		//			System.out.println(m.toString());
 
-		buildModel("ChEMBL_61");
-		//		buildModel("CPDBAS_Mutagenicity");
-		//buildModel("NCTRER");
+		//buildModel("ChEMBL_61");
+		//buildModel("CPDBAS_Mutagenicity");
+		buildModel("NCTRER");
 
 		//		Model.find("CPDBAS_Mutagenicity").getValidationChart();
 
@@ -198,12 +193,9 @@ public class Model extends ModelObj
 		if (model.miner.getNumCompounds() != endpoints.size())
 			throw new IllegalStateException();
 
-		String arffFile = "/tmp/" + id + ".arff";
-		CFPtoArff.writeTrainingDataset(arffFile, model.miner, id);
-
 		//			Instances inst = new Instances(new FileReader("/home/martin/workspace/external/weka-3-7-10/data/vote.arff"));
 		///home/martin/data/arffs/breast-cancer.arff
-		Instances inst = new Instances(new FileReader(arffFile));
+		Instances inst = CFPtoArff.getTrainingDataset(model.miner, id);
 		inst.setClassIndex(inst.numAttributes() - 1);
 
 		if (inst.size() != smiles.size())

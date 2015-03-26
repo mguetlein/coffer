@@ -1,7 +1,5 @@
 package org.kramerlab.cfpservice.api.impl;
 
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.util.Comparator;
 import java.util.List;
 
@@ -12,7 +10,7 @@ import org.kramerlab.cfpminer.CDKUtil;
 import org.kramerlab.cfpminer.CFPtoArff;
 import org.kramerlab.cfpservice.api.PredictionObj;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
-import org.kramerlab.extendedrandomforests.html.HtmlReport;
+import org.kramerlab.extendedrandomforests.html.ExtendedHtmlReport;
 import org.kramerlab.extendedrandomforests.html.PredictionReport;
 import org.kramerlab.extendedrandomforests.weka.PredictionAttribute;
 import org.mg.htmlreporting.HTMLReport;
@@ -83,18 +81,20 @@ public class Prediction extends PredictionObj
 	{
 		try
 		{
+			String predictionId = StringUtil.getMD5(smiles);
+			if (exists(m.getId(), predictionId))
+				return Prediction.find(m.getId(), predictionId);
+
 			Prediction p = new Prediction();
 			p.smiles = smiles;
 
-			String arffFile = "/tmp/dud_vegfr2.arff";
-			CFPtoArff.writeTestDataset(arffFile, m.getCFPMiner(), "DUD_vegfr2", p.getMolecule());
-			Instances data = new Instances(new FileReader(arffFile));
+			Instances data = CFPtoArff.getTestDataset(m.getCFPMiner(), "DUD_vegfr2", p.getMolecule());
 			Instance inst = data.get(0);
 			data.setClassIndex(data.numAttributes() - 1);
 			double dist[] = m.getExtendedRandomForest().distributionForInstance(inst);
 			int maxIdx = ArrayUtil.getMaxIndex(dist);
 
-			p.id = StringUtil.getMD5(smiles);
+			p.id = predictionId;
 			p.modelId = m.getId();
 			p.predictedIdx = maxIdx;
 			p.predictedDistribution = dist;
@@ -144,14 +144,14 @@ public class Prediction extends PredictionObj
 			});
 			res.removePropery("p");
 
-			HTMLReport rep = new HTMLReport(CFPServiceConfig.title, CFPServiceConfig.header, "Prediction of compound "
-					+ smiles, CFPServiceConfig.css, false);
+			HTMLReport rep = new HTMLReport("Prediction of compound " + smiles);
+			CFPServiceConfig.initPredictionReport(rep, predictionId);
 			DepictServiceImpl imageProvider = new DepictServiceImpl();
-			rep.addImage(rep.getImage(imageProvider.drawCompound(smiles, HtmlReport.molPicSize),
+			rep.addImage(rep.getImage(imageProvider.drawCompound(smiles, ExtendedHtmlReport.molPicSize),
 					imageProvider.hrefCompound(smiles), true));
 			rep.addGap();
 			rep.addTable(res);
-			return rep.close(CFPServiceConfig.footer);
+			return rep.close();
 		}
 		catch (Exception e)
 		{
@@ -159,24 +159,17 @@ public class Prediction extends PredictionObj
 		}
 	}
 
-	public FileInputStream getHTML()
+	public String getHTML()
 	{
 		try
 		{
-			String file = PersistanceAdapter.INSTANCE.getPredictionHTMLFile(modelId, id);
-			//			if (!new File(file).exists())
-			//			{
 			Model m = Model.find(modelId);
-			PredictionReport rep = new PredictionReport(m.getExtendedRandomForest(), m.getCFPMiner(),
+			PredictionReport rep = new PredictionReport(getSmiles(), getPredictedDistribution(),
+					getPredictionAttributes(), modelId, m.getExtendedRandomForest(), m.getCFPMiner(),
 					m.getTrainingDataSmiles());
-			rep.setTestInstance(getSmiles(), getPredictedDistribution(), getPredictionAttributes());
+			CFPServiceConfig.initPredictionReport(rep, modelId, id);
 			rep.setImageProvider(new DepictServiceImpl());
-			rep.setReportTitles(CFPServiceConfig.title, CFPServiceConfig.header, CFPServiceConfig.css,
-					CFPServiceConfig.footer);
-			rep.setModel(modelId, "/" + modelId);
-			rep.buildReport(file);
-			//			}
-			return new FileInputStream(file);
+			return rep.buildReport();
 		}
 		catch (Exception e)
 		{

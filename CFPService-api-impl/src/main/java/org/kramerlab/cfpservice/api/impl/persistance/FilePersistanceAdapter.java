@@ -46,24 +46,9 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		return "persistance/img/" + id + ".png";
 	}
 
-	public String getModelHTMLFile(String modelId)
-	{
-		return "persistance/model/" + modelId + ".html";
-	}
-
 	private static String getPredictionFile(String modelId, String predictionId)
 	{
 		return "persistance/prediction/" + modelId + "_" + predictionId + ".prediction";
-	}
-
-	public String getPredictionHTMLFile(String modelId, String predictionId)
-	{
-		return "persistance/prediction/" + modelId + "_" + predictionId + ".html";
-	}
-
-	public String getFragmentHTMLFile(String modelId, String fragmentId)
-	{
-		return "persistance/fragment/" + modelId + "_" + fragmentId + ".html";
 	}
 
 	public boolean modelExists(String modelId)

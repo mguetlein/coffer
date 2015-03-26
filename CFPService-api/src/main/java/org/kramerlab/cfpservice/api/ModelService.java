@@ -51,7 +51,7 @@ public interface ModelService
 	@Path("{id}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	InputStream getModelHTML(@PathParam("id") String id);
+	String getModelHTML(@PathParam("id") String id);
 
 	@Path("")
 	@POST
@@ -79,7 +79,7 @@ public interface ModelService
 	@Path("{id}/prediction/{pId}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	InputStream getPredictionHTML(@PathParam("id") String modelId, @PathParam("pId") String pId);
+	String getPredictionHTML(@PathParam("id") String modelId, @PathParam("pId") String pId);
 
 	//	@Path("{id}/fragment/{pId}")
 	//	@GET
@@ -89,5 +89,5 @@ public interface ModelService
 	@Path("{id}/fragment/{fId}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	InputStream getFragmentHTML(@PathParam("id") String modelId, @PathParam("fId") String fragmentId);
+	String getFragmentHTML(@PathParam("id") String modelId, @PathParam("fId") String fragmentId);
 }

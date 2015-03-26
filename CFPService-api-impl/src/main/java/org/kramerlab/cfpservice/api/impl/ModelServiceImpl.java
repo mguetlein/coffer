@@ -26,8 +26,8 @@ public class ModelServiceImpl implements ModelService
 	{
 		try
 		{
-			HTMLReport report = new HTMLReport(CFPServiceConfig.title, CFPServiceConfig.header, null,
-					CFPServiceConfig.css, false);
+			HTMLReport report = new HTMLReport();
+			CFPServiceConfig.initReport(report);
 			report.newSubsection("Make prediction");
 			report.addForm("/", "compound", "Predict", "Please insert SMILES string");
 			report.addGap();
@@ -38,7 +38,7 @@ public class ModelServiceImpl implements ModelService
 				set.setResultValue(idx, "List of models", HTMLReport.encodeLink(m.getId(), m.getId()));
 			}
 			report.addTable(set);
-			return report.close(CFPServiceConfig.footer);
+			return report.close();
 		}
 		catch (Exception e)
 		{
@@ -51,7 +51,7 @@ public class ModelServiceImpl implements ModelService
 		return Model.find(id);
 	}
 
-	public InputStream getModelHTML(String id)
+	public String getModelHTML(String id)
 	{
 		return Model.find(id).getHTML();
 	}
@@ -98,7 +98,7 @@ public class ModelServiceImpl implements ModelService
 		return Prediction.getHTML(predictionId);
 	}
 
-	public InputStream getPredictionHTML(String modelId, String predictionId)
+	public String getPredictionHTML(String modelId, String predictionId)
 	{
 		return Prediction.find(modelId, predictionId).getHTML();
 	}
@@ -108,7 +108,7 @@ public class ModelServiceImpl implements ModelService
 		return Fragment.find(modelId, fragmentId);
 	}
 
-	public InputStream getFragmentHTML(String modelId, String fragmentId)
+	public String getFragmentHTML(String modelId, String fragmentId)
 	{
 		return Fragment.find(modelId, fragmentId).getHTML();
 	}

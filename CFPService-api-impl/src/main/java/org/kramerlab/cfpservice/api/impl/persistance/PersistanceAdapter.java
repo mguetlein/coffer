@@ -29,12 +29,6 @@ public interface PersistanceAdapter
 
 	public Prediction readPrediction(String modelId, String predictionId);
 
-	public String getPredictionHTMLFile(String modelId, String predictionId);
-
-	public String getFragmentHTMLFile(String modelId, String fragmentId);
-
-	public String getModelHTMLFile(String modelId);
-
 	public String[] findLastPredictions(final String modelId);
 
 	public String getModelValidationResultsFile(String id);

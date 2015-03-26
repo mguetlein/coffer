@@ -1,11 +1,8 @@
 package org.kramerlab.cfpservice.api.impl;
 
-import java.io.FileInputStream;
-
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.kramerlab.cfpservice.api.FragmentObj;
-import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
 import org.kramerlab.extendedrandomforests.html.AttributeReport;
 
 @SuppressWarnings("restriction")
@@ -24,25 +21,15 @@ public class Fragment extends FragmentObj
 		return f;
 	}
 
-	public FileInputStream getHTML()
+	public String getHTML()
 	{
-		String file = PersistanceAdapter.INSTANCE.getFragmentHTMLFile(modelId, id);
 		try
 		{
-			//			if (!new File(file).exists())
-			//			{
 			Model m = Model.find(modelId);
-			AttributeReport rep = new AttributeReport(m.getExtendedRandomForest(), m.getCFPMiner(),
-					m.getTrainingDataSmiles());
-			//			rep.setTestInstance(getSmiles(), getPredictedDistribution(), getPredictionAttributes());
-			rep.setAttribute(Integer.parseInt(id) - 1);
-			rep.setImageProvider(new DepictServiceImpl());
-			rep.setReportTitles(CFPServiceConfig.title, CFPServiceConfig.header, CFPServiceConfig.css,
-					CFPServiceConfig.footer);
-			rep.setModel(modelId, "/" + modelId);
-			rep.buildReport(file);
-			//			}
-			return new FileInputStream(file);
+			AttributeReport rep = new AttributeReport(Integer.parseInt(id) - 1, m.getExtendedRandomForest(),
+					m.getCFPMiner(), m.getTrainingDataSmiles());
+			CFPServiceConfig.initFragmentReport(rep, modelId, id);
+			return rep.buildReport();
 		}
 		catch (Exception e)
 		{
