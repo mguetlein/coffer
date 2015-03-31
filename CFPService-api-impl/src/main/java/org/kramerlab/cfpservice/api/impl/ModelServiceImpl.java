@@ -9,8 +9,6 @@ import javax.ws.rs.core.Response;
 import org.kramerlab.cfpservice.api.FragmentObj;
 import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.PredictionObj;
-import org.mg.htmlreporting.HTMLReport;
-import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.util.StringUtil;
 import org.springframework.stereotype.Service;
 
@@ -24,26 +22,7 @@ public class ModelServiceImpl implements ModelService
 
 	public String getModelsHTML()
 	{
-		try
-		{
-			HTMLReport report = new HTMLReport();
-			CFPServiceConfig.initReport(report);
-			report.newSubsection("Make prediction");
-			report.addForm("/", "compound", "Predict", "Please insert SMILES string");
-			report.addGap();
-			ResultSet set = new ResultSet();
-			for (Model m : getModels())
-			{
-				int idx = set.addResult();
-				set.setResultValue(idx, "List of models", HTMLReport.encodeLink(m.getId(), m.getId()));
-			}
-			report.addTable(set);
-			return report.close();
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
+		return Model.getModelListHTML();
 	}
 
 	public Model getModel(String id)

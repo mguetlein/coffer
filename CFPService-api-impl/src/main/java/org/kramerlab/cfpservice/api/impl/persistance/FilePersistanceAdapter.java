@@ -7,6 +7,8 @@ import java.io.FilenameFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import org.kramerlab.cfpminer.CFPDataLoader;
@@ -51,17 +53,22 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		return "persistance/prediction/" + modelId + "_" + predictionId + ".prediction";
 	}
 
+	public Date getPredictionDate(String modelId, String predictionId)
+	{
+		return new Date(new File(getPredictionFile(modelId, predictionId)).lastModified());
+	}
+
 	public boolean modelExists(String modelId)
 	{
 		return new File(getModelFile(modelId)).exists();
 	}
 
-	public List<String> readTrainingDataEndpoints(String modelId)
+	public List<String> readDatasetEndpoints(String modelId)
 	{
 		return dataLoader.getDataset(modelId).getEndpoints();
 	}
 
-	public List<String> readTrainingDataSmiles(String modelId)
+	public List<String> readDatasetSmiles(String modelId)
 	{
 		return dataLoader.getDataset(modelId).getSmiles();
 	}
@@ -131,6 +138,11 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		return new File(getPredictionFile(modelId, predictionId)).exists();
 	}
 
+	public void updateDate(String modelId, String predictionId)
+	{
+		new File(getPredictionFile(modelId, predictionId)).setLastModified(new Date().getTime());
+	}
+
 	public Prediction readPrediction(String modelId, String predictionId)
 	{
 		try
@@ -146,13 +158,23 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		}
 	}
 
-	public String[] findLastPredictions(final String modelId)
+	public String[] findLastPredictions(final String... modelIds)
 	{
+		final HashSet<String> checked = new HashSet<String>();
 		File preds[] = new File("persistance/prediction").listFiles(new FilenameFilter()
 		{
 			public boolean accept(File dir, String name)
 			{
-				return name.endsWith(".prediction") && name.startsWith(modelId + "_");
+				if (!name.endsWith(".prediction"))
+					return false;
+				String predId = ArrayUtil.last(FileUtil.getFilename(name, false).split("_"));
+				if (checked.contains(predId))
+					return false;
+				checked.add(predId);
+				for (String modelId : modelIds)
+					if (!predictionExists(modelId, predId))
+						return false;
+				return true;
 			}
 		});
 		preds = ArrayUtil.sort(File.class, preds, new Comparator<File>()

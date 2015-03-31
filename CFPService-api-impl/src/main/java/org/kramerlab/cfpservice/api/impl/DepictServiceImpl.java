@@ -5,8 +5,8 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 
 import org.kramerlab.cfpservice.api.DepictService;
-import org.kramerlab.extendedrandomforests.html.DefaultImageProvider;
-import org.kramerlab.extendedrandomforests.html.ImageProvider;
+import org.kramerlab.cfpservice.api.impl.html.DefaultImageProvider;
+import org.kramerlab.cfpservice.api.impl.html.ImageProvider;
 import org.mg.javalib.util.ArrayUtil;
 import org.openscience.cdk.exception.InvalidSmilesException;
 import org.springframework.stereotype.Service;
@@ -33,6 +33,8 @@ public class DepictServiceImpl implements DepictService, ImageProvider
 		if (size != -1)
 			sizeStr = "&size=" + size;
 		String cropStr = "&crop=" + crop;
+		if (atoms == null || atoms.length == 0)
+			throw new IllegalArgumentException("atoms missing");
 		String atomsStr = "&atoms=" + ArrayUtil.toString(ArrayUtil.toIntegerArray(atoms), ",", "", "", "");
 		return "/depict?smiles=" + URLEncoder.encode(smiles, "UTF8") + sizeStr + atomsStr + cropStr;
 	}

@@ -1,6 +1,6 @@
 package org.kramerlab.cfpservice.api.impl;
 
-import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -9,12 +9,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.kramerlab.cfpminer.CDKUtil;
 import org.kramerlab.cfpminer.CFPtoArff;
 import org.kramerlab.cfpservice.api.PredictionObj;
+import org.kramerlab.cfpservice.api.impl.html.PredictionHtml;
+import org.kramerlab.cfpservice.api.impl.html.PredictionsHtml;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
-import org.kramerlab.extendedrandomforests.html.ExtendedHtmlReport;
-import org.kramerlab.extendedrandomforests.html.PredictionReport;
 import org.kramerlab.extendedrandomforests.weka.PredictionAttribute;
-import org.mg.htmlreporting.HTMLReport;
-import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.StringUtil;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -57,9 +55,9 @@ public class Prediction extends PredictionObj
 		}
 	}
 
-	public static String[] findLastPredictions(final String modelId)
+	public static String[] findLastPredictions(String... modelIds)
 	{
-		return PersistanceAdapter.INSTANCE.findLastPredictions(modelId);
+		return PersistanceAdapter.INSTANCE.findLastPredictions(modelIds);
 	}
 
 	public static Prediction find(String modelId, String predictionId)
@@ -70,6 +68,11 @@ public class Prediction extends PredictionObj
 	public static boolean exists(String modelId, String predictionId)
 	{
 		return PersistanceAdapter.INSTANCE.predictionExists(modelId, predictionId);
+	}
+
+	public Date getDate()
+	{
+		return PersistanceAdapter.INSTANCE.getPredictionDate(modelId, id);
 	}
 
 	public static void main(String[] args) throws Exception
@@ -83,7 +86,10 @@ public class Prediction extends PredictionObj
 		{
 			String predictionId = StringUtil.getMD5(smiles);
 			if (exists(m.getId(), predictionId))
+			{
+				PersistanceAdapter.INSTANCE.updateDate(m.getId(), predictionId);
 				return Prediction.find(m.getId(), predictionId);
+			}
 
 			Prediction p = new Prediction();
 			p.smiles = smiles;
@@ -114,44 +120,7 @@ public class Prediction extends PredictionObj
 	{
 		try
 		{
-			String smiles = null;
-			ResultSet res = new ResultSet();
-			for (Model m : Model.listModels())
-			{
-				if (Prediction.exists(m.getId(), predictionId))
-				{
-					int idx = res.addResult();
-					res.setResultValue(idx, "Model",
-							HTMLReport.encodeLink("/" + m.getId() + "/prediction/" + predictionId, m.getId()));
-					Prediction p = Prediction.find(m.getId(), predictionId);
-					smiles = p.getSmiles();
-					res.setResultValue(
-							idx,
-							"Prediction",
-							HTMLReport.getHTMLCode(PredictionReport.getPredictionString(p.predictedDistribution,
-									m.getClassValues(), p.getPredictedIdx(), true)));
-					res.setResultValue(idx, "p", p.predictedDistribution[m.getActiveClassIdx()]);
-					//							HTMLReport.encodeLink("/" + m.getId() + "/prediction/" + predictionId,
-					//									p.getPredictedClass())
-				}
-			}
-			res.sortResults("p", new Comparator<Object>()
-			{
-				public int compare(Object o1, Object o2)
-				{
-					return ((Double) o2).compareTo((Double) o1);
-				}
-			});
-			res.removePropery("p");
-
-			HTMLReport rep = new HTMLReport("Prediction of compound " + smiles);
-			CFPServiceConfig.initPredictionReport(rep, predictionId);
-			DepictServiceImpl imageProvider = new DepictServiceImpl();
-			rep.addImage(rep.getImage(imageProvider.drawCompound(smiles, ExtendedHtmlReport.molPicSize),
-					imageProvider.hrefCompound(smiles), true));
-			rep.addGap();
-			rep.addTable(res);
-			return rep.close();
+			return new PredictionsHtml(predictionId).build();
 		}
 		catch (Exception e)
 		{
@@ -163,13 +132,7 @@ public class Prediction extends PredictionObj
 	{
 		try
 		{
-			Model m = Model.find(modelId);
-			PredictionReport rep = new PredictionReport(getSmiles(), getPredictedDistribution(),
-					getPredictionAttributes(), modelId, m.getExtendedRandomForest(), m.getCFPMiner(),
-					m.getTrainingDataSmiles());
-			CFPServiceConfig.initPredictionReport(rep, modelId, id);
-			rep.setImageProvider(new DepictServiceImpl());
-			return rep.buildReport();
+			return new PredictionHtml(this).build();
 		}
 		catch (Exception e)
 		{

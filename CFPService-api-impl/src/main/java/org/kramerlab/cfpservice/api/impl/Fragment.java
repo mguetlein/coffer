@@ -3,7 +3,7 @@ package org.kramerlab.cfpservice.api.impl;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.kramerlab.cfpservice.api.FragmentObj;
-import org.kramerlab.extendedrandomforests.html.AttributeReport;
+import org.kramerlab.cfpservice.api.impl.html.FragmentHtml;
 
 @SuppressWarnings("restriction")
 @XmlRootElement
@@ -25,11 +25,7 @@ public class Fragment extends FragmentObj
 	{
 		try
 		{
-			Model m = Model.find(modelId);
-			AttributeReport rep = new AttributeReport(Integer.parseInt(id) - 1, m.getExtendedRandomForest(),
-					m.getCFPMiner(), m.getTrainingDataSmiles());
-			CFPServiceConfig.initFragmentReport(rep, modelId, id);
-			return rep.buildReport();
+			return new FragmentHtml(this).build();
 		}
 		catch (Exception e)
 		{

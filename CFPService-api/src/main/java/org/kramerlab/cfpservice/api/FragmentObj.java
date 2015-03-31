@@ -11,6 +11,9 @@ public class FragmentObj implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * fragment id = attribute-idx + 1
+	 */
 	@XmlAttribute
 	protected String id;
 	@XmlAttribute

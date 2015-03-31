@@ -1,5 +1,6 @@
 package org.kramerlab.cfpservice.api.impl.persistance;
 
+import java.util.Date;
 import java.util.List;
 
 import org.kramerlab.cfpminer.CFPMiner;
@@ -19,9 +20,9 @@ public interface PersistanceAdapter
 
 	public Model[] readModels();
 
-	public List<String> readTrainingDataSmiles(String modelId);
+	public List<String> readDatasetSmiles(String modelId);
 
-	public List<String> readTrainingDataEndpoints(String modelId);
+	public List<String> readDatasetEndpoints(String modelId);
 
 	public void saveModel(Model model);
 
@@ -29,7 +30,7 @@ public interface PersistanceAdapter
 
 	public Prediction readPrediction(String modelId, String predictionId);
 
-	public String[] findLastPredictions(final String modelId);
+	public String[] findLastPredictions(String... modelIds);
 
 	public String getModelValidationResultsFile(String id);
 
@@ -37,6 +38,10 @@ public interface PersistanceAdapter
 
 	public boolean predictionExists(String modelId, String predictionId);
 
+	public void updateDate(String modelId, String predictionId);
+
 	public Model readModel(String id);
+
+	public Date getPredictionDate(String modelId, String id);
 
 }
