@@ -1,7 +1,5 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
-import java.text.SimpleDateFormat;
-
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
 import org.mg.htmlreporting.HTMLReport;
@@ -16,16 +14,20 @@ public class ModelsHtml extends ExtendedHtmlReport
 
 	public String build() throws Exception
 	{
-		newSubsection("Make prediction");
+		newSection("Make prediction");
 		addForm("/", "compound", "Predict", "Please insert SMILES string");
 		addGap();
 		ResultSet set = new ResultSet();
+
 		Model[] models = Model.listModels();
 		for (Model m : models)
 		{
 			int idx = set.addResult();
-			set.setResultValue(idx, "List of models", HTMLReport.encodeLink(m.getId(), m.getId()));
+			set.setResultValue(idx, "Dataset", HTMLReport.encodeLink(m.getId(), m.getName()));
+			set.setResultValue(idx, "Target", HTMLReport.encodeLink(m.getId(), m.getTarget()));
 		}
+		startInlinesTables();
+		newSection("Prediction models");
 		addTable(set);
 
 		String[] modelIds = new String[models.length];
@@ -39,18 +41,20 @@ public class ModelsHtml extends ExtendedHtmlReport
 			{
 				Prediction p = Prediction.find(modelIds[0], predIds[i]);
 				int rIdx = res.addResult();
-				res.setResultValue(rIdx, "Recent predictions",
-						HTMLReport.encodeLink("/prediction/" + predIds[i], p.getSmiles()));
-				res.setResultValue(rIdx, "Date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(p.getDate()));
+				String url = "/prediction/" + predIds[i];
+				res.setResultValue(rIdx, "Recent predictions", HTMLReport.encodeLink(url, p.getSmiles()));
+				//				res.setResultValue(rIdx, "Date",
+				//						HTMLReport.encodeLink(url, new SimpleDateFormat("yyyy-MM-dd HH:mm").format(p.getDate())));
 				//					res.setResultValue(rIdx, "Prediction", HTMLReport.getHTMLCode(PredictionReport.getPredictionString(
 				//							p.getPredictedDistribution(), getClassValues(), p.getPredictedIdx(), true)));
 			}
 			if (res.getNumResults() > 0)
 			{
-				addGap();
+				//				addGap();
 				addTable(res);
 			}
 		}
+		stopInlineTables();
 
 		return close();
 	}

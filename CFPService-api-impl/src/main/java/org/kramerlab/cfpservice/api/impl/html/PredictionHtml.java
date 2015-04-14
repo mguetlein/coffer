@@ -1,5 +1,9 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
@@ -7,6 +11,9 @@ import org.kramerlab.extendedrandomforests.weka.PredictionAttribute;
 import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.util.StringUtil;
+import org.rendersnake.HtmlAttributesFactory;
+import org.rendersnake.HtmlCanvas;
+import org.rendersnake.Renderable;
 
 public class PredictionHtml extends ExtendedHtmlReport
 {
@@ -15,77 +22,137 @@ public class PredictionHtml extends ExtendedHtmlReport
 
 	public PredictionHtml(Prediction p)
 	{
-		super("Prediction of compound " + p.getSmiles(), p.getModelId(), p.getModelId(), p.getId(), "Prediction");
+		super("Prediction of compound " + p.getSmiles(), p.getModelId(), Model.getName(p.getModelId()), p.getId(),
+				"Prediction");
+		setHidePageTitle(true);
 		this.p = p;
 		miner = Model.find(p.getModelId()).getCFPMiner();
 	}
 
-	private String getPredictionString(boolean hideNonMax)
+	private Renderable getPrediction(boolean hideNonMax)
 	{
-		return getPredictionString(p, miner.getClassValues(), hideNonMax, null);
+		return getPrediction(p, miner.getClassValues(), hideNonMax, null);
 	}
 
-	private String getPredictionString(double dist[], int predIdx, boolean hideNonMax)
+	private Renderable getPrediction(double dist[], int predIdx, boolean hideNonMax)
 	{
-		return getPredictionString(dist, miner.getClassValues(), predIdx, hideNonMax, null);
+		return getPrediction(dist, miner.getClassValues(), predIdx, hideNonMax, null);
 	}
 
-	public static String getPredictionString(Prediction p, String classValues[], boolean hideNonMax, String url)
+	public static Renderable getPrediction(Prediction p, String classValues[], boolean hideNonMax, String url)
 	{
-		return getPredictionString(p.getPredictedDistribution(), classValues, p.getPredictedIdx(), hideNonMax, url);
+		return getPrediction(p.getPredictedDistribution(), classValues, p.getPredictedIdx(), hideNonMax, url);
 	}
 
-	private static String getPredictionString(double dist[], String classValues[], int predIdx, boolean hideNonMax,
-			String url)
+	private static Renderable getPrediction(final double dist[], final String classValues[], final int predIdx,
+			final boolean hideNonMax, final String url)
 	{
-		boolean hide = hideNonMax && dist[predIdx] > (1 / (double) dist.length);
-		StringBuffer s = new StringBuffer();
-		for (int i = 0; i < dist.length; i++)
+		return new Renderable()
 		{
-			if (i > 0)
-				s.append("<br>");
-			if (i != predIdx && hide)
-				s.append("<small><font color=grey>");
-			s.append(classValues[i]);
-			s.append(" (");
-			s.append(StringUtil.formatDouble(dist[i] * 100));
-			s.append("%)");
-			if (i != predIdx && hide)
-				s.append("</font></small>");
-		}
-		if (url == null)
-			return s.toString();
-		else
-			return "<a href=\"" + url + "\">" + s.toString() + "</a>";
+			public void renderOn(HtmlCanvas html) throws IOException
+			{
+				if (url != null)
+					html.a(HtmlAttributesFactory.href(url));
+
+				boolean hide = hideNonMax && dist[predIdx] > (1 / (double) dist.length);
+				for (int i = 0; i < dist.length; i++)
+				{
+					if (i != predIdx && hide)
+						html.div(HtmlAttributesFactory.class_("smallGrey"));
+					html.write(classValues[i] + " (" + StringUtil.formatDouble(dist[i] * 100) + "%)");
+					if (i != predIdx && hide)
+						html._div();
+					else if (i < dist.length - 1)
+						html.br();
+				}
+				if (url != null)
+					html._a();
+			}
+		};
 	}
+
+	public static void setAdditionalInfo(HTMLReport rep, ResultSet tableSet, int rIdx, final String smiles)
+			throws UnsupportedEncodingException
+	{
+		rep.setHeaderHelp("Info", "Looking up the compound smiles in PubChem and ChEMBL.");
+		final String smi = URLEncoder.encode(smiles, "UTF-8");
+		//		System.out.println(smi);
+		tableSet.setResultValue(rIdx, "Info", new Renderable()
+		{
+			public void renderOn(HtmlCanvas html) throws IOException
+			{
+				html.div(HtmlAttributesFactory.class_("small"));
+				html.write("Smiles: " + smiles);
+				html._div();
+
+				html.object(HtmlAttributesFactory.data("/external/all/" + smi))._object();//.width("300")
+				//html.object(HtmlAttributesFactory.data("/external/pubchem/" + smi).width("300"))._object();
+				//html.object(HtmlAttributesFactory.data("/external/chembl/" + smi).width("300"))._object();
+			}
+		});
+	}
+
+	//	public static void setTarget(HTMLReport rep, ResultSet tableSet, int rIdx, final String modelID, final String url)
+	//	{
+	//		tableSet.setResultValue(rIdx, "Target",
+	//				rep.getExternalLink(Model.getTarget(modelID), url, ArrayUtil.toArray(Model.getDatasetURLs(modelID))));
+	//	}
 
 	public String build() throws Exception
 	{
-		ResultSet set = new ResultSet();
-		int rIdx = set.addResult();
-		set.setResultValue(
-				rIdx,
-				"Test compound",
-				getImage(imageProvider.drawCompound(p.getSmiles(), molPicSize),
-						imageProvider.hrefCompound(p.getSmiles()), false));
+		newSection("Predicted compound");
+		{
+			ResultSet set = new ResultSet();
+			int rIdx = set.addResult();
+			//			set.setResultValue(rIdx, "Smiles", p.getSmiles());
+			set.setResultValue(
+					rIdx,
+					"Structure",
+					getImage(imageProvider.drawCompound(p.getSmiles(), molPicSize),
+							imageProvider.hrefCompound(p.getSmiles()), false));
+			setAdditionalInfo(this, set, rIdx, p.getSmiles());
 
-		String predStr = getPredictionString(true);
-		set.setResultValue(rIdx, "Predicted class", HTMLReport.getHTMLCode(predStr));
-		addTable(set);
-
+			setTableRowsAlternating(false);
+			addTable(set, false);
+			setTableRowsAlternating(true);
+		}
 		addGap();
-		newSubsection("Prediction of model " + p.getModelId() + " is based on the following fragments:");
+
+		newSection("Prediction model");
+		{
+			ResultSet set = new ResultSet();
+			int rIdx = set.addResult();
+
+			String url = "/" + p.getModelId();
+			set.setResultValue(rIdx, "Dataset", HTMLReport.encodeLink(url, Model.getName(p.getModelId())));
+			set.setResultValue(rIdx, "Target", HTMLReport.encodeLink(url, Model.getTarget(p.getModelId())));
+			set.setResultValue(rIdx, "Prediction", getPrediction(true));
+			setHeaderHelp(
+					"Prediction",
+					"The Random Forest model provides a probability with each prediction, that indicates the classifier's confidence for the predicted class.");
+
+			setTableRowsAlternating(false);
+			addTable(set);//, true);
+			setTableRowsAlternating(true);
+		}
+		addGap();
+		//		stopInlineTables();
+
+		//addParagraph("The compound ");
+
+		//		addGap();
+		newSection("Fragments");
 
 		startInlinesTables();
-		for (boolean match : new Boolean[] { true, false })
+		for (final boolean match : new Boolean[] { true, false })
 		{
-			set = new ResultSet();
-			for (PredictionAttribute pa : p.getPredictionAttributes())
+			ResultSet set = new ResultSet();
+			for (final PredictionAttribute pa : p.getPredictionAttributes())
 			{
 				int attIdx = pa.attribute;
 				if (match == testInstanceContains(attIdx))
 				{
-					rIdx = set.addResult();
+					int rIdx = set.addResult();
 					set.setResultValue(
 							rIdx,
 							(match ? "Present" : "Absent") + " fragments",
@@ -93,33 +160,73 @@ public class PredictionHtml extends ExtendedHtmlReport
 									imageProvider.hrefFragment(p.getModelId(), attIdx), true));
 					//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
 
-					Boolean activating = null;
+					Boolean moreActive = null;
+					final String txt;
+					final Boolean activating;
+
 					if (pa.alternativeDistributionForInstance[miner.getActiveIdx()] != p.getPredictedDistribution()[miner
 							.getActiveIdx()])
 					{
-						activating = pa.alternativeDistributionForInstance[miner.getActiveIdx()] > p
+						moreActive = pa.alternativeDistributionForInstance[miner.getActiveIdx()] > p
 								.getPredictedDistribution()[miner.getActiveIdx()];
 						if (match)
-							activating = !activating;
+							activating = !moreActive;
+						else
+							activating = moreActive;
+
+						String fragmentLink = HTMLReport.encodeLink(imageProvider.hrefFragment(p.getModelId(), attIdx),
+								"fragment");
+						String alternativePredStr = "compound would be predicted as active with "
+								+ (moreActive ? "increased" : "decreased")
+								+ " probability ("
+								+ //
+								StringUtil
+										.formatDouble(pa.alternativeDistributionForInstance[miner.getActiveIdx()] * 100)
+								+ "% instead of "
+								+ StringUtil.formatDouble(p.getPredictedDistribution()[miner.getActiveIdx()] * 100)
+								+ "%).";
+
+						if (match)
+							txt = "The " + fragmentLink + " is present in the test compound, it has "
+									+ (activating ? "an activating" : "a de-activating")
+									+ " effect on the prediction:<br>" + "If absent, the " + alternativePredStr;
+						else
+							txt = "The " + fragmentLink + " is absent in the test compound. If present, it would have "
+									+ (activating ? "an activating" : "a de-activating")
+									+ " effect on the prediction:<br>" + "The " + alternativePredStr;
+					}
+					else
+					{
+						txt = null;
+						activating = null;
 					}
 
-					String effectStr = "none";
-					if (activating != null)
+					set.setResultValue(rIdx, "Effect", new Renderable()
 					{
-						if (activating)
-							effectStr = "activating";
-						else
-							effectStr = "de-activating";
-					}
-					effectStr += "<font color=grey><small>";
-					if (match)
-						effectStr += "<br>Prediction if absent:<br>";
-					else
-						effectStr += "<br>Prediction if present:<br>";
-					effectStr += getPredictionString(pa.alternativeDistributionForInstance,
-							pa.alternativePredictionIdx, false);
-					effectStr += "</small></font>";
-					set.setResultValue(rIdx, "Effect", HTMLReport.getHTMLCode(effectStr));
+						public void renderOn(HtmlCanvas html) throws IOException
+						{
+							String effectStr = "none";
+							if (activating != null)
+							{
+								if (activating)
+									effectStr = "activating";
+								else
+									effectStr = "de-activating";
+							}
+							html.write(effectStr);
+							if (activating != null)
+								html.render(getMouseoverHelp(txt, " "));
+							html.div(HtmlAttributesFactory.class_("smallGrey"));
+							if (match)
+								html.write("Prediction if absent:");
+							else
+								html.write("Prediction if present:");
+							html.br();
+							html.render(getPrediction(pa.alternativeDistributionForInstance,
+									pa.alternativePredictionIdx, false));
+							html._div();
+						}
+					});
 				}
 			}
 			//			addParagraph((match ? "Matching" : "Not matching") + " attributes");

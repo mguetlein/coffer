@@ -3,18 +3,26 @@ package org.kramerlab.cfpservice.api.impl;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Locale;
 
 import javax.ws.rs.core.Response;
 
 import org.kramerlab.cfpservice.api.FragmentObj;
 import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.PredictionObj;
+import org.kramerlab.cfpservice.api.impl.util.ServiceCompound;
+import org.mg.javalib.util.StopWatchUtil;
 import org.mg.javalib.util.StringUtil;
 import org.springframework.stereotype.Service;
 
 @Service("modelService#default")
 public class ModelServiceImpl implements ModelService
 {
+	static
+	{
+		Locale.setDefault(Locale.US);
+	}
+
 	public Model[] getModels()
 	{
 		return Model.listModels();
@@ -35,13 +43,23 @@ public class ModelServiceImpl implements ModelService
 		return Model.find(id).getHTML();
 	}
 
-	public Response predict(String smiles)
+	public Response predict(final String smiles)
 	{
 		try
 		{
-			for (Model m : Model.listModels())
-				Prediction.createPrediction(m, smiles);
-			return Response.seeOther(new URI("/prediction/" + StringUtil.getMD5(smiles))).build();
+			final Model models[] = Model.listModels();
+			Prediction.createPrediction(models[0], smiles);
+			Thread th = new Thread(new Runnable()
+			{
+				public void run()
+				{
+					for (int i = 1; i < models.length; i++)
+						Prediction.createPrediction(models[i], smiles);
+				}
+			});
+			th.start();
+			return Response.seeOther(new URI("/prediction/" + StringUtil.getMD5(smiles) + "?wait=" + models.length))
+					.build();
 		}
 		catch (URISyntaxException e)
 		{
@@ -72,9 +90,9 @@ public class ModelServiceImpl implements ModelService
 		return Prediction.find(modelId, predictionId);
 	}
 
-	public String getPredictionHTML(String predictionId)
+	public String getPredictionsHTML(String predictionId, String wait)
 	{
-		return Prediction.getHTML(predictionId);
+		return Prediction.getHTML(predictionId, wait != null ? Integer.parseInt(wait) : -1);
 	}
 
 	public String getPredictionHTML(String modelId, String predictionId)
@@ -91,4 +109,23 @@ public class ModelServiceImpl implements ModelService
 	{
 		return Fragment.find(modelId, fragmentId).getHTML();
 	}
+
+	public String getExternal(String service, String smiles)
+	{
+		try
+		{
+			return ServiceCompound.get(ServiceCompound.Service.valueOf(service), smiles);
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static void main(String[] args)
+	{
+		new ModelServiceImpl().predict("c1ccccc1");
+		StopWatchUtil.print();
+	}
+
 }

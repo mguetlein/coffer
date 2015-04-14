@@ -8,14 +8,17 @@ import org.mg.javalib.datamining.ResultSet;
 public class FragmentHtml extends ExtendedHtmlReport
 {
 	int selectedAttributeIdx;
-
+	String modelId;
+	String fragment;
 	CFPMiner miner;
 
 	public FragmentHtml(Fragment f)
 	{
-		super(f.getModelId(), f.getModelId(), f.getId(), "Fragment");
+		super(f.getModelId(), Model.getName(f.getModelId()), f.getId(), "Fragment");
 		this.miner = Model.find(f.getModelId()).getCFPMiner();
-		setPageTitle("Fragment " + f.getId() + " of " + miner.getNumAttributes());
+		this.modelId = f.getModelId();
+		fragment = "Fragment " + f.getId() + " / " + miner.getNumAttributes();
+		setPageTitle(fragment);
 		this.selectedAttributeIdx = Integer.parseInt(f.getId()) - 1;
 	}
 
@@ -26,7 +29,8 @@ public class FragmentHtml extends ExtendedHtmlReport
 
 	public String build() throws Exception
 	{
-		newSubsection("Occurence in training dataset");
+		setHidePageTitle(true);
+		newSection("Occurence of " + fragment + " in dataset " + Model.getName(modelId));
 
 		ResultSet set = new ResultSet();
 		int rIdx = set.addResult();
@@ -53,7 +57,8 @@ public class FragmentHtml extends ExtendedHtmlReport
 		}
 		addTable(set);
 
-		newSubsection("Training set compounds that include the fragment");
+		addGap();
+		newSection("Compounds including the fragment");
 
 		startInlinesTables();
 		setTableRowsAlternating(false);

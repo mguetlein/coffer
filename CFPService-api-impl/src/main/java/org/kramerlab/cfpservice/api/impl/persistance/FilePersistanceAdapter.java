@@ -6,10 +6,13 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.kramerlab.cfpminer.CFPDataLoader;
 import org.kramerlab.cfpminer.CFPMiner;
@@ -130,6 +133,13 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		Model res[] = new Model[models.length];
 		for (int i = 0; i < res.length; i++)
 			res[i] = Model.find(FileUtil.getFilename(models[i], false));
+		Arrays.sort(res, new Comparator<Model>()
+		{
+			public int compare(Model o1, Model o2)
+			{
+				return CFPDataLoader.CFPDataComparator.compare(o1.getId(), o2.getId());
+			}
+		});
 		return res;
 	}
 
@@ -236,5 +246,20 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		{
 			throw new PersistanceException(e);
 		}
+	}
+
+	public String getModelEndpoint(String modelId)
+	{
+		return dataLoader.getDatasetEndpoint(modelId);
+	}
+
+	public Set<String> getModelDatasetURLs(String modelId)
+	{
+		return dataLoader.getDatasetURLs(modelId);
+	}
+
+	public Map<String, String> getModelDatasetCitations(String modelId)
+	{
+		return dataLoader.getModelDatasetCitations(modelId);
 	}
 }

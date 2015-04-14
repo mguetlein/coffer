@@ -3,6 +3,7 @@ package org.kramerlab.cfpservice.api.impl.html;
 import java.io.File;
 
 import org.kramerlab.cfpminer.CDKUtil;
+import org.kramerlab.cfpminer.CFPDepict;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.StringUtil;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -24,7 +25,7 @@ public class DefaultImageProvider implements ImageProvider
 	{
 		IAtomContainer mol = CDKUtil.parseSmiles(smiles);
 		String png = relativeImgPath + StringUtil.getMD5(smiles) + "_" + size + ".png";
-		CDKUtil.draw(png, mol, size);
+		CFPDepict.drawToPNG(png, mol, size);
 		return png;
 	}
 
@@ -35,7 +36,7 @@ public class DefaultImageProvider implements ImageProvider
 				+ ArrayUtil.toString(ArrayUtil.toIntegerArray(atoms), "-", "", "", "") + "_" + crop + "_" + size
 				+ ".png";
 		if (!new File(pngFile).exists())
-			CDKUtil.drawFP(pngFile, mol, atoms, crop, size);
+			CFPDepict.drawFPtoPng(pngFile, mol, atoms, crop, size);
 		return pngFile;
 	}
 

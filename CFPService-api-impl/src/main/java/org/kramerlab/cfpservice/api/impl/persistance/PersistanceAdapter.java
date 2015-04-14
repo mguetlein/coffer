@@ -2,6 +2,8 @@ package org.kramerlab.cfpservice.api.impl.persistance;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpservice.api.impl.Model;
@@ -43,5 +45,11 @@ public interface PersistanceAdapter
 	public Model readModel(String id);
 
 	public Date getPredictionDate(String modelId, String id);
+
+	public String getModelEndpoint(String modelId);
+
+	public Set<String> getModelDatasetURLs(String modelId);
+
+	public Map<String, String> getModelDatasetCitations(String modelId);
 
 }

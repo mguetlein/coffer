@@ -4,10 +4,13 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.kramerlab.cfpminer.CFPDataLoader;
 import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpminer.CFPtoArff;
 import org.kramerlab.cfpminer.weka.ValidationResultsProvider;
@@ -112,20 +115,55 @@ public class Model extends ModelObj
 		}
 	}
 
+	public String getTarget()
+	{
+		return getTarget(id);
+	}
+
+	public String getName()
+	{
+		return getName(id);
+	}
+
+	public static String getName(String modelId)
+	{
+		return modelId.replaceAll("_", " ");
+	}
+
+	public Map<String, String> getDatasetCitations()
+	{
+		return PersistanceAdapter.INSTANCE.getModelDatasetCitations(id);
+	}
+
+	public static String getTarget(String modelId)
+	{
+		return PersistanceAdapter.INSTANCE.getModelEndpoint(modelId) + "";
+	}
+
+	public static Set<String> getDatasetURLs(String modelId)
+	{
+		return PersistanceAdapter.INSTANCE.getModelDatasetURLs(modelId);
+	}
+
 	public static void main(String[] args) throws Exception
 	{
-		//		for (Model m : PersistanceAdapter.INSTANCE.readModels())
-		//			System.out.println(m.toString());
-
 		//buildModel("DUD_vegfr2");
 		//buildModel("ChEMBL_61");
-		buildModel("CPDBAS_Mutagenicity");
 		//buildModel("NCTRER");
+		//buildModel("CPDBAS_Mutagenicity");
+		//		buildModel("AMES");
+		//		buildModel("CPDBAS_Rat");
+		//		buildModel("CPDBAS_Hamster");
+		//		buildModel("ChEMBL_61");
+		//		buildModel("MUV_859");
+		//		buildModel("CPDBAS_MultiCellCall");
+		//		buildModel("ChEMBL_87");
+
+		for (String dataset : new CFPDataLoader("persistance/data").allDatasets())
+			if (!PersistanceAdapter.INSTANCE.modelExists(dataset))
+				buildModel(dataset);
 
 		//		Model.find("CPDBAS_Mutagenicity").getValidationChart();
-
-		//CPDBAS_Hamster
-		//buildModel("ChEMBL_61");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -139,13 +177,13 @@ public class Model extends ModelObj
 		ListUtil.scramble(new Random(1), smiles, endpoints);
 
 		model.miner = new CFPMiner(endpoints);
-		model.miner.setType(CFPMiner.CFPType.ecfp6);
+		model.miner.setType(CFPMiner.CFPType.ecfp4);
 		model.miner.setFeatureSelection(CFPMiner.FeatureSelection.filt);
-		model.miner.setHashfoldsize(1024);
+		model.miner.setHashfoldsize(8192);
 		model.miner.mine(smiles);
 
-		//		String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(id);
-		//		CFPMiner.validate(id, 1, outfile, new String[] { "RaF" }, endpoints, model.miner);
+		String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(id);
+		CFPMiner.validate(id, 1, outfile, new String[] { "RaF" }, endpoints, model.miner);
 
 		model.miner.applyFilter();
 		System.out.println(model.miner);
@@ -207,4 +245,5 @@ public class Model extends ModelObj
 			//						+ ", atoms " + ArrayUtil.toString(miner.getAtoms(smi, miner.getHashcodeViaIdx(i))));
 		}
 	}
+
 }

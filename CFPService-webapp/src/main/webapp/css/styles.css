@@ -7,6 +7,14 @@ body{
 	background-color:#eee;
 }
 
+.pubchem {
+	color: black;
+	background-color:white;
+	font-size: 80%;
+	text-align:left;
+}
+
+
 /*h, input, button, select, option, textarea, table, div, p, li, a{*/
 
 #content {
@@ -55,13 +63,17 @@ h4{
 	font-size: 100%;
 }
 
-input, button, select, option, textarea, table, div, p, li, a, pre {
+input, button, select, option, textarea, table, div, p, li, a, pre, object, embed {
     font-size: 95%;
     font-family: inherit;
 }
 
 a {
 	color: inherit;
+}
+
+a, u {
+    text-decoration: none;
 }
 
 em {
@@ -83,8 +95,17 @@ a.a_header:hover {
 }
 
 footer {
-    font-size: 85%;
+    font-size: 90%;
     font-family: inherit;
+}
+
+.small {
+    font-size: 90%;
+}
+
+.smallGrey {
+    font-size: 90%;
+    color:gray;
 }
 
 h1, h2, h3, h4, th {
@@ -93,6 +114,10 @@ h1, h2, h3, h4, th {
 
 th {
 	background-color:#eee;
+}
+
+th.transpose {
+	background-color: inherit;
 }
 
 
@@ -105,6 +130,10 @@ table, th, td{
 	word-wrap:break-word;
 	border: 1px solid #98AFC7;
     border-collapse: collapse;
+}
+
+table.noBorder{
+	border: 0px;
 }
 
 table{
@@ -183,4 +212,33 @@ table.table_footer, th, td {
 
 
 
+.MouseoverHelp {
+    position:relative;
+}
+.MouseoverHelp div {
+    display: none;
+}
+.MouseoverHelpHover {
+    position:relative;
+}
+.MouseoverHelpHover div {
+    display:block;
+    background-color: #eee;
+    position:absolute;
+    padding: 1em;
+    border: 1px solid #98AFC7;
+    width: 25em;
 
+    color: black;
+    font-weight: normal;
+    text-decoration:none;
+    font-size: 95%;
+    font-family: inherit;
+/*    top:1.3em;
+    *top:20px;
+    left:70px;
+    z-index:1000;
+
+    
+    border-radius: 4px;*/
+}

@@ -104,6 +104,7 @@ public class Prediction extends PredictionObj
 			p.modelId = m.getId();
 			p.predictedIdx = maxIdx;
 			p.predictedDistribution = dist;
+
 			p.setPredictionAttributes(m.getExtendedRandomForest().getPredictionAttributes(inst, dist));
 
 			PersistanceAdapter.INSTANCE.savePrediction(p);
@@ -116,11 +117,11 @@ public class Prediction extends PredictionObj
 		}
 	}
 
-	public static String getHTML(String predictionId)
+	public static String getHTML(String predictionId, int wait)
 	{
 		try
 		{
-			return new PredictionsHtml(predictionId).build();
+			return new PredictionsHtml(predictionId, wait).build();
 		}
 		catch (Exception e)
 		{

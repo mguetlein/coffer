@@ -74,7 +74,7 @@ public interface ModelService
 	@Path("prediction/{pId}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	String getPredictionHTML(@PathParam("pId") String pId);
+	String getPredictionsHTML(@PathParam("pId") String pId, @FormParam("wait") String wait);
 
 	@Path("{id}/prediction/{pId}")
 	@GET
@@ -90,4 +90,10 @@ public interface ModelService
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
 	String getFragmentHTML(@PathParam("id") String modelId, @PathParam("fId") String fragmentId);
+
+	@Path("external/{service}/{smiles}")
+	@GET
+	@Produces({ MediaType.TEXT_HTML })
+	String getExternal(@PathParam("service") String service, @PathParam("smiles") String smiles);
+
 }
