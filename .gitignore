@@ -4,3 +4,9 @@ CFPService-webapp/target/
 CFPService-webapp-exec/target/
 CFPService-api/target/
 CFPService-webapp/src/main/webapp/css/styles.css~
+persistance/img/*.png
+persistance/prediction/*.prediction
+persistance/model/*.model
+persistance/model/*.cfp
+persistance/model/*.arff
+persistance/model/*.classifier
