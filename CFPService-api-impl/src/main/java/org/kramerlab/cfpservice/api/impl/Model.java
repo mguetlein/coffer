@@ -160,8 +160,11 @@ public class Model extends ModelObj
 		//		buildModel("ChEMBL_87");
 
 		for (String dataset : new CFPDataLoader("persistance/data").allDatasets())
-			if (!PersistanceAdapter.INSTANCE.modelExists(dataset))
-				buildModel(dataset);
+		{
+			//			if (!PersistanceAdapter.INSTANCE.modelExists(dataset))
+			buildModel(dataset);
+			break;
+		}
 
 		//		Model.find("CPDBAS_Mutagenicity").getValidationChart();
 	}

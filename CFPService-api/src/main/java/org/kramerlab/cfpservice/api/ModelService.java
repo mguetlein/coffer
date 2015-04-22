@@ -43,6 +43,11 @@ public interface ModelService
 	@Produces({ MediaType.TEXT_HTML })
 	String getModelsHTML();
 
+	@Path("doc")
+	@GET
+	@Produces({ MediaType.TEXT_HTML })
+	String getDocHTML();
+
 	@Path("{id}")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })

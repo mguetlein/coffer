@@ -48,15 +48,15 @@ footer {
 
 
 h1{
-	font-size: 180%;
+	font-size: 170%;
 }
 
 h2{
-	font-size: 140%;
+	font-size: 135%;
 }
 
 h3{
-	font-size: 100%;
+	font-size: 120%;
 }
 
 h4{
@@ -76,12 +76,17 @@ a, u {
     text-decoration: none;
 }
 
+a.underline, u.underline {
+    text-decoration: underline;
+}
+
 em {
 	color: gray;
 }
 
 a:hover {
 	color: #0000A0;
+    text-decoration: underline;
 }
 
 a.a_header {
@@ -159,7 +164,7 @@ table.alternate tr:nth-child(even){
 }
 
 th, td{
-	max-width:300px;
+	max-width:350px;
 }
 
 table.table_footer, th, td {
@@ -234,11 +239,10 @@ table.table_footer, th, td {
     text-decoration:none;
     font-size: 95%;
     font-family: inherit;
+
 /*    top:1.3em;
     *top:20px;
     left:70px;
     z-index:1000;
-
-    
     border-radius: 4px;*/
 }

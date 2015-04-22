@@ -2,14 +2,15 @@ package org.kramerlab.cfpservice.api.impl;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Locale;
 
 import javax.ws.rs.core.Response;
 
+import org.kramerlab.cfpminer.CDKUtil;
 import org.kramerlab.cfpservice.api.FragmentObj;
 import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.PredictionObj;
+import org.kramerlab.cfpservice.api.impl.html.DocHtml;
 import org.kramerlab.cfpservice.api.impl.util.ServiceCompound;
 import org.mg.javalib.util.StopWatchUtil;
 import org.mg.javalib.util.StringUtil;
@@ -21,6 +22,18 @@ public class ModelServiceImpl implements ModelService
 	static
 	{
 		Locale.setDefault(Locale.US);
+	}
+
+	public String getDocHTML()
+	{
+		try
+		{
+			return new DocHtml().build();
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	public Model[] getModels()
@@ -47,6 +60,7 @@ public class ModelServiceImpl implements ModelService
 	{
 		try
 		{
+			CDKUtil.validateSmiles(smiles);
 			final Model models[] = Model.listModels();
 			Prediction.createPrediction(models[0], smiles);
 			Thread th = new Thread(new Runnable()
@@ -61,7 +75,7 @@ public class ModelServiceImpl implements ModelService
 			return Response.seeOther(new URI("/prediction/" + StringUtil.getMD5(smiles) + "?wait=" + models.length))
 					.build();
 		}
-		catch (URISyntaxException e)
+		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -71,10 +85,11 @@ public class ModelServiceImpl implements ModelService
 	{
 		try
 		{
+			CDKUtil.validateSmiles(smiles);
 			Prediction p = Prediction.createPrediction(Model.find(id), smiles);
 			return Response.seeOther(new URI(id + "/prediction/" + p.getId())).build();
 		}
-		catch (URISyntaxException e)
+		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}

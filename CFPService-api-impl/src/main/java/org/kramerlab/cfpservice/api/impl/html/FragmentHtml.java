@@ -3,6 +3,7 @@ package org.kramerlab.cfpservice.api.impl.html;
 import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpservice.api.impl.Fragment;
 import org.kramerlab.cfpservice.api.impl.Model;
+import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.datamining.ResultSet;
 
 public class FragmentHtml extends ExtendedHtmlReport
@@ -14,7 +15,7 @@ public class FragmentHtml extends ExtendedHtmlReport
 
 	public FragmentHtml(Fragment f)
 	{
-		super(f.getModelId(), Model.getName(f.getModelId()), f.getId(), "Fragment");
+		super(f.getModelId(), Model.getName(f.getModelId()), "fragment/" + f.getId(), "Fragment");
 		this.miner = Model.find(f.getModelId()).getCFPMiner();
 		this.modelId = f.getModelId();
 		fragment = "Fragment " + f.getId() + " / " + miner.getNumAttributes();
@@ -29,8 +30,13 @@ public class FragmentHtml extends ExtendedHtmlReport
 
 	public String build() throws Exception
 	{
-		setHidePageTitle(true);
-		newSection("Occurence of " + fragment + " in dataset " + Model.getName(modelId));
+		//		setHidePageTitle(true);
+		//		newSection("Occurence of " + fragment + " in dataset " + Model.getName(modelId));
+
+		addParagraph(HTMLReport.encodeLink("/" + modelId + "/fragment/" + (selectedAttributeIdx + 0), "prev") + " "
+				+ HTMLReport.encodeLink("/" + modelId + "/fragment/" + (selectedAttributeIdx + 2), "next"));
+
+		newSection("Occurence in dataset " + Model.getName(modelId));
 
 		ResultSet set = new ResultSet();
 		int rIdx = set.addResult();

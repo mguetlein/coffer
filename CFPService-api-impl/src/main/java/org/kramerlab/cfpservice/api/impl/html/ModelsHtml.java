@@ -14,6 +14,10 @@ public class ModelsHtml extends ExtendedHtmlReport
 
 	public String build() throws Exception
 	{
+		newSection("Welcome");
+		addParagraph(text("home.welcome") + " " + HTMLReport.encodeLink("/doc", "Documentation"));
+		addGap();
+
 		newSection("Make prediction");
 		addForm("/", "compound", "Predict", "Please insert SMILES string");
 		addGap();

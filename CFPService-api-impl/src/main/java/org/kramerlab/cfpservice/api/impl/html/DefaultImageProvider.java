@@ -25,7 +25,8 @@ public class DefaultImageProvider implements ImageProvider
 	{
 		IAtomContainer mol = CDKUtil.parseSmiles(smiles);
 		String png = relativeImgPath + StringUtil.getMD5(smiles) + "_" + size + ".png";
-		CFPDepict.drawToPNG(png, mol, size);
+		if (!new File(png).exists())
+			CFPDepict.drawToPNG(png, mol, size);
 		return png;
 	}
 

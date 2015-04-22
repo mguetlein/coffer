@@ -127,9 +127,7 @@ public class PredictionHtml extends ExtendedHtmlReport
 			set.setResultValue(rIdx, "Dataset", HTMLReport.encodeLink(url, Model.getName(p.getModelId())));
 			set.setResultValue(rIdx, "Target", HTMLReport.encodeLink(url, Model.getTarget(p.getModelId())));
 			set.setResultValue(rIdx, "Prediction", getPrediction(true));
-			setHeaderHelp(
-					"Prediction",
-					"The Random Forest model provides a probability with each prediction, that indicates the classifier's confidence for the predicted class.");
+			setHeaderHelp("Prediction", text("model.prediction.tip") + " " + moreLink(DocHtml.PREDICTION_MODELS));
 
 			setTableRowsAlternating(false);
 			addTable(set);//, true);
@@ -174,8 +172,8 @@ public class PredictionHtml extends ExtendedHtmlReport
 						else
 							activating = moreActive;
 
-						String fragmentLink = HTMLReport.encodeLink(imageProvider.hrefFragment(p.getModelId(), attIdx),
-								"fragment");
+						String fragmentLink = "fragment";
+						// HTMLReport.encodeLink(imageProvider.hrefFragment(p.getModelId(), attIdx),"fragment");
 						String alternativePredStr = "compound would be predicted as active with "
 								+ (moreActive ? "increased" : "decreased")
 								+ " probability ("
@@ -189,11 +187,13 @@ public class PredictionHtml extends ExtendedHtmlReport
 						if (match)
 							txt = "The " + fragmentLink + " is present in the test compound, it has "
 									+ (activating ? "an activating" : "a de-activating")
-									+ " effect on the prediction:<br>" + "If absent, the " + alternativePredStr;
+									+ " effect on the prediction:<br>" + "If absent, the " + alternativePredStr + " "
+									+ moreLink(DocHtml.PREDICTION_FRAGMENTS);
 						else
 							txt = "The " + fragmentLink + " is absent in the test compound. If present, it would have "
 									+ (activating ? "an activating" : "a de-activating")
-									+ " effect on the prediction:<br>" + "The " + alternativePredStr;
+									+ " effect on the prediction:<br>" + "The " + alternativePredStr + " "
+									+ moreLink(DocHtml.PREDICTION_FRAGMENTS);
 					}
 					else
 					{

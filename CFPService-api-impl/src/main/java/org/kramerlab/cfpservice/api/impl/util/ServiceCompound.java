@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -28,7 +29,7 @@ public abstract class ServiceCompound implements Renderable
 
 	public abstract String getJsonUrl(String encodedSmiles);
 
-	protected abstract void parseJson(JSONObject obj) throws JSONException;
+	protected abstract void parseJson(JSONObject obj) throws JSONException, FileNotFoundException;
 
 	protected abstract String getLinkout();
 
@@ -76,9 +77,11 @@ public abstract class ServiceCompound implements Renderable
 		}
 
 		@Override
-		protected void parseJson(JSONObject obj) throws JSONException
+		protected void parseJson(JSONObject obj) throws JSONException, FileNotFoundException
 		{
 			obj = obj.getJSONArray("PC_Compounds").getJSONObject(0);
+			if (obj.getJSONObject("id").isNull("id"))
+				throw new FileNotFoundException("pubchem json has no cid");
 			id = obj.getJSONObject("id").getJSONObject("id").getString("cid");
 			JSONArray props = obj.getJSONArray("props");
 			for (int i = 0; i < props.length(); i++)
@@ -158,7 +161,6 @@ public abstract class ServiceCompound implements Renderable
 		{
 			return "https://www.ebi.ac.uk/chembldb/index.php/compound/inspect/" + id;
 		}
-
 	}
 
 	protected String id;
@@ -167,16 +169,20 @@ public abstract class ServiceCompound implements Renderable
 
 	public ServiceCompound(String smiles)
 	{
-		System.out.println(smiles);
 		try
 		{
 			JSONObject obj = new JSONObject(IOUtils.toString(new URL(getJsonUrl(URLEncoder.encode(smiles, "UTF-8"))),
 					Charsets.UTF_8));
 			parseJson(obj);
 		}
+		catch (UnknownHostException e)
+		{
+			System.err.println("Compound info fetching failed - cannot conect to host : " + e.getMessage());
+		}
 		catch (FileNotFoundException e)
 		{
-			System.err.println("Not found " + e.getMessage());
+			System.err.println("Compound info fetching failed - no compound found for smiles " + smiles + " : "
+					+ e.getMessage());
 		}
 		catch (Exception e)
 		{
@@ -228,7 +234,7 @@ public abstract class ServiceCompound implements Renderable
 
 	public static void main(String[] args) throws MalformedURLException, JSONException, IOException
 	{
-		String smiles = "c1ccccc1";
+		String smiles = "C1CCCCCCCCCCCCCCCCCCCCNCCCCCCCCCCCCCCCCCCCCCCCC1";
 		System.out.println(new PubChemCompound(smiles).getHTML());
 		System.out.println(new ChEMBLCompound(smiles).getHTML());
 	}

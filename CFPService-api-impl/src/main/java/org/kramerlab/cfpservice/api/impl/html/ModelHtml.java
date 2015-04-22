@@ -1,10 +1,13 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
+import java.io.IOException;
+
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
 import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.util.CountedSet;
+import org.rendersnake.HtmlCanvas;
 import org.rendersnake.Renderable;
 
 public class ModelHtml extends ExtendedHtmlReport
@@ -44,8 +47,30 @@ public class ModelHtml extends ExtendedHtmlReport
 
 		//		ResultSet setM = new ResultSet();
 		//		setM.addResult();
-		set.concatCols(m.getExtendedRandomForest().getSummary(true));
-		set.concatCols(m.getCFPMiner().getSummary(true));
+		set.setResultValue(
+				idx,
+				"Prediction model",
+				getMouseoverHelp(text("model.tip") + " " + moreLink(DocHtml.PREDICTION_MODELS), m
+						.getExtendedRandomForest().getName()));
+
+		set.setResultValue(
+				idx,
+				"Fragment type",
+				getMouseoverHelp(text("fragment.type.tip") + " " + moreLink(DocHtml.FRAGMENTS), m.getCFPMiner()
+						.getFeatureType()));
+		set.setResultValue(idx, "Num fragments", new Renderable()
+		{
+			public void renderOn(HtmlCanvas html) throws IOException
+			{
+				html.write(m.getCFPMiner().getNumAttributes() + " ");
+				new TextWithLinks(encodeLink("/" + m.getId() + "/fragment/1", "(inspect fragments)"), true)
+						.renderOn(html);
+				//html.write("bla");
+			}
+		});
+		//				 + " " + ;
+
+		//		set.concatCols(m.getCFPMiner().getSummary(true));
 		//set.setResultValue(idx, "Model", getList(setM));
 
 		setTableRowsAlternating(false);
@@ -90,5 +115,4 @@ public class ModelHtml extends ExtendedHtmlReport
 		return close();
 
 	}
-
 }
