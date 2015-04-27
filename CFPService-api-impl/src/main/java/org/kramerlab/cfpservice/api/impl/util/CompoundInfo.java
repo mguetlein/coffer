@@ -14,13 +14,13 @@ import org.apache.commons.io.IOUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.kramerlab.cfpservice.api.impl.html.ExtendedHtmlReport;
+import org.kramerlab.cfpservice.api.impl.html.DefaultHtml;
 import org.mg.javalib.util.StringUtil;
 import org.rendersnake.HtmlAttributesFactory;
 import org.rendersnake.HtmlCanvas;
 import org.rendersnake.Renderable;
 
-public abstract class ServiceCompound implements Renderable
+public abstract class CompoundInfo implements Renderable
 {
 	public enum Service
 	{
@@ -40,16 +40,16 @@ public abstract class ServiceCompound implements Renderable
 	public static String get(Service service, String smiles) throws MalformedURLException, JSONException, IOException
 	{
 		if (service == Service.pubchem)
-			return new PubChemCompound(smiles).getHTML();
+			return new PubChemCompoundInfo(smiles).getHTML();
 		else if (service == Service.chembl)
-			return new ChEMBLCompound(smiles).getHTML();
+			return new ChEMBLCompoundInfo(smiles).getHTML();
 		else if (service == Service.all)
 		{
 			HtmlCanvas html = new HtmlCanvas();
-			html.macros().stylesheet(ExtendedHtmlReport.css);
+			html.macros().stylesheet(DefaultHtml.css);
 			html.body(HtmlAttributesFactory.class_("pubchem"));
-			ServiceCompound p = new PubChemCompound(smiles);
-			ServiceCompound c = new ChEMBLCompound(smiles);
+			CompoundInfo p = new PubChemCompoundInfo(smiles);
+			CompoundInfo c = new ChEMBLCompoundInfo(smiles);
 			if (p.id != null)
 				p.renderOn(html);
 			if (p.id != null && c.id != null)
@@ -63,9 +63,9 @@ public abstract class ServiceCompound implements Renderable
 			throw new IllegalArgumentException();
 	}
 
-	public static class PubChemCompound extends ServiceCompound
+	public static class PubChemCompoundInfo extends CompoundInfo
 	{
-		public PubChemCompound(String smiles)
+		public PubChemCompoundInfo(String smiles)
 		{
 			super(smiles);
 		}
@@ -123,10 +123,10 @@ public abstract class ServiceCompound implements Renderable
 		}
 	}
 
-	public static class ChEMBLCompound extends ServiceCompound
+	public static class ChEMBLCompoundInfo extends CompoundInfo
 	{
 
-		public ChEMBLCompound(String smiles) throws MalformedURLException, JSONException, IOException
+		public ChEMBLCompoundInfo(String smiles) throws MalformedURLException, JSONException, IOException
 		{
 			super(smiles);
 		}
@@ -167,7 +167,7 @@ public abstract class ServiceCompound implements Renderable
 	protected String name;
 	protected HashMap<String, String> fields = new LinkedHashMap<String, String>();
 
-	public ServiceCompound(String smiles)
+	public CompoundInfo(String smiles)
 	{
 		try
 		{
@@ -195,7 +195,7 @@ public abstract class ServiceCompound implements Renderable
 		try
 		{
 			HtmlCanvas html = new HtmlCanvas();
-			html.macros().stylesheet(ExtendedHtmlReport.css);
+			html.macros().stylesheet(DefaultHtml.css);
 			html.body(HtmlAttributesFactory.class_("pubchem"));
 			renderOn(html);
 			html._body();
@@ -235,7 +235,7 @@ public abstract class ServiceCompound implements Renderable
 	public static void main(String[] args) throws MalformedURLException, JSONException, IOException
 	{
 		String smiles = "C1CCCCCCCCCCCCCCCCCCCCNCCCCCCCCCCCCCCCCCCCCCCCC1";
-		System.out.println(new PubChemCompound(smiles).getHTML());
-		System.out.println(new ChEMBLCompound(smiles).getHTML());
+		System.out.println(new PubChemCompoundInfo(smiles).getHTML());
+		System.out.println(new ChEMBLCompoundInfo(smiles).getHTML());
 	}
 }

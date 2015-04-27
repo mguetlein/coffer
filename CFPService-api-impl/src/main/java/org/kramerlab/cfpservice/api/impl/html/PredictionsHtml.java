@@ -4,45 +4,42 @@ import java.util.Comparator;
 
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
-import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.datamining.ResultSet;
 
-public class PredictionsHtml extends ExtendedHtmlReport
+public class PredictionsHtml extends DefaultHtml
 {
-	String predictionId;
+	Prediction[] predictions;
 	int wait;
 
-	public PredictionsHtml(String predictionId, int wait)
+	public PredictionsHtml(Prediction[] predictions, int wait)
 	{
-		super(predictionId, "Prediction", null, null);
+		super(predictions[0].getId(), "Prediction", null, null);
 		setHidePageTitle(true);
-		this.predictionId = predictionId;
+		this.predictions = predictions;
 		this.wait = wait;
 	}
 
 	public String build() throws Exception
 	{
-		String smiles = null;
+		String smiles = predictions[0].getSmiles();
 
 		int count = 0;
 		ResultSet res = new ResultSet();
-		for (Model m : Model.listModels())
+
+		for (Prediction p : predictions)
 		{
-			if (Prediction.exists(m.getId(), predictionId))
-			{
-				int idx = res.addResult();
-				String url = "/" + m.getId() + "/prediction/" + predictionId;
-				//				res.setResultValue(idx, "Model", HTMLReport.encodeLink(url /*"/" + m.getId()*/, m.getId()));
-				Prediction p = Prediction.find(m.getId(), predictionId);
-				smiles = p.getSmiles();
-				res.setResultValue(idx, "Dataset", HTMLReport.encodeLink(url, m.getName()));
-				res.setResultValue(idx, "Target", HTMLReport.encodeLink(url, m.getTarget()));
-				res.setResultValue(idx, "Prediction", PredictionHtml.getPrediction(p, m.getClassValues(), true, url));
-				res.setResultValue(idx, "p", p.getPredictedDistribution()[m.getActiveClassIdx()]);
-				//							HTMLReport.encodeLink("/" + m.getId() + "/prediction/" + predictionId,
-				//									p.getPredictedClass())
-				count++;
-			}
+			int idx = res.addResult();
+			String url = "/" + p.getModelId() + "/prediction/" + p.getId();
+			//				res.setResultValue(idx, "Model", HTMLReport.encodeLink(url /*"/" + m.getId()*/, m.getId()));
+			smiles = p.getSmiles();
+			Model m = Model.find(p.getModelId());
+			res.setResultValue(idx, "Dataset", encodeLink(url, m.getName()));
+			res.setResultValue(idx, "Target", encodeLink(url, m.getTarget()));
+			res.setResultValue(idx, "Prediction", PredictionHtml.getPrediction(p, m.getClassValues(), true, url));
+			res.setResultValue(idx, "p", p.getPredictedDistribution()[m.getActiveClassIdx()]);
+			//							HTMLReport.encodeLink("/" + m.getId() + "/prediction/" + predictionId,
+			//									p.getPredictedClass())
+			count++;
 		}
 		if (count < wait)
 			setRefresh(10);
@@ -69,11 +66,11 @@ public class PredictionsHtml extends ExtendedHtmlReport
 
 		if (count < wait)
 		{
-			startInlinesTables();
+			startLeftColumn();
 			addImage("/img/wait.gif");
-			addGap();
+			startRightColumn();
 			addParagraph(count + "/" + wait + " model predictions done, this page reloads every 10 seconds.");
-			stopInlineTables();
+			stopColumns();
 		}
 		else
 		{

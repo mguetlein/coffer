@@ -2,8 +2,8 @@ package org.kramerlab.cfpservice.api;
 
 import java.io.Serializable;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 @SuppressWarnings("restriction")
 @XmlRootElement
@@ -11,11 +11,8 @@ public class ModelObj implements Serializable
 {
 	private static final long serialVersionUID = 2L;
 
-	@XmlAttribute
 	protected String id;
-	@XmlAttribute
 	protected String classValues[];
-	@XmlAttribute
 	protected int activeClassIdx;
 
 	public String getId()
@@ -28,6 +25,7 @@ public class ModelObj implements Serializable
 		this.id = id;
 	}
 
+	@XmlTransient
 	public int getActiveClassIdx()
 	{
 		return activeClassIdx;

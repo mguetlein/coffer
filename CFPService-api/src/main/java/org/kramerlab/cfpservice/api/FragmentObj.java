@@ -2,7 +2,6 @@ package org.kramerlab.cfpservice.api;
 
 import java.io.Serializable;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @SuppressWarnings("restriction")
@@ -14,9 +13,7 @@ public class FragmentObj implements Serializable
 	/**
 	 * fragment id = attribute-idx + 1
 	 */
-	@XmlAttribute
 	protected String id;
-	@XmlAttribute
 	protected String modelId;
 
 	public String getId()
@@ -38,5 +35,4 @@ public class FragmentObj implements Serializable
 	{
 		this.modelId = modelId;
 	}
-
 }

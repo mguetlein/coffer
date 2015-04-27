@@ -30,13 +30,36 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+/**
+ * Java API and REST API Interface for {@value SERVICE_TITLE} ({@value SERVICE_HOME})<br>
+ * REST methods are documented below.
+ * 
+ * @author Martin Gütlein guetlein@uni-mainz.de
+ */
 @Path("")
 public interface ModelService
 {
+	public static String SERVICE_HOME = "http://ucfps.informatik.uni-mainz.de";
+	public static String SERVICE_TITLE = "Unfolded Circular Fingerprints";
+
+	/**
+	 * <b>request:</b> GET {@value SERVICE_HOME}/<br>
+	 * <b>content-type:</b> application/json<br>
+	 * <b>returns:</b> list of models
+	 */
 	@Path("")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
 	ModelObj[] getModels();
+
+	/**
+	 * <b>request:</b> POST {@value SERVICE_HOME}/<br>
+	 * <b>params:</b> </i>compound</i> SMILES String<br>
+	 * <b>returns:</b> redirect to prediction with all models
+	 */
+	@Path("")
+	@POST
+	Response predict(@FormParam("compound") String compound);
 
 	@Path("")
 	@GET
@@ -48,57 +71,100 @@ public interface ModelService
 	@Produces({ MediaType.TEXT_HTML })
 	String getDocHTML();
 
-	@Path("{id}")
+	/**
+	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i><br>
+	 * <b>content-type:</b> application/json<br>
+	 * <b>returns:</b> model
+	 */
+	@Path("{modelId}")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	ModelObj getModel(@PathParam("id") String id);
+	ModelObj getModel(@PathParam("modelId") String modelId);
 
-	@Path("{id}")
+	@Path("{modelId}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	String getModelHTML(@PathParam("id") String id);
+	String getModelHTML(@PathParam("modelId") String modelId);
 
-	@Path("")
+	/**
+	 * <b>request:</b> POST {@value SERVICE_HOME}/<i>modelId</i><br>
+	 * <b>params:</b> <i>compound</i> SMILES String<br>
+	 * <b>returns:</b> redirect to single-model prediction
+	 */
+	@Path("{modelId}")
 	@POST
-	Response predict(@FormParam("compound") String compound);
+	Response predict(@PathParam("modelId") String modelId, @FormParam("compound") String compound);
 
-	@Path("{id}")
-	@POST
-	Response predict(@PathParam("id") String id, @FormParam("compound") String compound);
-
-	@Path("{id}/validation")
+	@Path("{modelId}/validation")
 	@GET
 	@Produces({ "image/png" })
-	InputStream getValidationChart(@PathParam("id") String id);
+	InputStream getValidationChart(@PathParam("modelId") String modelId);
 
-	@Path("{id}/prediction/{pId}")
+	/**
+	 * <b>request:</b> GET {@value SERVICE_HOME}/prediction/<i>modelId</i><br>
+	 * <b>content-type:</b> application/json<br>
+	 * <b>returns:</b> list of single-model predictions
+	 */
+	@Path("prediction/{predictionId}")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	PredictionObj getPrediction(@PathParam("id") String modelId, @PathParam("pId") String pId);
+	PredictionObj[] getPredictions(@PathParam("predictionId") String predictionId, @FormParam("wait") String wait);
 
-	@Path("prediction/{pId}")
+	@Path("prediction/{predictionId}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	String getPredictionsHTML(@PathParam("pId") String pId, @FormParam("wait") String wait);
+	String getPredictionsHTML(@PathParam("predictionId") String predictionId, @FormParam("wait") String wait);
 
-	@Path("{id}/prediction/{pId}")
+	/**
+	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i>/prediction/<i>predictionId</i><br>
+	 * <b>content-type:</b> application/json<br>
+	 * <b>returns:</b> single-model prediction
+	 */
+	@Path("{modelId}/prediction/{predictionId}")
+	@GET
+	@Produces({ MediaType.APPLICATION_JSON })
+	PredictionObj getPrediction(@PathParam("modelId") String modelId, @PathParam("predictionId") String predictionId);
+
+	@Path("{modelId}/prediction/{predictionId}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	String getPredictionHTML(@PathParam("id") String modelId, @PathParam("pId") String pId);
+	String getPredictionHTML(@PathParam("modelId") String modelId, @PathParam("predictionId") String predictionId);
 
-	//	@Path("{id}/fragment/{pId}")
-	//	@GET
-	//	@Produces({ MediaType.APPLICATION_JSON })
-	//	Fragment getFragment(@PathParam("id") String modelId, @PathParam("pId") String predictionId);
-	//
-	@Path("{id}/fragment/{fId}")
+	/**
+	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i>/fragment/<i>fragmentId</i><br>
+	 * <b>content-type:</b> application/json<br>
+	 * <b>returns:</b> fragment
+	 */
+	@Path("{modelId}/fragment/{fragmentId}")
+	@GET
+	@Produces({ MediaType.APPLICATION_JSON })
+	FragmentObj getFragment(@PathParam("modelId") String modelId, @PathParam("fragmentId") String fragmentId);
+
+	@Path("{modelId}/fragment/{fragmentId}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	String getFragmentHTML(@PathParam("id") String modelId, @PathParam("fId") String fragmentId);
+	String getFragmentHTML(@PathParam("modelId") String modelId, @PathParam("fragmentId") String fragmentId);
 
-	@Path("external/{service}/{smiles}")
+	@Path("info/{service}/{smiles}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	String getExternal(@PathParam("service") String service, @PathParam("smiles") String smiles);
+	String getCompoundInfo(@PathParam("service") String service, @PathParam("smiles") String smiles);
+
+	/**
+	 * <b>request:</b> GET {@value SERVICE_HOME}/depict<br>
+	 * <b>content-type:</b> image/png<br>
+	 * <b>params:</b> <i>smiles</i> compound smiles string<br>
+	 * <i>size</i> integer to specify width and height (optional), otherwise depends on compound with default bond size<br>
+	 * <i>atoms</i> comma separated atom indices (optional) to be highlighted<br>
+	 * <i>highlightOutgoingBonds</i> true (optional) if outgoing bonds of fragment should be highlighted<br> 
+	 * <i>crop</i> true (optional) if image should be cropped around matching atoms<br>
+	 * <b>returns:</b> image
+	 */
+	@Path("depict")
+	@GET
+	@Produces({ "image/png" })
+	InputStream depict(@FormParam("smiles") String smiles, @FormParam("size") String size,
+			@FormParam("atoms") String atoms, @FormParam("highlightOutgoingBonds") String highlightOutgoingBonds,
+			@FormParam("crop") String crop);
 
 }

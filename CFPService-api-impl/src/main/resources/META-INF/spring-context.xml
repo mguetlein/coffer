@@ -52,7 +52,6 @@
    
     <jaxrs:serviceBeans>
       <ref bean="modelService#default"/>
-      <ref bean="depictService#default"/>
     </jaxrs:serviceBeans>
     
     <jaxrs:providers>

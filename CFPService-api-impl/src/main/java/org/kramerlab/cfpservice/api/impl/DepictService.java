@@ -4,15 +4,12 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URLEncoder;
 
-import org.kramerlab.cfpservice.api.DepictService;
 import org.kramerlab.cfpservice.api.impl.html.DefaultImageProvider;
 import org.kramerlab.cfpservice.api.impl.html.ImageProvider;
 import org.mg.javalib.util.ArrayUtil;
 import org.openscience.cdk.exception.InvalidSmilesException;
-import org.springframework.stereotype.Service;
 
-@Service("depictService#default")
-public class DepictServiceImpl implements DepictService, ImageProvider
+public class DepictService implements ImageProvider
 {
 	public String drawCompound(String smiles, int size) throws Exception
 	{
@@ -27,7 +24,8 @@ public class DepictServiceImpl implements DepictService, ImageProvider
 		return drawCompound(smiles, -1);
 	}
 
-	public String drawCompoundWithFP(String smiles, int[] atoms, boolean crop, int size) throws Exception
+	public String drawCompoundWithFP(String smiles, int[] atoms, boolean highlightOutgoingBonds, boolean crop, int size)
+			throws Exception
 	{
 		String sizeStr = "";
 		if (size != -1)
@@ -36,12 +34,14 @@ public class DepictServiceImpl implements DepictService, ImageProvider
 		if (atoms == null || atoms.length == 0)
 			throw new IllegalArgumentException("atoms missing");
 		String atomsStr = "&atoms=" + ArrayUtil.toString(ArrayUtil.toIntegerArray(atoms), ",", "", "", "");
-		return "/depict?smiles=" + URLEncoder.encode(smiles, "UTF8") + sizeStr + atomsStr + cropStr;
+		String highlightOutgoingBondsStr = "&highlightOutgoingBonds=" + highlightOutgoingBonds;
+		return "/depict?smiles=" + URLEncoder.encode(smiles, "UTF8") + sizeStr + atomsStr + highlightOutgoingBondsStr
+				+ cropStr;
 	}
 
-	public String hrefCompoundWithFP(String smiles, int[] atoms) throws Exception
+	public String hrefCompoundWithFP(String smiles, int[] atoms, boolean highlightOutgoingBonds) throws Exception
 	{
-		return drawCompoundWithFP(smiles, atoms, false, -1);
+		return drawCompoundWithFP(smiles, atoms, highlightOutgoingBonds, false, -1);
 	}
 
 	public String hrefModel(String modelName)
@@ -54,7 +54,8 @@ public class DepictServiceImpl implements DepictService, ImageProvider
 		return "/" + modelName + "/fragment/" + (fp + 1);
 	}
 
-	public InputStream depict(String smiles, String size, String atoms, String crop)
+	public static InputStream depict(String smiles, String size, String atoms, String highlightOutgoingBonds,
+			String crop)
 	{
 		try
 		{
@@ -64,9 +65,10 @@ public class DepictServiceImpl implements DepictService, ImageProvider
 			if (atoms != null)
 			{
 				int a[] = ArrayUtil.toPrimitiveIntArray(ArrayUtil.parseIntegers(atoms.split(",")));
+				boolean h = (highlightOutgoingBonds != null) && highlightOutgoingBonds.equals("true");
 				boolean c = (crop != null) && crop.equals("true");
 				return new FileInputStream(new DefaultImageProvider("persistance/img/").drawCompoundWithFP(smiles, a,
-						c, s));
+						h, c, s));
 			}
 			else
 				return new FileInputStream(new DefaultImageProvider("persistance/img/").drawCompound(smiles, s));
@@ -79,9 +81,9 @@ public class DepictServiceImpl implements DepictService, ImageProvider
 
 	public static void main(String[] args) throws InvalidSmilesException, Exception
 	{
-		new DepictServiceImpl().depict("Cl.c1ccc(CCCCCC(=O)O)cc1", null, "1,2", "false");
-		//new DepictServiceImpl().depict("c1ccc(CCCCCC(=O)O)cc1", null, "1,2", "false");
-		//new DepictServiceImpl().depict("c1ccc(CCCCCC(=O)O)cc1", null, null, null);
+		DepictService.depict("Cl.c1ccc(CCCCCC(=O)O)cc1", null, "1,2", "true", "false");
+		//        DepictService.depict("c1ccc(CCCCCC(=O)O)cc1", null, "1,2", "false");
+		//        DepictService.depict("c1ccc(CCCCCC(=O)O)cc1", null, null, null);
 
 		//		DefaultImageProvider.drawFP("/tmp/delme.png",
 		//				new SmilesParser(SilentChemObjectBuilder.getInstance()).parseSmiles("c1c(CCCCCCCCCCCCCCCC)cccc1"),

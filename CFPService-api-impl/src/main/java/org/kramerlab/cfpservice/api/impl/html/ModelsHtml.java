@@ -2,10 +2,9 @@ package org.kramerlab.cfpservice.api.impl.html;
 
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
-import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.datamining.ResultSet;
 
-public class ModelsHtml extends ExtendedHtmlReport
+public class ModelsHtml extends DefaultHtml
 {
 	public ModelsHtml()
 	{
@@ -15,7 +14,7 @@ public class ModelsHtml extends ExtendedHtmlReport
 	public String build() throws Exception
 	{
 		newSection("Welcome");
-		addParagraph(text("home.welcome") + " " + HTMLReport.encodeLink("/doc", "Documentation"));
+		addParagraph(text("home.welcome") + " " + encodeLink("/doc", "Documentation"));
 		addGap();
 
 		newSection("Make prediction");
@@ -27,38 +26,41 @@ public class ModelsHtml extends ExtendedHtmlReport
 		for (Model m : models)
 		{
 			int idx = set.addResult();
-			set.setResultValue(idx, "Dataset", HTMLReport.encodeLink(m.getId(), m.getName()));
-			set.setResultValue(idx, "Target", HTMLReport.encodeLink(m.getId(), m.getTarget()));
+			set.setResultValue(idx, "Dataset", encodeLink("/" + m.getId(), m.getName()));
+			set.setResultValue(idx, "Target", encodeLink("/" + m.getId(), m.getTarget()));
 		}
-		startInlinesTables();
-		newSection("Prediction models");
-		addTable(set);
 
 		String[] modelIds = new String[models.length];
 		for (int i = 0; i < modelIds.length; i++)
 			modelIds[i] = models[i].getId();
 		String predIds[] = Prediction.findLastPredictions(modelIds);
 		if (predIds.length > 0)
+			startLeftColumn();
+
+		newSection("Prediction models");
+		setTableColWidthLimited(false);
+		addTable(set);
+
+		if (predIds.length > 0)
 		{
+			startRightColumn();
 			ResultSet res = new ResultSet();
-			for (int i = 0; i < Math.min(predIds.length, 5); i++)
+			for (int i = 0; i < Math.min(predIds.length, 10); i++)
 			{
 				Prediction p = Prediction.find(modelIds[0], predIds[i]);
 				int rIdx = res.addResult();
 				String url = "/prediction/" + predIds[i];
-				res.setResultValue(rIdx, "Recent predictions", HTMLReport.encodeLink(url, p.getSmiles()));
+				res.setResultValue(rIdx, "Compounds", encodeLink(url, p.getSmiles()));
 				//				res.setResultValue(rIdx, "Date",
 				//						HTMLReport.encodeLink(url, new SimpleDateFormat("yyyy-MM-dd HH:mm").format(p.getDate())));
 				//					res.setResultValue(rIdx, "Prediction", HTMLReport.getHTMLCode(PredictionReport.getPredictionString(
 				//							p.getPredictedDistribution(), getClassValues(), p.getPredictedIdx(), true)));
 			}
-			if (res.getNumResults() > 0)
-			{
-				//				addGap();
-				addTable(res);
-			}
+
+			newSection("Recent predictions");
+			addTable(res);
+			stopColumns();
 		}
-		stopInlineTables();
 
 		return close();
 	}

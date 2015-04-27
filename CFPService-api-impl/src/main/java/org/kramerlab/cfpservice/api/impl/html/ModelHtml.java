@@ -10,7 +10,7 @@ import org.mg.javalib.util.CountedSet;
 import org.rendersnake.HtmlCanvas;
 import org.rendersnake.Renderable;
 
-public class ModelHtml extends ExtendedHtmlReport
+public class ModelHtml extends DefaultHtml
 {
 	Model m;
 
@@ -22,8 +22,6 @@ public class ModelHtml extends ExtendedHtmlReport
 
 	public String build() throws Exception
 	{
-		startInlinesTables();
-
 		ResultSet set = new ResultSet();
 
 		int idx = set.addResult();
@@ -73,15 +71,19 @@ public class ModelHtml extends ExtendedHtmlReport
 		//		set.concatCols(m.getCFPMiner().getSummary(true));
 		//set.setResultValue(idx, "Model", getList(setM));
 
+		setTableColWidthLimited(true);
 		setTableRowsAlternating(false);
 		setHideTableBorder(true);
+		startLeftColumn();
 		addTable(set, true);
+
 		setHideTableBorder(false);
 		setTableRowsAlternating(true);
-
+		startRightColumn();
 		addImage(HTMLReport.getImage("/" + m.getId() + "/validation"));
 
-		stopInlineTables();
+		stopColumns();
+		setTableColWidthLimited(false);
 
 		addGap();
 		newSection("Make prediction");
@@ -95,12 +97,12 @@ public class ModelHtml extends ExtendedHtmlReport
 		if (predIds.length > 0)
 		{
 			ResultSet res = new ResultSet();
-			for (int i = 0; i < Math.min(predIds.length, 5); i++)
+			for (int i = 0; i < Math.min(predIds.length, 10); i++)
 			{
 				Prediction p = Prediction.find(m.getId(), predIds[i]);
 				String url = "/" + m.getId() + "/prediction/" + predIds[i];
 				int rIdx = res.addResult();
-				res.setResultValue(rIdx, "Compound", HTMLReport.encodeLink(url, p.getSmiles()));
+				res.setResultValue(rIdx, "Compound", encodeLink(url, p.getSmiles()));
 				res.setResultValue(rIdx, "Prediction", PredictionHtml.getPrediction(p, m.getClassValues(), true, url));
 				//				res.setResultValue(rIdx, "Date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(p.getDate()));
 			}

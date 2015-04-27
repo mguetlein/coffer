@@ -2,11 +2,12 @@ package org.kramerlab.cfpservice.api.impl.html;
 
 import java.util.ResourceBundle;
 
-import org.kramerlab.cfpservice.api.impl.DepictServiceImpl;
+import org.kramerlab.cfpservice.api.ModelService;
+import org.kramerlab.cfpservice.api.impl.DepictService;
 import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.util.ArrayUtil;
 
-public class ExtendedHtmlReport extends HTMLReport
+public class DefaultHtml extends HTMLReport
 {
 	private String footer()
 	{
@@ -16,23 +17,26 @@ public class ExtendedHtmlReport extends HTMLReport
 				+ "</div><div><a href='http://infosys.informatik.uni-mainz.de'><img src=\"/img/jgu.png\" /></div>";
 	}
 
-	private static String serviceTitle = "Unfolded Circular Fingerprints";
-	private static String serviceHeader = "<a class='a_header' href=\"/\"><h1>Unfolded Circular Fingerprints</h1></a>";
+	private String serviceHeader()
+	{
+		return "<a class='a_header' href=\"/\"><h1>" + ModelService.SERVICE_TITLE + "</h1></a>";
+	}
+
 	public static String css = "/css/styles.css";
 
 	protected int molPicSize = 200;
 	protected int croppedPicSize = 150;
-	protected ImageProvider imageProvider = new DepictServiceImpl();
+	protected ImageProvider imageProvider = new DepictService();
 
-	public ExtendedHtmlReport(String id, String name, String subId, String subName)
+	public DefaultHtml(String id, String name, String subId, String subName)
 	{
 		this(null, id, name, subId, subName);
 	}
 
-	public ExtendedHtmlReport(String title, String id, String name, String subId, String subName)
+	public DefaultHtml(String title, String id, String name, String subId, String subName)
 	{
 		super(title);
-		setTitles(serviceTitle, serviceHeader, css, footer());
+
 		if (id != null)
 		{
 			String[] urls = new String[] { "/", "/" + id };
@@ -44,6 +48,7 @@ public class ExtendedHtmlReport extends HTMLReport
 			}
 			setBreadCrumps(urls, names);
 		}
+		setTitles(ModelService.SERVICE_TITLE, serviceHeader(), css, footer());
 		setHelpImg("/img/help14.png");
 		setExternalLinkImg("/img/iconExternalLink.gif");
 	}
@@ -62,9 +67,8 @@ public class ExtendedHtmlReport extends HTMLReport
 		return bundle().getString(key);
 	}
 
-	public static String moreLink(String docSection)
+	public String moreLink(String docSection)
 	{
-		return HTMLReport.encodeLink("/doc#" + DocHtml.getAnker(docSection), "more..");
+		return encodeLink("/doc#" + DocHtml.getAnker(docSection), "more..");
 	}
-
 }

@@ -1,5 +1,6 @@
 package org.kramerlab.cfpservice.api.impl;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.kramerlab.cfpminer.CFPDataLoader;
 import org.kramerlab.cfpminer.CFPMiner;
+import org.kramerlab.cfpminer.CFPMiner.CFPType;
 import org.kramerlab.cfpminer.CFPtoArff;
 import org.kramerlab.cfpminer.weka.ValidationResultsProvider;
 import org.kramerlab.cfpservice.api.ModelObj;
@@ -19,7 +21,10 @@ import org.kramerlab.cfpservice.api.impl.html.ModelHtml;
 import org.kramerlab.cfpservice.api.impl.html.ModelsHtml;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
 import org.kramerlab.extendedrandomforests.weka.ExtendedRandomForest;
+import org.mg.javalib.datamining.ResultSet;
+import org.mg.javalib.datamining.ResultSetIO;
 import org.mg.javalib.util.CountedSet;
+import org.mg.javalib.util.FileUtil;
 import org.mg.javalib.util.ListUtil;
 
 import weka.core.Instances;
@@ -162,8 +167,10 @@ public class Model extends ModelObj
 		for (String dataset : new CFPDataLoader("persistance/data").allDatasets())
 		{
 			//			if (!PersistanceAdapter.INSTANCE.modelExists(dataset))
-			buildModel(dataset);
-			break;
+			//            if (dataset.equals("AMES"))
+			if (dataset.startsWith("ChEMBL") || dataset.startsWith("MUV"))
+				buildModel(dataset);
+			//break;
 		}
 
 		//		Model.find("CPDBAS_Mutagenicity").getValidationChart();
@@ -180,13 +187,30 @@ public class Model extends ModelObj
 		ListUtil.scramble(new Random(1), smiles, endpoints);
 
 		model.miner = new CFPMiner(endpoints);
-		model.miner.setType(CFPMiner.CFPType.ecfp4);
 		model.miner.setFeatureSelection(CFPMiner.FeatureSelection.filt);
-		model.miner.setHashfoldsize(8192);
+
+		ResultSet r = ResultSetIO.parseFromFile(new File(ValidationResultsProvider.RESULTS_MERGED_FOLDER
+				+ "RaF_filt.best"));
+		for (int i = 0; i < r.getNumResults(); i++)
+		{
+			if (r.getResultValue(i, "Dataset").toString().equals(id))
+			{
+				CFPType type = CFPType.valueOf(r.getResultValue(i, "type").toString());
+				int hashfoldsize = Double.valueOf(r.getResultValue(i, "hashfoldsize").toString()).intValue();
+				model.miner.setType(type);
+				model.miner.setHashfoldsize(hashfoldsize);
+				break;
+			}
+		}
+
 		model.miner.mine(smiles);
 
 		String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(id);
-		CFPMiner.validate(id, 1, outfile, new String[] { "RaF" }, endpoints, model.miner);
+		String classifier = "RaF";
+		if (ValidationResultsProvider.resultsExist(id, model.miner, classifier))
+			FileUtil.copy(ValidationResultsProvider.getResultsFile(id, model.miner, classifier), outfile);
+		else
+			CFPMiner.validate(id, 1, outfile, new String[] { classifier }, endpoints, model.miner);
 
 		model.miner.applyFilter();
 		System.out.println(model.miner);

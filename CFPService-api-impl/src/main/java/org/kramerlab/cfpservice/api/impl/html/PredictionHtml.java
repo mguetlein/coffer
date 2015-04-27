@@ -15,15 +15,15 @@ import org.rendersnake.HtmlAttributesFactory;
 import org.rendersnake.HtmlCanvas;
 import org.rendersnake.Renderable;
 
-public class PredictionHtml extends ExtendedHtmlReport
+public class PredictionHtml extends DefaultHtml
 {
 	Prediction p;
 	CFPMiner miner;
 
 	public PredictionHtml(Prediction p)
 	{
-		super("Prediction of compound " + p.getSmiles(), p.getModelId(), Model.getName(p.getModelId()), p.getId(),
-				"Prediction");
+		super("Prediction of compound " + p.getSmiles(), p.getModelId(), Model.getName(p.getModelId()), "prediction/"
+				+ p.getId(), "Prediction");
 		setHidePageTitle(true);
 		this.p = p;
 		miner = Model.find(p.getModelId()).getCFPMiner();
@@ -85,9 +85,9 @@ public class PredictionHtml extends ExtendedHtmlReport
 				html.write("Smiles: " + smiles);
 				html._div();
 
-				html.object(HtmlAttributesFactory.data("/external/all/" + smi))._object();//.width("300")
-				//html.object(HtmlAttributesFactory.data("/external/pubchem/" + smi).width("300"))._object();
-				//html.object(HtmlAttributesFactory.data("/external/chembl/" + smi).width("300"))._object();
+				html.object(HtmlAttributesFactory.data("/info/all/" + smi))._object();//.width("300")
+				//html.object(HtmlAttributesFactory.data("/info/pubchem/" + smi).width("300"))._object();
+				//html.object(HtmlAttributesFactory.data("/info/chembl/" + smi).width("300"))._object();
 			}
 		});
 	}
@@ -113,6 +113,7 @@ public class PredictionHtml extends ExtendedHtmlReport
 			setAdditionalInfo(this, set, rIdx, p.getSmiles());
 
 			setTableRowsAlternating(false);
+			setTableColWidthLimited(true);
 			addTable(set, false);
 			setTableRowsAlternating(true);
 		}
@@ -124,12 +125,13 @@ public class PredictionHtml extends ExtendedHtmlReport
 			int rIdx = set.addResult();
 
 			String url = "/" + p.getModelId();
-			set.setResultValue(rIdx, "Dataset", HTMLReport.encodeLink(url, Model.getName(p.getModelId())));
-			set.setResultValue(rIdx, "Target", HTMLReport.encodeLink(url, Model.getTarget(p.getModelId())));
+			set.setResultValue(rIdx, "Dataset", encodeLink(url, Model.getName(p.getModelId())));
+			set.setResultValue(rIdx, "Target", encodeLink(url, Model.getTarget(p.getModelId())));
 			set.setResultValue(rIdx, "Prediction", getPrediction(true));
 			setHeaderHelp("Prediction", text("model.prediction.tip") + " " + moreLink(DocHtml.PREDICTION_MODELS));
 
 			setTableRowsAlternating(false);
+			setTableColWidthLimited(false);
 			addTable(set);//, true);
 			setTableRowsAlternating(true);
 		}
@@ -139,21 +141,19 @@ public class PredictionHtml extends ExtendedHtmlReport
 		//addParagraph("The compound ");
 
 		//		addGap();
-		newSection("Fragments");
 
-		startInlinesTables();
 		for (final boolean match : new Boolean[] { true, false })
 		{
 			ResultSet set = new ResultSet();
 			for (final PredictionAttribute pa : p.getPredictionAttributes())
 			{
-				int attIdx = pa.attribute;
+				int attIdx = pa.getAttribute();
 				if (match == testInstanceContains(attIdx))
 				{
 					int rIdx = set.addResult();
 					set.setResultValue(
 							rIdx,
-							(match ? "Present" : "Absent") + " fragments",
+							"Fragment",
 							getImage(getFragmentPicInTestInstance(attIdx, true, true),
 									imageProvider.hrefFragment(p.getModelId(), attIdx), true));
 					//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
@@ -162,10 +162,10 @@ public class PredictionHtml extends ExtendedHtmlReport
 					final String txt;
 					final Boolean activating;
 
-					if (pa.alternativeDistributionForInstance[miner.getActiveIdx()] != p.getPredictedDistribution()[miner
-							.getActiveIdx()])
+					if (pa.getAlternativeDistributionForInstance()[miner.getActiveIdx()] != p
+							.getPredictedDistribution()[miner.getActiveIdx()])
 					{
-						moreActive = pa.alternativeDistributionForInstance[miner.getActiveIdx()] > p
+						moreActive = pa.getAlternativeDistributionForInstance()[miner.getActiveIdx()] > p
 								.getPredictedDistribution()[miner.getActiveIdx()];
 						if (match)
 							activating = !moreActive;
@@ -179,7 +179,7 @@ public class PredictionHtml extends ExtendedHtmlReport
 								+ " probability ("
 								+ //
 								StringUtil
-										.formatDouble(pa.alternativeDistributionForInstance[miner.getActiveIdx()] * 100)
+										.formatDouble(pa.getAlternativeDistributionForInstance()[miner.getActiveIdx()] * 100)
 								+ "% instead of "
 								+ StringUtil.formatDouble(p.getPredictedDistribution()[miner.getActiveIdx()] * 100)
 								+ "%).";
@@ -222,17 +222,24 @@ public class PredictionHtml extends ExtendedHtmlReport
 							else
 								html.write("Prediction if present:");
 							html.br();
-							html.render(getPrediction(pa.alternativeDistributionForInstance,
-									pa.alternativePredictionIdx, false));
+							html.render(getPrediction(pa.getAlternativeDistributionForInstance(),
+									pa.getAlternativePredictionIdx(), false));
 							html._div();
 						}
 					});
 				}
 			}
 			//			addParagraph((match ? "Matching" : "Not matching") + " attributes");
+			setTableColWidthLimited(true);
+
+			if (match)
+				startLeftColumn();
+			else
+				startRightColumn();
+			newSection((match ? "Present" : "Absent") + " fragments");
 			addTable(set);
 		}
-		stopInlineTables();
+		stopColumns();
 		return close();
 	}
 
@@ -254,8 +261,8 @@ public class PredictionHtml extends ExtendedHtmlReport
 		if (miner.getAtoms(m, miner.getHashcodeViaIdx(attIdx)) == null)
 			throw new IllegalStateException("no atoms in " + m + " for att-idx " + attIdx + ", hashcode: "
 					+ miner.getHashcodeViaIdx(attIdx));
-		return imageProvider.drawCompoundWithFP(m, miner.getAtoms(m, miner.getHashcodeViaIdx(attIdx)), crop,
-				crop ? croppedPicSize : molPicSize);
+		return imageProvider.drawCompoundWithFP(m, miner.getAtoms(m, miner.getHashcodeViaIdx(attIdx)), miner
+				.getCFPType().isECFP(), crop, crop ? croppedPicSize : molPicSize);
 	}
 
 }

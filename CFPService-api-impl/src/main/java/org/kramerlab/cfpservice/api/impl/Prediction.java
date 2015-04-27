@@ -1,13 +1,13 @@
 package org.kramerlab.cfpservice.api.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.kramerlab.cfpminer.CDKUtil;
 import org.kramerlab.cfpminer.CFPtoArff;
+import org.kramerlab.cfpminer.cdk.CDKUtil;
 import org.kramerlab.cfpservice.api.PredictionObj;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml;
 import org.kramerlab.cfpservice.api.impl.html.PredictionsHtml;
@@ -24,9 +24,8 @@ import weka.core.Instances;
 @XmlRootElement
 public class Prediction extends PredictionObj
 {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 3L;
 
-	@XmlAttribute
 	protected List<PredictionAttribute> predictionAttributes;
 
 	public Prediction()
@@ -58,6 +57,15 @@ public class Prediction extends PredictionObj
 	public static String[] findLastPredictions(String... modelIds)
 	{
 		return PersistanceAdapter.INSTANCE.findLastPredictions(modelIds);
+	}
+
+	public static Prediction[] find(String predictionId)
+	{
+		List<Prediction> p = new ArrayList<Prediction>();
+		for (Model m : Model.listModels())
+			if (Prediction.exists(m.getId(), predictionId))
+				p.add(Prediction.find(m.getId(), predictionId));
+		return ArrayUtil.toArray(p);
 	}
 
 	public static Prediction find(String modelId, String predictionId)
@@ -121,7 +129,7 @@ public class Prediction extends PredictionObj
 	{
 		try
 		{
-			return new PredictionsHtml(predictionId, wait).build();
+			return new PredictionsHtml(find(predictionId), wait).build();
 		}
 		catch (Exception e)
 		{

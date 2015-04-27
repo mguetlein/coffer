@@ -6,12 +6,12 @@ import java.util.Locale;
 
 import javax.ws.rs.core.Response;
 
-import org.kramerlab.cfpminer.CDKUtil;
+import org.kramerlab.cfpminer.cdk.CDKUtil;
 import org.kramerlab.cfpservice.api.FragmentObj;
 import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.PredictionObj;
 import org.kramerlab.cfpservice.api.impl.html.DocHtml;
-import org.kramerlab.cfpservice.api.impl.util.ServiceCompound;
+import org.kramerlab.cfpservice.api.impl.util.CompoundInfo;
 import org.mg.javalib.util.StopWatchUtil;
 import org.mg.javalib.util.StringUtil;
 import org.springframework.stereotype.Service;
@@ -105,14 +105,23 @@ public class ModelServiceImpl implements ModelService
 		return Prediction.find(modelId, predictionId);
 	}
 
-	public String getPredictionsHTML(String predictionId, String wait)
-	{
-		return Prediction.getHTML(predictionId, wait != null ? Integer.parseInt(wait) : -1);
-	}
-
 	public String getPredictionHTML(String modelId, String predictionId)
 	{
 		return Prediction.find(modelId, predictionId).getHTML();
+	}
+
+	public Prediction[] getPredictions(String predictionId, String wait)
+	{
+		Prediction[] res = Prediction.find(predictionId);
+		if (wait != null && res.length < Integer.parseInt(wait))
+			return new Prediction[0];
+		else
+			return res;
+	}
+
+	public String getPredictionsHTML(String predictionId, String wait)
+	{
+		return Prediction.getHTML(predictionId, wait != null ? Integer.parseInt(wait) : -1);
 	}
 
 	public FragmentObj getFragment(String modelId, String fragmentId)
@@ -125,16 +134,21 @@ public class ModelServiceImpl implements ModelService
 		return Fragment.find(modelId, fragmentId).getHTML();
 	}
 
-	public String getExternal(String service, String smiles)
+	public String getCompoundInfo(String service, String smiles)
 	{
 		try
 		{
-			return ServiceCompound.get(ServiceCompound.Service.valueOf(service), smiles);
+			return CompoundInfo.get(CompoundInfo.Service.valueOf(service), smiles);
 		}
 		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}
+	}
+
+	public InputStream depict(String smiles, String size, String atoms, String highlightOutgoingBonds, String crop)
+	{
+		return DepictService.depict(smiles, size, atoms, highlightOutgoingBonds, crop);
 	}
 
 	public static void main(String[] args)

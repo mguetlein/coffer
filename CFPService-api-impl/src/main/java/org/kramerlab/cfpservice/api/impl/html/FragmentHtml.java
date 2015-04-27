@@ -3,10 +3,9 @@ package org.kramerlab.cfpservice.api.impl.html;
 import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpservice.api.impl.Fragment;
 import org.kramerlab.cfpservice.api.impl.Model;
-import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.datamining.ResultSet;
 
-public class FragmentHtml extends ExtendedHtmlReport
+public class FragmentHtml extends DefaultHtml
 {
 	int selectedAttributeIdx;
 	String modelId;
@@ -33,8 +32,8 @@ public class FragmentHtml extends ExtendedHtmlReport
 		//		setHidePageTitle(true);
 		//		newSection("Occurence of " + fragment + " in dataset " + Model.getName(modelId));
 
-		addParagraph(HTMLReport.encodeLink("/" + modelId + "/fragment/" + (selectedAttributeIdx + 0), "prev") + " "
-				+ HTMLReport.encodeLink("/" + modelId + "/fragment/" + (selectedAttributeIdx + 2), "next"));
+		addParagraph(encodeLink("/" + modelId + "/fragment/" + (selectedAttributeIdx + 0), "prev") + " "
+				+ encodeLink("/" + modelId + "/fragment/" + (selectedAttributeIdx + 2), "next"));
 
 		newSection("Occurence in dataset " + Model.getName(modelId));
 
@@ -66,7 +65,7 @@ public class FragmentHtml extends ExtendedHtmlReport
 		addGap();
 		newSection("Compounds including the fragment");
 
-		startInlinesTables();
+		boolean first = true;
 		setTableRowsAlternating(false);
 		for (String clazz : miner.getClassValues())
 		{
@@ -79,18 +78,23 @@ public class FragmentHtml extends ExtendedHtmlReport
 					rIdx = set.addResult();
 					String smiles = miner.getTrainingDataSmiles().get(i);
 					int atoms[] = miner.getAtoms(smiles, miner.getHashcodeViaIdx(selectedAttributeIdx));
-					String img = imageProvider.drawCompoundWithFP(smiles, atoms, false, molPicSize);
-					String href = imageProvider.hrefCompoundWithFP(smiles, atoms);
+					String img = imageProvider.drawCompoundWithFP(smiles, atoms, miner.getCFPType().isECFP(), false,
+							molPicSize);
+					String href = imageProvider.hrefCompoundWithFP(smiles, atoms, miner.getCFPType().isECFP());
 					//set.setResultValue(rIdx, "idx", i + "");
-					set.setResultValue(rIdx, "'" + clazz + "' training compounds", getImage(img, href, false));
+					set.setResultValue(rIdx, "'" + clazz + "' compounds", getImage(img, href, false));
 					//					//set.setResultValue(rIdx, "Class", trainingData.get(i).stringValue(trainingData.classAttribute()));
 				}
 
 			}
+			if (first)
+				startLeftColumn();
+			else
+				startRightColumn();
+			first = false;
 			addTable(set);
-
 		}
-		stopInlineTables();
+		stopColumns();
 
 		return close();
 	}

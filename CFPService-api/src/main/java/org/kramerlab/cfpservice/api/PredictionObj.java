@@ -2,7 +2,6 @@ package org.kramerlab.cfpservice.api;
 
 import java.io.Serializable;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @SuppressWarnings("restriction")
@@ -11,15 +10,10 @@ public class PredictionObj implements Serializable
 {
 	private static final long serialVersionUID = 4L;
 
-	@XmlAttribute
 	protected String id;
-	@XmlAttribute
 	protected String smiles;
-	@XmlAttribute
 	protected String modelId;
-	@XmlAttribute
 	protected int predictedIdx;
-	@XmlAttribute
 	protected double predictedDistribution[];
 
 	public String getId()

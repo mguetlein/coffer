@@ -1,6 +1,6 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
-public class DocHtml extends ExtendedHtmlReport
+public class DocHtml extends DefaultHtml
 {
 	public static String PREDICTION_MODELS = "Prediction Models";
 
@@ -45,6 +45,10 @@ public class DocHtml extends ExtendedHtmlReport
 		newSection("Source Code");
 
 		addParagraph(text("doc.source"));
+
+		newSection("REST API");
+
+		addParagraph(text("doc.rest"));
 
 		newSection("How to cite this service");
 

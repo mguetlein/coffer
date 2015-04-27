@@ -2,8 +2,8 @@ package org.kramerlab.cfpservice.api.impl.html;
 
 import java.io.File;
 
-import org.kramerlab.cfpminer.CDKUtil;
 import org.kramerlab.cfpminer.CFPDepict;
+import org.kramerlab.cfpminer.cdk.CDKUtil;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.StringUtil;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -30,14 +30,15 @@ public class DefaultImageProvider implements ImageProvider
 		return png;
 	}
 
-	public String drawCompoundWithFP(String smiles, int atoms[], boolean crop, int size) throws Exception
+	public String drawCompoundWithFP(String smiles, int atoms[], boolean highlightOutgoingBonds, boolean crop, int size)
+			throws Exception
 	{
 		IAtomContainer mol = CDKUtil.parseSmiles(smiles);
 		String pngFile = relativeImgPath + StringUtil.getMD5(smiles) + "_"
-				+ ArrayUtil.toString(ArrayUtil.toIntegerArray(atoms), "-", "", "", "") + "_" + crop + "_" + size
-				+ ".png";
+				+ ArrayUtil.toString(ArrayUtil.toIntegerArray(atoms), "-", "", "", "") + "_" + highlightOutgoingBonds
+				+ "_" + crop + "_" + size + ".png";
 		if (!new File(pngFile).exists())
-			CFPDepict.drawFPtoPng(pngFile, mol, atoms, crop, size);
+			CFPDepict.drawFPtoPng(pngFile, mol, atoms, highlightOutgoingBonds, crop, size);
 		return pngFile;
 	}
 
@@ -56,7 +57,7 @@ public class DefaultImageProvider implements ImageProvider
 		return null;
 	}
 
-	public String hrefCompoundWithFP(String smiles, int[] atoms)
+	public String hrefCompoundWithFP(String smiles, int[] atoms, boolean highlightOutgoingBonds)
 	{
 		return null;
 	}
