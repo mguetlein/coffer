@@ -108,8 +108,8 @@ public class PredictionHtml extends DefaultHtml
 			set.setResultValue(
 					rIdx,
 					"Structure",
-					getImage(imageProvider.drawCompound(p.getSmiles(), molPicSize),
-							imageProvider.hrefCompound(p.getSmiles()), false));
+					getImage(depictMultiMatch(p.getSmiles(), p.getId(), p.getModelId(), maxMolPicSize),
+							depictMultiMatch(p.getSmiles(), p.getId(), p.getModelId(), -1), false));
 			setAdditionalInfo(this, set, rIdx, p.getSmiles());
 
 			setTableRowsAlternating(false);
@@ -150,13 +150,6 @@ public class PredictionHtml extends DefaultHtml
 				int attIdx = pa.getAttribute();
 				if (match == testInstanceContains(attIdx))
 				{
-					int rIdx = set.addResult();
-					set.setResultValue(
-							rIdx,
-							"Fragment",
-							getImage(getFragmentPicInTestInstance(attIdx, true, true),
-									imageProvider.hrefFragment(p.getModelId(), attIdx), true));
-					//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
 
 					Boolean moreActive = null;
 					final String txt;
@@ -200,6 +193,14 @@ public class PredictionHtml extends DefaultHtml
 						txt = null;
 						activating = null;
 					}
+
+					int rIdx = set.addResult();
+					set.setResultValue(
+							rIdx,
+							"Fragment",
+							getImage(getFragmentPicInTestInstance(attIdx, true, activating, true), "/" + p.getModelId()
+									+ "/fragment/" + (attIdx + 1), true));
+					//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
 
 					set.setResultValue(rIdx, "Effect", new Renderable()
 					{
@@ -248,7 +249,8 @@ public class PredictionHtml extends DefaultHtml
 		return miner.getHashcodesForTestCompound(p.getSmiles()).contains(miner.getHashcodeViaIdx(attIdx));
 	}
 
-	private String getFragmentPicInTestInstance(int attIdx, boolean fallbackToTraining, boolean crop) throws Exception
+	private String getFragmentPicInTestInstance(int attIdx, boolean fallbackToTraining, Boolean activating, boolean crop)
+			throws Exception
 	{
 		String m = p.getSmiles();
 		if (!testInstanceContains(attIdx))
@@ -261,8 +263,8 @@ public class PredictionHtml extends DefaultHtml
 		if (miner.getAtoms(m, miner.getHashcodeViaIdx(attIdx)) == null)
 			throw new IllegalStateException("no atoms in " + m + " for att-idx " + attIdx + ", hashcode: "
 					+ miner.getHashcodeViaIdx(attIdx));
-		return imageProvider.drawCompoundWithFP(m, miner.getAtoms(m, miner.getHashcodeViaIdx(attIdx)), miner
-				.getCFPType().isECFP(), crop, crop ? croppedPicSize : molPicSize);
+		return depictMatch(m, miner.getAtoms(m, miner.getHashcodeViaIdx(attIdx)), miner.getCFPType().isECFP(),
+				activating, crop, crop ? croppedPicSize : maxMolPicSize);
 	}
 
 }

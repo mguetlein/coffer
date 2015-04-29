@@ -1,9 +1,9 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
+import java.net.URLEncoder;
 import java.util.ResourceBundle;
 
 import org.kramerlab.cfpservice.api.ModelService;
-import org.kramerlab.cfpservice.api.impl.DepictService;
 import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.util.ArrayUtil;
 
@@ -24,9 +24,8 @@ public class DefaultHtml extends HTMLReport
 
 	public static String css = "/css/styles.css";
 
-	protected int molPicSize = 200;
+	protected int maxMolPicSize = 300;
 	protected int croppedPicSize = 150;
-	protected ImageProvider imageProvider = new DepictService();
 
 	public DefaultHtml(String id, String name, String subId, String subName)
 	{
@@ -70,5 +69,40 @@ public class DefaultHtml extends HTMLReport
 	public String moreLink(String docSection)
 	{
 		return encodeLink("/doc#" + DocHtml.getAnker(docSection), "more..");
+	}
+
+	public String depict(String smiles, int size) throws Exception
+	{
+		String sizeStr = "";
+		if (size != -1)
+			sizeStr = "&size=" + size;
+		return "/depict?smiles=" + URLEncoder.encode(smiles, "UTF8") + sizeStr;
+	}
+
+	public String depictMatch(String smiles, int[] atoms, boolean highlightOutgoingBonds, Boolean activating,
+			boolean crop, int size) throws Exception
+	{
+		String sizeStr = "";
+		if (size != -1)
+			sizeStr = "&size=" + size;
+		String cropStr = "&crop=" + crop;
+		if (atoms == null || atoms.length == 0)
+			throw new IllegalArgumentException("atoms missing");
+		String atomsStr = "&atoms=" + ArrayUtil.toString(ArrayUtil.toIntegerArray(atoms), ",", "", "", "");
+		String highlightOutgoingBondsStr = "&highlightOutgoingBonds=" + highlightOutgoingBonds;
+		String activatingStr = "";
+		if (activating != null)
+			activatingStr = "&activating=" + activating;
+		return "/depictMatch?smiles=" + URLEncoder.encode(smiles, "UTF8") + sizeStr + atomsStr
+				+ highlightOutgoingBondsStr + cropStr + activatingStr;
+	}
+
+	public String depictMultiMatch(String smiles, String predictionId, String modelId, int size) throws Exception
+	{
+		String sizeStr = "";
+		if (size != -1)
+			sizeStr = "&size=" + size;
+		return "/depictMultiMatch?smiles=" + URLEncoder.encode(smiles, "UTF8") + "&model=" + modelId + "&prediction="
+				+ predictionId + sizeStr;
 	}
 }

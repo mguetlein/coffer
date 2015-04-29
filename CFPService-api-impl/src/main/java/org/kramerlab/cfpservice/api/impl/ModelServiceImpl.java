@@ -146,9 +146,20 @@ public class ModelServiceImpl implements ModelService
 		}
 	}
 
-	public InputStream depict(String smiles, String size, String atoms, String highlightOutgoingBonds, String crop)
+	public InputStream depict(String smiles, String size)
 	{
-		return DepictService.depict(smiles, size, atoms, highlightOutgoingBonds, crop);
+		return DepictService.depict(smiles, size);
+	}
+
+	public InputStream depictMatch(String smiles, String size, String atoms, String highlightOutgoingBonds,
+			String activating, String crop)
+	{
+		return DepictService.depictMatch(smiles, size, atoms, highlightOutgoingBonds, activating, crop);
+	}
+
+	public InputStream depictMultiMatch(String smiles, String size, String prediction, String model)
+	{
+		return DepictService.depictMultiMatch(smiles, size, prediction, model);
 	}
 
 	public static void main(String[] args)

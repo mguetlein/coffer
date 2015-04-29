@@ -163,8 +163,19 @@ public interface ModelService
 	@Path("depict")
 	@GET
 	@Produces({ "image/png" })
-	InputStream depict(@FormParam("smiles") String smiles, @FormParam("size") String size,
+	InputStream depict(@FormParam("smiles") String smiles, @FormParam("size") String size);
+
+	@Path("depictMatch")
+	@GET
+	@Produces({ "image/png" })
+	InputStream depictMatch(@FormParam("smiles") String smiles, @FormParam("size") String size,
 			@FormParam("atoms") String atoms, @FormParam("highlightOutgoingBonds") String highlightOutgoingBonds,
-			@FormParam("crop") String crop);
+			@FormParam("activating") String activating, @FormParam("crop") String crop);
+
+	@Path("depictMultiMatch")
+	@GET
+	@Produces({ "image/png" })
+	InputStream depictMultiMatch(@FormParam("smiles") String smiles, @FormParam("size") String size,
+			@FormParam("prediction") String prediction, @FormParam("model") String model);
 
 }

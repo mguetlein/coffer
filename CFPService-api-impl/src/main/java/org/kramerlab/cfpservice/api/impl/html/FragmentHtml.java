@@ -78,9 +78,8 @@ public class FragmentHtml extends DefaultHtml
 					rIdx = set.addResult();
 					String smiles = miner.getTrainingDataSmiles().get(i);
 					int atoms[] = miner.getAtoms(smiles, miner.getHashcodeViaIdx(selectedAttributeIdx));
-					String img = imageProvider.drawCompoundWithFP(smiles, atoms, miner.getCFPType().isECFP(), false,
-							molPicSize);
-					String href = imageProvider.hrefCompoundWithFP(smiles, atoms, miner.getCFPType().isECFP());
+					String img = depictMatch(smiles, atoms, miner.getCFPType().isECFP(), null, false, maxMolPicSize);
+					String href = depictMatch(smiles, atoms, miner.getCFPType().isECFP(), null, false, -1);
 					//set.setResultValue(rIdx, "idx", i + "");
 					set.setResultValue(rIdx, "'" + clazz + "' compounds", getImage(img, href, false));
 					//					//set.setResultValue(rIdx, "Class", trainingData.get(i).stringValue(trainingData.classAttribute()));

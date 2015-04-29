@@ -1,77 +1,94 @@
 package org.kramerlab.cfpservice.api.impl;
 
+import java.awt.Color;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.net.URLEncoder;
 
-import org.kramerlab.cfpservice.api.impl.html.DefaultImageProvider;
-import org.kramerlab.cfpservice.api.impl.html.ImageProvider;
+import org.kramerlab.cfpminer.CFPDepict;
+import org.kramerlab.cfpminer.cdk.CDKUtil;
+import org.kramerlab.cfpservice.api.impl.util.CFPDepictUtil;
 import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.ColorUtil;
+import org.mg.javalib.util.StringUtil;
 import org.openscience.cdk.exception.InvalidSmilesException;
 
-public class DepictService implements ImageProvider
+public class DepictService
 {
-	public String drawCompound(String smiles, int size) throws Exception
-	{
-		String sizeStr = "";
-		if (size != -1)
-			sizeStr = "&size=" + size;
-		return "/depict?smiles=" + URLEncoder.encode(smiles, "UTF8") + sizeStr;
-	}
+	public static Color ACTIVE_BRIGHT = Color.RED;
+	public static Color INACTIVE_BRIGHT = Color.GREEN;
+	public static Color NEUTRAL_BRIGHT = Color.WHITE;
 
-	public String hrefCompound(String smiles) throws Exception
-	{
-		return drawCompound(smiles, -1);
-	}
+	public static Color ACTIVE_MODERATE = ColorUtil.transparent(Color.RED, 150);
+	public static Color INACTIVE_MODERATE = ColorUtil.transparent(Color.GREEN, 200);
+	public static Color NEUTRAL_MODERATE = ColorUtil.transparent(Color.GRAY, 200);
 
-	public String drawCompoundWithFP(String smiles, int[] atoms, boolean highlightOutgoingBonds, boolean crop, int size)
-			throws Exception
-	{
-		String sizeStr = "";
-		if (size != -1)
-			sizeStr = "&size=" + size;
-		String cropStr = "&crop=" + crop;
-		if (atoms == null || atoms.length == 0)
-			throw new IllegalArgumentException("atoms missing");
-		String atomsStr = "&atoms=" + ArrayUtil.toString(ArrayUtil.toIntegerArray(atoms), ",", "", "", "");
-		String highlightOutgoingBondsStr = "&highlightOutgoingBonds=" + highlightOutgoingBonds;
-		return "/depict?smiles=" + URLEncoder.encode(smiles, "UTF8") + sizeStr + atomsStr + highlightOutgoingBondsStr
-				+ cropStr;
-	}
+	private static String relativeImgPath = "persistance/img/";
 
-	public String hrefCompoundWithFP(String smiles, int[] atoms, boolean highlightOutgoingBonds) throws Exception
-	{
-		return drawCompoundWithFP(smiles, atoms, highlightOutgoingBonds, false, -1);
-	}
-
-	public String hrefModel(String modelName)
-	{
-		return "/" + modelName;
-	}
-
-	public String hrefFragment(String modelName, int fp)
-	{
-		return "/" + modelName + "/fragment/" + (fp + 1);
-	}
-
-	public static InputStream depict(String smiles, String size, String atoms, String highlightOutgoingBonds,
-			String crop)
+	public static InputStream depict(String smiles, String size)
 	{
 		try
 		{
-			int s = -1;
-			if (size != null)
-				s = Integer.parseInt(size);
-			if (atoms != null)
+			String pngFile = relativeImgPath + StringUtil.getMD5(smiles) + "_" + size + ".png";
+			if (!new File(pngFile).exists())
+			{
+				int s = -1;
+				if (size != null)
+					s = Integer.parseInt(size);
+				CFPDepict.depictToPNG(pngFile, CDKUtil.parseSmiles(smiles), s);
+			}
+			return new FileInputStream(pngFile);
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static InputStream depictMatch(String smiles, String size, String atoms, String highlightOutgoingBonds,
+			String activating, String crop)
+	{
+		try
+		{
+			String pngFile = relativeImgPath + StringUtil.getMD5(smiles) + "_" + atoms.replaceAll(",", "-") + "_"
+					+ highlightOutgoingBonds + "_" + activating + "_" + crop + "_" + size + ".png";
+			if (!new File(pngFile).exists())
 			{
 				int a[] = ArrayUtil.toPrimitiveIntArray(ArrayUtil.parseIntegers(atoms.split(",")));
 				boolean h = (highlightOutgoingBonds != null) && highlightOutgoingBonds.equals("true");
+				Color col = NEUTRAL_MODERATE;
+				if (activating != null && activating.equals("true"))
+					col = ACTIVE_MODERATE;
+				else if (activating != null && activating.equals("false"))
+					col = INACTIVE_MODERATE;
 				boolean c = (crop != null) && crop.equals("true");
-				return new FileInputStream(new DefaultImageProvider("persistance/img/").drawCompoundWithFP(smiles, a,
-						h, c, s));
+				int s = -1;
+				if (size != null)
+					s = Integer.parseInt(size);
+				CFPDepict.depictMatchToPNG(pngFile, CDKUtil.parseSmiles(smiles), a, h, col, c, s);
 			}
-			else
-				return new FileInputStream(new DefaultImageProvider("persistance/img/").drawCompound(smiles, s));
+			return new FileInputStream(pngFile);
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static InputStream depictMultiMatch(String smiles, String size, String prediction, String model)
+	{
+		try
+		{
+			String pngFile = relativeImgPath + StringUtil.getMD5(smiles) + "_" + prediction + "_" + model + "_" + size
+					+ ".png";
+			if (!new File(pngFile).exists())
+			{
+				int s = -1;
+				if (size != null)
+					s = Integer.parseInt(size);
+				CFPDepictUtil.depictMultiMatchToPNG(pngFile, CDKUtil.parseSmiles(smiles), prediction, model, s);
+			}
+			return new FileInputStream(pngFile);
 		}
 		catch (Exception e)
 		{
@@ -81,7 +98,7 @@ public class DepictService implements ImageProvider
 
 	public static void main(String[] args) throws InvalidSmilesException, Exception
 	{
-		DepictService.depict("Cl.c1ccc(CCCCCC(=O)O)cc1", null, "1,2", "true", "false");
+		DepictService.depictMatch("Cl.c1ccc(CCCCCC(=O)O)cc1", null, "1,2", "true", "true", "false");
 		//        DepictService.depict("c1ccc(CCCCCC(=O)O)cc1", null, "1,2", "false");
 		//        DepictService.depict("c1ccc(CCCCCC(=O)O)cc1", null, null, null);
 
@@ -90,4 +107,5 @@ public class DepictService implements ImageProvider
 		//				new int[] { 1, 2 }, true, 100);
 
 	}
+
 }

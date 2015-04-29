@@ -113,9 +113,21 @@
 </dependency>
     
     	<dependency>
+	  <groupId>org.kramerlab.cfpminer</groupId>
+	  <artifactId>CFPMiner</artifactId>
+  	<version>0.0.1-SNAPSHOT</version>
+	  </dependency>
+	  
+	      	<dependency>
 	  <groupId>org.kramerlab.extendedrandomforests</groupId>
 	  <artifactId>ExtendedRandomForests</artifactId>
   	<version>0.0.1-SNAPSHOT</version>
+	  </dependency>
+	  
+	  <dependency>
+	   	<groupId>org.mg.htmlreporting</groupId>
+	   	<artifactId>HTMLReporting</artifactId>
+	   	<version>0.0.1-SNAPSHOT</version>
 	  </dependency>
 
   </dependencies>

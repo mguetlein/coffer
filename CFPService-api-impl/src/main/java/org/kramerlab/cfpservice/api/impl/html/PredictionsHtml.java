@@ -55,7 +55,7 @@ public class PredictionsHtml extends DefaultHtml
 
 		setPageTitle("Prediction of compound " + smiles);
 		newSection("Predicted compound");
-		Image img = getImage(imageProvider.drawCompound(smiles, molPicSize), imageProvider.hrefCompound(smiles), false);
+		Image img = getImage(depict(smiles, maxMolPicSize), depict(smiles, -1), false);
 		ResultSet set = new ResultSet();
 		int rIdx = set.addResult();
 		set.setResultValue(rIdx, "Test compound", img);
@@ -69,6 +69,7 @@ public class PredictionsHtml extends DefaultHtml
 			startLeftColumn();
 			addImage("/img/wait.gif");
 			startRightColumn();
+			addGap();
 			addParagraph(count + "/" + wait + " model predictions done, this page reloads every 10 seconds.");
 			stopColumns();
 		}
