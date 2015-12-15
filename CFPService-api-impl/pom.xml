@@ -119,8 +119,8 @@
 	  </dependency>
 	  
 	      	<dependency>
-	  <groupId>org.kramerlab.extendedrandomforests</groupId>
-	  <artifactId>ExtendedRandomForests</artifactId>
+	  <groupId>org.mg.wekalib</groupId>
+	  <artifactId>WEKALib</artifactId>
   	<version>0.0.1-SNAPSHOT</version>
 	  </dependency>
 	  

@@ -105,9 +105,9 @@ public class ModelServiceImpl implements ModelService
 		return Prediction.find(modelId, predictionId);
 	}
 
-	public String getPredictionHTML(String modelId, String predictionId)
+	public String getPredictionHTML(String modelId, String predictionId, String maxNumFragments)
 	{
-		return Prediction.find(modelId, predictionId).getHTML();
+		return Prediction.find(modelId, predictionId).getHTML(maxNumFragments);
 	}
 
 	public Prediction[] getPredictions(String predictionId, String wait)
@@ -129,9 +129,9 @@ public class ModelServiceImpl implements ModelService
 		return Fragment.find(modelId, fragmentId);
 	}
 
-	public String getFragmentHTML(String modelId, String fragmentId)
+	public String getFragmentHTML(String modelId, String fragmentId, String maxNumCompounds)
 	{
-		return Fragment.find(modelId, fragmentId).getHTML();
+		return Fragment.find(modelId, fragmentId).getHTML(maxNumCompounds);
 	}
 
 	public String getCompoundInfo(String service, String smiles)

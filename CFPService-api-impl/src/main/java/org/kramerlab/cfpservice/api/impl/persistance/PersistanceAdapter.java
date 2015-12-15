@@ -8,7 +8,7 @@ import java.util.Set;
 import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
-import org.kramerlab.extendedrandomforests.weka.ExtendedRandomForest;
+import org.mg.wekalib.attribute_ranking.AttributeProvidingClassifier;
 
 public interface PersistanceAdapter
 {
@@ -16,7 +16,7 @@ public interface PersistanceAdapter
 
 	public boolean modelExists(String modelId);
 
-	public ExtendedRandomForest readExtendedRandomForest(String modelId);
+	public AttributeProvidingClassifier readClassifier(String modelId);
 
 	public CFPMiner readCFPMiner(String modelId);
 
@@ -32,7 +32,7 @@ public interface PersistanceAdapter
 
 	public Prediction readPrediction(String modelId, String predictionId);
 
-	public String[] findLastPredictions(String... modelIds);
+	public String[] findAllPredictions(String... modelIds);
 
 	public String getModelValidationResultsFile(String id);
 
@@ -51,5 +51,7 @@ public interface PersistanceAdapter
 	public Set<String> getModelDatasetURLs(String modelId);
 
 	public Map<String, String> getModelDatasetCitations(String modelId);
+
+	public void deleteModel(String modelId);
 
 }

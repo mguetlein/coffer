@@ -11,32 +11,37 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.kramerlab.cfpminer.CFPDataLoader;
 import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpminer.CFPMiner.CFPType;
+import org.kramerlab.cfpminer.CFPMiner.FeatureSelection;
 import org.kramerlab.cfpminer.CFPtoArff;
+import org.kramerlab.cfpminer.weka.CFPValidate;
 import org.kramerlab.cfpminer.weka.ValidationResultsProvider;
 import org.kramerlab.cfpservice.api.ModelObj;
 import org.kramerlab.cfpservice.api.impl.html.ModelHtml;
 import org.kramerlab.cfpservice.api.impl.html.ModelsHtml;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
-import org.kramerlab.extendedrandomforests.weka.ExtendedRandomForest;
 import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.datamining.ResultSetIO;
 import org.mg.javalib.util.CountedSet;
 import org.mg.javalib.util.FileUtil;
 import org.mg.javalib.util.ListUtil;
+import org.mg.wekalib.attribute_ranking.AttributeProvidingClassifier;
+import org.mg.wekalib.attribute_ranking.ExtendedNaiveBayes;
+import org.mg.wekalib.attribute_ranking.ExtendedRandomForest;
 
+import weka.classifiers.Classifier;
 import weka.core.Instances;
+import weka.core.Randomizable;
 
 @SuppressWarnings("restriction")
 @XmlRootElement
 public class Model extends ModelObj
 {
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 4L;
 
 	protected transient CFPMiner miner;
-	protected transient ExtendedRandomForest erf;
+	protected transient AttributeProvidingClassifier erf;
 
 	public Model()
 	{
@@ -80,10 +85,10 @@ public class Model extends ModelObj
 		}
 	}
 
-	public ExtendedRandomForest getExtendedRandomForest()
+	public AttributeProvidingClassifier getClassifier()
 	{
 		if (erf == null)
-			erf = PersistanceAdapter.INSTANCE.readExtendedRandomForest(id);
+			erf = PersistanceAdapter.INSTANCE.readClassifier(id);
 		return erf;
 	}
 
@@ -152,65 +157,115 @@ public class Model extends ModelObj
 
 	public static void main(String[] args) throws Exception
 	{
-		//buildModel("DUD_vegfr2");
-		//buildModel("ChEMBL_61");
-		//buildModel("NCTRER");
-		//buildModel("CPDBAS_Mutagenicity");
-		//		buildModel("AMES");
-		//		buildModel("CPDBAS_Rat");
+		buildModel("REID-3", false);
+		buildModel("REID-4", false);
+		buildModel("REID-11", false);
+
+		//		buildModel("DUD_vegfr2", true);
+		//		buildModel("ChEMBL_61", true);
+		//		buildModel("NCTRER", true);
+		//		buildModel("CPDBAS_Mutagenicity", true);
+		//		//				buildModel("READ", false);
+		//		buildModel("CPDBAS_Rat", true);
 		//		buildModel("CPDBAS_Hamster");
 		//		buildModel("ChEMBL_61");
 		//		buildModel("MUV_859");
 		//		buildModel("CPDBAS_MultiCellCall");
 		//		buildModel("ChEMBL_87");
 
-		for (String dataset : new CFPDataLoader("persistance/data").allDatasets())
-		{
-			//			if (!PersistanceAdapter.INSTANCE.modelExists(dataset))
-			//            if (dataset.equals("AMES"))
-			if (dataset.startsWith("ChEMBL") || dataset.startsWith("MUV"))
-				buildModel(dataset);
-			//break;
-		}
+		//		for (String dataset : new CFPDataLoader("persistance/data").allDatasets())
+		//		{
+		//			//			//			if (!PersistanceAdapter.INSTANCE.modelExists(dataset))
+		//			//			//            if (dataset.equals("AMES"))
+		//			//			if (dataset.startsWith("ChEMBL") || dataset.startsWith("MUV"))
+		//			buildModel(dataset, true);
+		//			//			break;
+		//		}
+
+		//		buildModel("AMES", true);
 
 		//		Model.find("CPDBAS_Mutagenicity").getValidationChart();
+
+		//		Model m = Model.find("REID");
+		//		CSVFile f = FileUtil.readCSV("/home/martin/data/reid/combined-2.csv", ",");
+		//		for (String line[] : f.content)
+		//		{
+		//			if (line[0] == null)
+		//			{
+		//				System.out.println("");
+		//				continue;
+		//			}
+		//			if (line[0].equals("SMILES"))
+		//				continue;
+		//			predict(m, line[0]);
+		//		}
+
+	}
+
+	public static void predict(Model model, String smiles) throws Exception
+	{
+		Prediction p = Prediction.createPrediction(model, smiles);
+		System.out.println(p.getPredictedDistribution()[model.getActiveClassIdx()]);
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void buildModel(String id) throws Exception
+	public static void buildModel(String dataset, boolean forceExistingValidation) throws Exception
 	{
-		Model model = new Model();
-		model.id = id;
+		String algorithm = null;
 
-		List<String> endpoints = PersistanceAdapter.INSTANCE.readDatasetEndpoints(id);
-		List<String> smiles = PersistanceAdapter.INSTANCE.readDatasetSmiles(id);
+		if (PersistanceAdapter.INSTANCE.modelExists(dataset))
+			PersistanceAdapter.INSTANCE.deleteModel(dataset);
+
+		Model model = new Model();
+		model.id = dataset;
+
+		List<String> endpoints = PersistanceAdapter.INSTANCE.readDatasetEndpoints(dataset);
+		List<String> smiles = PersistanceAdapter.INSTANCE.readDatasetSmiles(dataset);
 		ListUtil.scramble(new Random(1), smiles, endpoints);
 
 		model.miner = new CFPMiner(endpoints);
-		model.miner.setFeatureSelection(CFPMiner.FeatureSelection.filt);
 
-		ResultSet r = ResultSetIO.parseFromFile(new File(ValidationResultsProvider.RESULTS_MERGED_FOLDER
-				+ "RaF_filt.best"));
-		for (int i = 0; i < r.getNumResults(); i++)
+		File f = new File(ValidationResultsProvider.RESULTS_MERGED_FOLDER + "AUP.best");
+		if (f.exists())
 		{
-			if (r.getResultValue(i, "Dataset").toString().equals(id))
+			ResultSet r = ResultSetIO.parseFromTxtFile(f);
+			for (int i = 0; i < r.getNumResults(); i++)
 			{
-				CFPType type = CFPType.valueOf(r.getResultValue(i, "type").toString());
-				int hashfoldsize = Double.valueOf(r.getResultValue(i, "hashfoldsize").toString()).intValue();
-				model.miner.setType(type);
-				model.miner.setHashfoldsize(hashfoldsize);
-				break;
+				if (r.getResultValue(i, "Dataset").toString().equals(dataset))
+				{
+					algorithm = r.getResultValue(i, "Algorithm").toString();
+					CFPType type = CFPType.valueOf(r.getResultValue(i, "CFPType").toString());
+					FeatureSelection sel = FeatureSelection.valueOf(r.getResultValue(i, "FeatureSelection").toString());
+					if (sel != FeatureSelection.none)
+					{
+						int hashfoldsize = Double.valueOf(r.getResultValue(i, "hashfoldSize").toString()).intValue();
+						model.miner.setHashfoldsize(hashfoldsize);
+					}
+					model.miner.setType(type);
+					model.miner.setFeatureSelection(sel);
+					break;
+				}
 			}
+		}
+		if (algorithm == null)
+		{
+			algorithm = "RnF";
+			model.miner.setType(CFPType.ecfp4);
+			model.miner.setHashfoldsize(1024);
+			model.miner.setFeatureSelection(FeatureSelection.filt);
 		}
 
 		model.miner.mine(smiles);
 
-		String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(id);
-		String classifier = "RaF";
-		if (ValidationResultsProvider.resultsExist(id, model.miner, classifier))
-			FileUtil.copy(ValidationResultsProvider.getResultsFile(id, model.miner, classifier), outfile);
+		String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(dataset);
+		if (ValidationResultsProvider.resultsExist(dataset, model.miner, algorithm))
+			FileUtil.copy(ValidationResultsProvider.getResultsFile(dataset, model.miner, algorithm), outfile);
 		else
-			CFPMiner.validate(id, 1, outfile, new String[] { classifier }, endpoints, model.miner);
+		{
+			if (forceExistingValidation)
+				throw new IllegalStateException("validation missing");
+			CFPValidate.validate(dataset, 1, outfile, new String[] { algorithm }, endpoints, model.miner);
+		}
 
 		model.miner.applyFilter();
 		System.out.println(model.miner);
@@ -220,12 +275,12 @@ public class Model extends ModelObj
 
 		//			Instances inst = new Instances(new FileReader("/home/martin/workspace/external/weka-3-7-10/data/vote.arff"));
 		///home/martin/data/arffs/breast-cancer.arff
-		Instances inst = CFPtoArff.getTrainingDataset(model.miner, id);
+		Instances inst = CFPtoArff.getTrainingDataset(model.miner, dataset);
 		inst.setClassIndex(inst.numAttributes() - 1);
 
 		if (inst.size() != smiles.size())
 			throw new IllegalStateException();
-		if (inst.numAttributes() != model.miner.getNumAttributes() + 1)
+		if (inst.numAttributes() != model.miner.getNumFragments() + 1)
 			throw new IllegalStateException();
 		if (!model.miner.getClassValues()[0].equals(inst.classAttribute().value(0)))
 			throw new IllegalArgumentException();
@@ -233,9 +288,15 @@ public class Model extends ModelObj
 			throw new IllegalArgumentException();
 
 		int seed = 1;
-		model.erf = new ExtendedRandomForest();
-		model.erf.setSeed(seed);
-		model.erf.buildClassifier(inst);
+		if (algorithm.equals("RnF"))
+			model.erf = new ExtendedRandomForest();
+		else if (algorithm.equals("NBy"))
+			model.erf = new ExtendedNaiveBayes();
+		else
+			throw new IllegalStateException();
+		if (model.erf instanceof Randomizable)
+			((Randomizable) model.erf).setSeed(seed);
+		((Classifier) model.erf).buildClassifier(inst);
 
 		//		model.erf.printTrees();
 
@@ -247,9 +308,9 @@ public class Model extends ModelObj
 		//				.getHashcodeViaIdx(0)))));
 		int idx = 1;
 		System.out.println("idx " + idx);
-		System.out.println("hash-code " + model.miner.getHashcodeViaIdx(idx));
+		System.out.println("hash-code " + model.miner.getFragmentViaIdx(idx));
 		List<String> endpoint = new ArrayList<String>();
-		for (Integer c : model.miner.getCompoundsForHashcode(model.miner.getHashcodeViaIdx(idx)))
+		for (Integer c : model.miner.getCompoundsForFragment(model.miner.getFragmentViaIdx(idx)))
 			endpoint.add(model.miner.getEndpoints().get(c));
 		System.out.println(CountedSet.create(endpoint));
 
@@ -257,15 +318,15 @@ public class Model extends ModelObj
 		model.setClassValues(model.miner.getClassValues());
 		model.saveModel();
 
-		Model m = Model.find(id);
-		System.out.println("hash-code " + m.getCFPMiner().getHashcodeViaIdx(idx));
+		Model m = Model.find(dataset);
+		System.out.println("hash-code " + m.getCFPMiner().getFragmentViaIdx(idx));
 
 		CFPMiner miner = m.getCFPMiner();
-		for (int i = 0; i < miner.getNumAttributes(); i++)
+		for (int i = 0; i < miner.getNumFragments(); i++)
 		{
 			String smi = miner.getTrainingDataSmiles().get(
-					miner.getCompoundsForHashcode(miner.getHashcodeViaIdx(i)).iterator().next());
-			if (miner.getAtoms(smi, miner.getHashcodeViaIdx(i)) == null)
+					miner.getCompoundsForFragment(miner.getFragmentViaIdx(i)).iterator().next());
+			if (miner.getAtoms(smi, miner.getFragmentViaIdx(i)) == null)
 				throw new IllegalStateException("no matching atoms in training intance");
 			//			else
 			//				System.out.println("attidx: " + i + ", hashcode " + miner.getHashcodeViaIdx(i) + ", smi " + smi

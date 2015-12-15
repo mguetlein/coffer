@@ -7,10 +7,10 @@ import java.net.URLEncoder;
 import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
-import org.kramerlab.extendedrandomforests.weka.PredictionAttribute;
 import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.util.StringUtil;
+import org.mg.wekalib.attribute_ranking.PredictionAttribute;
 import org.rendersnake.HtmlAttributesFactory;
 import org.rendersnake.HtmlCanvas;
 import org.rendersnake.Renderable;
@@ -20,13 +20,14 @@ public class PredictionHtml extends DefaultHtml
 	Prediction p;
 	CFPMiner miner;
 
-	public PredictionHtml(Prediction p)
+	public PredictionHtml(Prediction p, String maxNumFragments)
 	{
 		super("Prediction of compound " + p.getSmiles(), p.getModelId(), Model.getName(p.getModelId()), "prediction/"
 				+ p.getId(), "Prediction");
 		setHidePageTitle(true);
 		this.p = p;
 		miner = Model.find(p.getModelId()).getCFPMiner();
+		parseMaxNumElements(maxNumFragments);
 	}
 
 	private Renderable getPrediction(boolean hideNonMax)
@@ -92,12 +93,6 @@ public class PredictionHtml extends DefaultHtml
 		});
 	}
 
-	//	public static void setTarget(HTMLReport rep, ResultSet tableSet, int rIdx, final String modelID, final String url)
-	//	{
-	//		tableSet.setResultValue(rIdx, "Target",
-	//				rep.getExternalLink(Model.getTarget(modelID), url, ArrayUtil.toArray(Model.getDatasetURLs(modelID))));
-	//	}
-
 	public String build() throws Exception
 	{
 		newSection("Predicted compound");
@@ -119,16 +114,27 @@ public class PredictionHtml extends DefaultHtml
 		}
 		addGap();
 
-		newSection("Prediction model");
+		newSection("Prediction");
 		{
 			ResultSet set = new ResultSet();
 			int rIdx = set.addResult();
 
-			String url = "/" + p.getModelId();
-			set.setResultValue(rIdx, "Dataset", encodeLink(url, Model.getName(p.getModelId())));
-			set.setResultValue(rIdx, "Target", encodeLink(url, Model.getTarget(p.getModelId())));
+			String endpoint = p.getTrainingActivity();
+			if (endpoint != null)
+				set.setResultValue(rIdx, "Activity", endpoint);
+
 			set.setResultValue(rIdx, "Prediction", getPrediction(true));
-			setHeaderHelp("Prediction", text("model.prediction.tip") + " " + moreLink(DocHtml.PREDICTION_MODELS));
+			set.setResultValue(rIdx, " ", " ");
+
+			String url = "/" + p.getModelId();
+			Model m = Model.find(p.getModelId());
+			set.setResultValue(rIdx, "Dataset", encodeLink(url, m.getName()));
+			set.setResultValue(rIdx, "Target", encodeLink(url, m.getTarget()));
+			set.setResultValue(rIdx, "Classifier", encodeLink(url, m.getClassifier().getName()));
+			set.setResultValue(rIdx, "Fragments", encodeLink(url, m.getCFPMiner().getFeatureType()));
+
+			setHeaderHelp("Prediction", text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
+			setHeaderHelp("Activity", text("model.activity.tip"));
 
 			setTableRowsAlternating(false);
 			setTableColWidthLimited(false);
@@ -145,11 +151,18 @@ public class PredictionHtml extends DefaultHtml
 		for (final boolean match : new Boolean[] { true, false })
 		{
 			ResultSet set = new ResultSet();
+			int fIdx = 0;
 			for (final PredictionAttribute pa : p.getPredictionAttributes())
 			{
 				int attIdx = pa.getAttribute();
 				if (match == testInstanceContains(attIdx))
 				{
+					fIdx++;
+					if (fIdx > maxNumElements)
+						continue;
+
+					int rIdx = set.addResult();
+					set.setResultValue(rIdx, "No.", fIdx + "");
 
 					Boolean moreActive = null;
 					final String txt;
@@ -194,12 +207,11 @@ public class PredictionHtml extends DefaultHtml
 						activating = null;
 					}
 
-					int rIdx = set.addResult();
 					set.setResultValue(
 							rIdx,
 							"Fragment",
-							getImage(getFragmentPicInTestInstance(attIdx, true, activating, true), "/" + p.getModelId()
-									+ "/fragment/" + (attIdx + 1), true));
+							getImage(depictMatch(attIdx, true, activating, true), "/" + p.getModelId() + "/fragment/"
+									+ (attIdx + 1), true));
 					//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
 
 					set.setResultValue(rIdx, "Effect", new Renderable()
@@ -238,6 +250,16 @@ public class PredictionHtml extends DefaultHtml
 			else
 				startRightColumn();
 			newSection((match ? "Present" : "Absent") + " fragments");
+
+			if (fIdx > maxNumElements)
+			{
+				int rIdx = set.addResult();
+				set.setResultValue(
+						rIdx,
+						"Fragment",
+						encodeLink(p.getId() + "?size=" + Math.min(maxNumElements + defaultMaxNumElements, fIdx) + "#"
+								+ (rIdx + 1), "More fragments"));
+			}
 			addTable(set);
 		}
 		stopColumns();
@@ -246,10 +268,10 @@ public class PredictionHtml extends DefaultHtml
 
 	private boolean testInstanceContains(int attIdx) throws Exception
 	{
-		return miner.getHashcodesForTestCompound(p.getSmiles()).contains(miner.getHashcodeViaIdx(attIdx));
+		return miner.getFragmentsForTestCompound(p.getSmiles()).contains(miner.getFragmentViaIdx(attIdx));
 	}
 
-	private String getFragmentPicInTestInstance(int attIdx, boolean fallbackToTraining, Boolean activating, boolean crop)
+	private String depictMatch(int attIdx, boolean fallbackToTraining, Boolean activating, boolean crop)
 			throws Exception
 	{
 		String m = p.getSmiles();
@@ -257,13 +279,13 @@ public class PredictionHtml extends DefaultHtml
 			//		if (testInstance.stringValue(attr).equals("0"))
 			if (fallbackToTraining)
 				m = miner.getTrainingDataSmiles().get(
-						miner.getCompoundsForHashcode(miner.getHashcodeViaIdx(attIdx)).iterator().next());
+						miner.getCompoundsForFragment(miner.getFragmentViaIdx(attIdx)).iterator().next());
 			else
 				crop = false;
-		if (miner.getAtoms(m, miner.getHashcodeViaIdx(attIdx)) == null)
+		if (miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)) == null)
 			throw new IllegalStateException("no atoms in " + m + " for att-idx " + attIdx + ", hashcode: "
-					+ miner.getHashcodeViaIdx(attIdx));
-		return depictMatch(m, miner.getAtoms(m, miner.getHashcodeViaIdx(attIdx)), miner.getCFPType().isECFP(),
+					+ miner.getFragmentViaIdx(attIdx));
+		return depictMatch(m, miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)), miner.getCFPType().isECFP(),
 				activating, crop, crop ? croppedPicSize : maxMolPicSize);
 	}
 

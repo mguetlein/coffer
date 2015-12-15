@@ -33,7 +33,7 @@ public class ModelsHtml extends DefaultHtml
 		String[] modelIds = new String[models.length];
 		for (int i = 0; i < modelIds.length; i++)
 			modelIds[i] = models[i].getId();
-		String predIds[] = Prediction.findLastPredictions(modelIds);
+		String predIds[] = Prediction.findAllPredictions(modelIds);
 		if (predIds.length > 0)
 			startLeftColumn();
 

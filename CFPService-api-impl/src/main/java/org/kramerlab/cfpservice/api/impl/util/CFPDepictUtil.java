@@ -6,14 +6,15 @@ import java.util.List;
 import java.util.Set;
 
 import org.kramerlab.cfpminer.CFPDepict;
+import org.kramerlab.cfpminer.CFPFragment;
 import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpminer.cdk.CDKUtil;
 import org.kramerlab.cfpservice.api.impl.DepictService;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
-import org.kramerlab.extendedrandomforests.weka.PredictionAttribute;
 import org.mg.javalib.gui.property.ColorGradient;
 import org.mg.javalib.util.ArrayUtil;
+import org.mg.wekalib.attribute_ranking.PredictionAttribute;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
@@ -84,8 +85,8 @@ public class CFPDepictUtil
 			// iterate over all attributes
 			for (PredictionAttribute a : att)
 			{
-				int h = cfp.getHashcodeViaIdx(a.getAttribute());
-				Set<Integer> atoms = cfp.getAtomsMultiple(mol, h);
+				CFPFragment f = cfp.getFragmentViaIdx(a.getAttribute());
+				Set<Integer> atoms = cfp.getAtomsMultiple(mol, f);
 				if (atoms != null && atoms.size() > 0)
 				{
 					// use only matching attributes

@@ -3,6 +3,7 @@ package org.kramerlab.cfpservice.api.impl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -12,11 +13,13 @@ import org.kramerlab.cfpservice.api.PredictionObj;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml;
 import org.kramerlab.cfpservice.api.impl.html.PredictionsHtml;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
-import org.kramerlab.extendedrandomforests.weka.PredictionAttribute;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.StringUtil;
+import org.mg.wekalib.attribute_ranking.PredictionAttribute;
+import org.mg.wekalib.attribute_ranking.PredictionAttributeComputation;
 import org.openscience.cdk.interfaces.IAtomContainer;
 
+import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
 
@@ -54,9 +57,9 @@ public class Prediction extends PredictionObj
 		}
 	}
 
-	public static String[] findLastPredictions(String... modelIds)
+	public static String[] findAllPredictions(String... modelIds)
 	{
-		return PersistanceAdapter.INSTANCE.findLastPredictions(modelIds);
+		return PersistanceAdapter.INSTANCE.findAllPredictions(modelIds);
 	}
 
 	public static Prediction[] find(String predictionId)
@@ -105,15 +108,18 @@ public class Prediction extends PredictionObj
 			Instances data = CFPtoArff.getTestDataset(m.getCFPMiner(), "DUD_vegfr2", p.getMolecule());
 			Instance inst = data.get(0);
 			data.setClassIndex(data.numAttributes() - 1);
-			double dist[] = m.getExtendedRandomForest().distributionForInstance(inst);
+			double dist[] = ((Classifier) m.getClassifier()).distributionForInstance(inst);
 			int maxIdx = ArrayUtil.getMaxIndex(dist);
 
 			p.id = predictionId;
 			p.modelId = m.getId();
 			p.predictedIdx = maxIdx;
 			p.predictedDistribution = dist;
+			p.trainingActivity = m.getCFPMiner().getTrainingActivity(smiles);
 
-			p.setPredictionAttributes(m.getExtendedRandomForest().getPredictionAttributes(inst, dist));
+			Set<Integer> atts = m.getClassifier().getAttributesEmployedForPrediction(inst);
+			p.setPredictionAttributes(PredictionAttributeComputation.compute((Classifier) m.getClassifier(), inst,
+					dist, atts));
 
 			PersistanceAdapter.INSTANCE.savePrediction(p);
 
@@ -137,15 +143,16 @@ public class Prediction extends PredictionObj
 		}
 	}
 
-	public String getHTML()
+	public String getHTML(String maxNumFragments)
 	{
 		try
 		{
-			return new PredictionHtml(this).build();
+			return new PredictionHtml(this, maxNumFragments).build();
 		}
 		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}
 	}
+
 }

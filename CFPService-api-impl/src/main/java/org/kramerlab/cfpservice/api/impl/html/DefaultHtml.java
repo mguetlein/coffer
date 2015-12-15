@@ -26,6 +26,8 @@ public class DefaultHtml extends HTMLReport
 
 	protected int maxMolPicSize = 300;
 	protected int croppedPicSize = 150;
+	protected int defaultMaxNumElements = 100;
+	protected int maxNumElements = defaultMaxNumElements;
 
 	public DefaultHtml(String id, String name, String subId, String subName)
 	{
@@ -50,6 +52,16 @@ public class DefaultHtml extends HTMLReport
 		setTitles(ModelService.SERVICE_TITLE, serviceHeader(), css, footer());
 		setHelpImg("/img/help14.png");
 		setExternalLinkImg("/img/iconExternalLink.gif");
+	}
+
+	protected void parseMaxNumElements(String maxNumElements)
+	{
+		if (maxNumElements == null || maxNumElements.isEmpty())
+			this.maxNumElements = defaultMaxNumElements;
+		else if (maxNumElements.equals("all"))
+			this.maxNumElements = Integer.MAX_VALUE;
+		else
+			this.maxNumElements = Integer.parseInt(maxNumElements);
 	}
 
 	private static ResourceBundle bundle;

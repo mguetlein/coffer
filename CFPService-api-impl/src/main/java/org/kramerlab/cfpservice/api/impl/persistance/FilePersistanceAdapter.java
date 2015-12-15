@@ -18,9 +18,9 @@ import org.kramerlab.cfpminer.CFPDataLoader;
 import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
-import org.kramerlab.extendedrandomforests.weka.ExtendedRandomForest;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.FileUtil;
+import org.mg.wekalib.attribute_ranking.AttributeProvidingClassifier;
 
 public class FilePersistanceAdapter implements PersistanceAdapter
 {
@@ -91,14 +91,14 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		}
 	}
 
-	public ExtendedRandomForest readExtendedRandomForest(String modelId)
+	public AttributeProvidingClassifier readClassifier(String modelId)
 	{
 		try
 		{
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(getModelClassifierFile(modelId)));
-			ExtendedRandomForest erf = (ExtendedRandomForest) ois.readObject();
+			AttributeProvidingClassifier classi = (AttributeProvidingClassifier) ois.readObject();
 			ois.close();
-			return erf;
+			return classi;
 		}
 		catch (Exception e)
 		{
@@ -168,7 +168,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		}
 	}
 
-	public String[] findLastPredictions(final String... modelIds)
+	public String[] findAllPredictions(final String... modelIds)
 	{
 		final HashSet<String> checked = new HashSet<String>();
 		File preds[] = new File("persistance/prediction").listFiles(new FilenameFilter()
@@ -217,6 +217,21 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		}
 	}
 
+	public void deleteModel(String id)
+	{
+		System.out.println("deleting model '" + id + "' and all its predictions");
+		for (String pId : findAllPredictions(id))
+			deletePrediction(id, pId);
+		new File(getModelCFPFile(id)).delete();
+		new File(getModelClassifierFile(id)).delete();
+		new File(getModelFile(id)).delete();
+	}
+
+	private void deletePrediction(String modelId, String predictionId)
+	{
+		new File(getPredictionFile(modelId, predictionId)).delete();
+	}
+
 	public void saveModel(Model model)
 	{
 		try
@@ -230,7 +245,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 
 			file = getModelClassifierFile(model.getId());
 			oos = new ObjectOutputStream(new FileOutputStream(file));
-			oos.writeObject(model.getExtendedRandomForest());
+			oos.writeObject(model.getClassifier());
 			oos.flush();
 			oos.close();
 			System.out.println("classifier written to " + file);

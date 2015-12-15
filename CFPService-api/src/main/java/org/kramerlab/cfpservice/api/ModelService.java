@@ -128,7 +128,8 @@ public interface ModelService
 	@Path("{modelId}/prediction/{predictionId}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	String getPredictionHTML(@PathParam("modelId") String modelId, @PathParam("predictionId") String predictionId);
+	String getPredictionHTML(@PathParam("modelId") String modelId, @PathParam("predictionId") String predictionId,
+			@FormParam("size") String size);
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i>/fragment/<i>fragmentId</i><br>
@@ -143,7 +144,8 @@ public interface ModelService
 	@Path("{modelId}/fragment/{fragmentId}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	String getFragmentHTML(@PathParam("modelId") String modelId, @PathParam("fragmentId") String fragmentId);
+	String getFragmentHTML(@PathParam("modelId") String modelId, @PathParam("fragmentId") String fragmentId,
+			@FormParam("size") String size);
 
 	@Path("info/{service}/{smiles}")
 	@GET

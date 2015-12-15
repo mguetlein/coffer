@@ -2,7 +2,7 @@ package org.kramerlab.cfpservice.api.impl.html;
 
 public class DocHtml extends DefaultHtml
 {
-	public static String PREDICTION_MODELS = "Prediction Models";
+	public static String CLASSIFIERS = "Classifiers";
 
 	public static String PREDICTION_FRAGMENTS = "Prediction Fragments";
 
@@ -34,9 +34,9 @@ public class DocHtml extends DefaultHtml
 
 		addParagraph(text("doc.fragments"));
 
-		newSection(PREDICTION_MODELS);
+		newSection(CLASSIFIERS);
 
-		addParagraph(text("doc.models"));
+		addParagraph(text("doc.classifiers"));
 
 		newSection(PREDICTION_FRAGMENTS);
 

@@ -35,6 +35,12 @@ public class PredictionsHtml extends DefaultHtml
 			Model m = Model.find(p.getModelId());
 			res.setResultValue(idx, "Dataset", encodeLink(url, m.getName()));
 			res.setResultValue(idx, "Target", encodeLink(url, m.getTarget()));
+			String endpoint = p.getTrainingActivity();
+			if (endpoint != null)
+			{
+				res.setResultValue(idx, "Activity", endpoint);
+				setHeaderHelp("Activity", text("model.activity.tip"));
+			}
 			res.setResultValue(idx, "Prediction", PredictionHtml.getPrediction(p, m.getClassValues(), true, url));
 			res.setResultValue(idx, "p", p.getPredictedDistribution()[m.getActiveClassIdx()]);
 			//							HTMLReport.encodeLink("/" + m.getId() + "/prediction/" + predictionId,

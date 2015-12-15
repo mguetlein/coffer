@@ -45,11 +45,8 @@ public class ModelHtml extends DefaultHtml
 
 		//		ResultSet setM = new ResultSet();
 		//		setM.addResult();
-		set.setResultValue(
-				idx,
-				"Prediction model",
-				getMouseoverHelp(text("model.tip") + " " + moreLink(DocHtml.PREDICTION_MODELS), m
-						.getExtendedRandomForest().getName()));
+		set.setResultValue(idx, "Classifier",
+				getMouseoverHelp(text("model.tip") + " " + moreLink(DocHtml.CLASSIFIERS), m.getClassifier().getName()));
 
 		set.setResultValue(
 				idx,
@@ -60,7 +57,7 @@ public class ModelHtml extends DefaultHtml
 		{
 			public void renderOn(HtmlCanvas html) throws IOException
 			{
-				html.write(m.getCFPMiner().getNumAttributes() + " ");
+				html.write(m.getCFPMiner().getNumFragments() + " ");
 				new TextWithLinks(encodeLink("/" + m.getId() + "/fragment/1", "(inspect fragments)"), true)
 						.renderOn(html);
 				//html.write("bla");
@@ -93,7 +90,7 @@ public class ModelHtml extends DefaultHtml
 		//					PersistanceAdapter.INSTANCE.getModelValidationResultsFile(id));
 		//			addTable(val.getJoinedResults());
 
-		String predIds[] = Prediction.findLastPredictions(m.getId());
+		String predIds[] = Prediction.findAllPredictions(m.getId());
 		if (predIds.length > 0)
 		{
 			ResultSet res = new ResultSet();
