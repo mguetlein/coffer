@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.kramerlab.cfpminer.CFPDepict;
-import org.kramerlab.cfpminer.CFPFragment;
-import org.kramerlab.cfpminer.CFPMiner;
-import org.kramerlab.cfpminer.cdk.CDKUtil;
 import org.kramerlab.cfpservice.api.impl.DepictService;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
+import org.mg.cdklib.AtomContainerUtil;
+import org.mg.cdklib.cfp.CFPFragment;
+import org.mg.cdklib.cfp.CFPMiner;
+import org.mg.cdklib.depict.CDKDepict;
 import org.mg.javalib.gui.property.ColorGradient;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.wekalib.attribute_ranking.PredictionAttribute;
@@ -37,7 +37,7 @@ public class CFPDepictUtil
 		setAtomBondWeights(mol, miner, pAtt, dist);
 		Color cols[] = weightsToColorGradient(mol, new ColorGradient(DepictService.ACTIVE_BRIGHT,
 				DepictService.NEUTRAL_BRIGHT, DepictService.INACTIVE_BRIGHT));
-		CFPDepict.depictMatchToPNG(pngFile, mol, cols, false, maxSize);
+		CDKDepict.depictMatchToPNG(pngFile, mol, cols, false, maxSize);
 	}
 
 	private static String WEIGHT_PROP = "weightProp";
@@ -54,11 +54,11 @@ public class CFPDepictUtil
 	private static Color[] weightsToColorGradient(IAtomContainer mol, ColorGradient gradient)
 	{
 		List<Color> palette = new ArrayList<Color>();
-		for (IChemObject c : CDKUtil.getAtomsAndBonds(mol))
+		for (IChemObject c : AtomContainerUtil.getAtomsAndBonds(mol))
 		{
 			double w = c.getProperty(WEIGHT_PROP, Double.class);
 			Color col = gradient.getColor(w);
-			c.setProperty(CFPDepict.COLOR_PROP, palette.size());
+			c.setProperty(CDKDepict.COLOR_PROP, palette.size());
 			palette.add(col);
 		}
 		return ArrayUtil.toArray(palette);
@@ -79,7 +79,7 @@ public class CFPDepictUtil
 		try
 		{
 			// step 1: sum up prop-diffs
-			for (IChemObject c : CDKUtil.getAtomsAndBonds(mol))
+			for (IChemObject c : AtomContainerUtil.getAtomsAndBonds(mol))
 				c.setProperty(WEIGHT_PROP, 0.0);
 			double propActive = dist[cfp.getActiveIdx()];
 			// iterate over all attributes
@@ -116,9 +116,9 @@ public class CFPDepictUtil
 			}
 			//step 2: normalize
 			double maxAbs = 0;
-			for (IChemObject c : CDKUtil.getAtomsAndBonds(mol))
+			for (IChemObject c : AtomContainerUtil.getAtomsAndBonds(mol))
 				maxAbs = Math.max(maxAbs, Math.abs(c.getProperty(WEIGHT_PROP, Double.class)));
-			for (IChemObject c : CDKUtil.getAtomsAndBonds(mol))
+			for (IChemObject c : AtomContainerUtil.getAtomsAndBonds(mol))
 			{
 				double w = c.getProperty(WEIGHT_PROP, Double.class);
 				w /= maxAbs; // normalize to [-1,0,1]

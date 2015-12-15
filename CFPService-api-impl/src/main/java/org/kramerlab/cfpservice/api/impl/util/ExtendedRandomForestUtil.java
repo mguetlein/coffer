@@ -4,11 +4,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import org.kramerlab.cfpminer.CFPDataLoader;
-import org.kramerlab.cfpminer.CFPDataLoader.Dataset;
-import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpminer.CFPtoArff;
-import org.kramerlab.cfpminer.cdk.CDKUtil;
+import org.mg.cdklib.CDKConverter;
+import org.mg.cdklib.cfp.CFPMiner;
+import org.mg.cdklib.cfp.CFPType;
+import org.mg.cdklib.cfp.FeatureSelection;
+import org.mg.cdklib.data.DataLoader;
+import org.mg.cdklib.data.CDKDataset;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.wekalib.attribute_ranking.AttributeProvidingClassifier;
 import org.mg.wekalib.attribute_ranking.ExtendedRandomForest;
@@ -27,11 +29,11 @@ public class ExtendedRandomForestUtil
 		try
 		{
 			String name = "CPDBAS_Hamster";
-			Dataset d = new CFPDataLoader("/home/martin/workspace/CFPMiner/data/").getDataset(name);
+			CDKDataset d = new DataLoader("/home/martin/workspace/CFPMiner/data/").getDataset(name);
 
 			CFPMiner cfp = new CFPMiner(d.getEndpoints());
-			cfp.setType(CFPMiner.CFPType.ecfp6);
-			cfp.setFeatureSelection(CFPMiner.FeatureSelection.filt);
+			cfp.setType(CFPType.ecfp6);
+			cfp.setFeatureSelection(FeatureSelection.filt);
 			cfp.setHashfoldsize(1024);
 			cfp.mine(d.getSmiles());
 			cfp.applyFilter();
@@ -81,7 +83,7 @@ public class ExtendedRandomForestUtil
 						break;
 				}
 
-				IAtomContainer mol = CDKUtil.parseSmiles(d.getSmiles().get(test));
+				IAtomContainer mol = CDKConverter.parseSmiles(d.getSmiles().get(test));
 				String outfile = "/tmp/test" + i + ".png";
 				CFPDepictUtil.depictMultiMatchToPNG(outfile, mol, cfp, dist, pAtt, -1);
 				System.err.println(outfile);

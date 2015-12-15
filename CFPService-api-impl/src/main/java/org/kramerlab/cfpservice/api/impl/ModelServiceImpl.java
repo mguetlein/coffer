@@ -6,12 +6,12 @@ import java.util.Locale;
 
 import javax.ws.rs.core.Response;
 
-import org.kramerlab.cfpminer.cdk.CDKUtil;
 import org.kramerlab.cfpservice.api.FragmentObj;
 import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.PredictionObj;
 import org.kramerlab.cfpservice.api.impl.html.DocHtml;
 import org.kramerlab.cfpservice.api.impl.util.CompoundInfo;
+import org.mg.cdklib.CDKConverter;
 import org.mg.javalib.util.StopWatchUtil;
 import org.mg.javalib.util.StringUtil;
 import org.springframework.stereotype.Service;
@@ -60,7 +60,7 @@ public class ModelServiceImpl implements ModelService
 	{
 		try
 		{
-			CDKUtil.validateSmiles(smiles);
+			CDKConverter.validateSmiles(smiles);
 			final Model models[] = Model.listModels();
 			Prediction.createPrediction(models[0], smiles);
 			Thread th = new Thread(new Runnable()
@@ -85,7 +85,7 @@ public class ModelServiceImpl implements ModelService
 	{
 		try
 		{
-			CDKUtil.validateSmiles(smiles);
+			CDKConverter.validateSmiles(smiles);
 			Prediction p = Prediction.createPrediction(Model.find(id), smiles);
 			return Response.seeOther(new URI(id + "/prediction/" + p.getId())).build();
 		}

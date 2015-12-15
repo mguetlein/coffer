@@ -1,8 +1,8 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
-import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpservice.api.impl.Fragment;
 import org.kramerlab.cfpservice.api.impl.Model;
+import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.javalib.datamining.ResultSet;
 
 public class FragmentHtml extends DefaultHtml

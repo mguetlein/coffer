@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
+import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.wekalib.attribute_ranking.AttributeProvidingClassifier;
 
 public interface PersistanceAdapter

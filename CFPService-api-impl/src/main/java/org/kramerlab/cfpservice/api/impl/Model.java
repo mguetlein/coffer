@@ -11,9 +11,6 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.kramerlab.cfpminer.CFPMiner;
-import org.kramerlab.cfpminer.CFPMiner.CFPType;
-import org.kramerlab.cfpminer.CFPMiner.FeatureSelection;
 import org.kramerlab.cfpminer.CFPtoArff;
 import org.kramerlab.cfpminer.weka.CFPValidate;
 import org.kramerlab.cfpminer.weka.ValidationResultsProvider;
@@ -21,6 +18,9 @@ import org.kramerlab.cfpservice.api.ModelObj;
 import org.kramerlab.cfpservice.api.impl.html.ModelHtml;
 import org.kramerlab.cfpservice.api.impl.html.ModelsHtml;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
+import org.mg.cdklib.cfp.CFPMiner;
+import org.mg.cdklib.cfp.CFPType;
+import org.mg.cdklib.cfp.FeatureSelection;
 import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.datamining.ResultSetIO;
 import org.mg.javalib.util.CountedSet;
@@ -157,14 +157,14 @@ public class Model extends ModelObj
 
 	public static void main(String[] args) throws Exception
 	{
-		buildModel("REID-3", false);
-		buildModel("REID-4", false);
-		buildModel("REID-11", false);
+		//		buildModel("REID-3", false);
+		//		buildModel("REID-4", false);
+		//		buildModel("REID-11", false);
 
 		//		buildModel("DUD_vegfr2", true);
 		//		buildModel("ChEMBL_61", true);
 		//		buildModel("NCTRER", true);
-		//		buildModel("CPDBAS_Mutagenicity", true);
+		buildModel("CPDBAS_Mutagenicity", true);
 		//		//				buildModel("READ", false);
 		//		buildModel("CPDBAS_Rat", true);
 		//		buildModel("CPDBAS_Hamster");

@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-for s in "JavaLib" "CFPMiner" "HTMLReporting" "ExtendedRandomForests"; do 
+for s in "JavaLib" "WEKALib" "CFPMiner" "HTMLReporting"; do 
     cd ~/workspace/$s
     mvn clean install
     cd -

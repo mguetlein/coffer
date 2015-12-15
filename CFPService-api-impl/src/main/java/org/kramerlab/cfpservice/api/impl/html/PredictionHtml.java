@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
+import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.util.StringUtil;

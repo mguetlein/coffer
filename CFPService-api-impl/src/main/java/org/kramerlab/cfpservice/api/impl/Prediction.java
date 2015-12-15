@@ -8,11 +8,11 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.kramerlab.cfpminer.CFPtoArff;
-import org.kramerlab.cfpminer.cdk.CDKUtil;
 import org.kramerlab.cfpservice.api.PredictionObj;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml;
 import org.kramerlab.cfpservice.api.impl.html.PredictionsHtml;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
+import org.mg.cdklib.CDKConverter;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.StringUtil;
 import org.mg.wekalib.attribute_ranking.PredictionAttribute;
@@ -49,7 +49,7 @@ public class Prediction extends PredictionObj
 	{
 		try
 		{
-			return CDKUtil.parseSmiles(smiles);
+			return CDKConverter.parseSmiles(smiles);
 		}
 		catch (Exception e)
 		{

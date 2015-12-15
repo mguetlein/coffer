@@ -14,17 +14,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.kramerlab.cfpminer.CFPDataLoader;
-import org.kramerlab.cfpminer.CFPMiner;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
+import org.mg.cdklib.cfp.CFPMiner;
+import org.mg.cdklib.data.DataLoader;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.FileUtil;
 import org.mg.wekalib.attribute_ranking.AttributeProvidingClassifier;
 
 public class FilePersistanceAdapter implements PersistanceAdapter
 {
-	CFPDataLoader dataLoader = new CFPDataLoader("persistance/data");
+	DataLoader dataLoader = new DataLoader("persistance/data");
 
 	private static String getModelFile(String id)
 	{
@@ -137,7 +137,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		{
 			public int compare(Model o1, Model o2)
 			{
-				return CFPDataLoader.CFPDataComparator.compare(o1.getId(), o2.getId());
+				return DataLoader.CFPDataComparator.compare(o1.getId(), o2.getId());
 			}
 		});
 		return res;

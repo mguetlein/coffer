@@ -5,9 +5,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
-import org.kramerlab.cfpminer.CFPDepict;
-import org.kramerlab.cfpminer.cdk.CDKUtil;
 import org.kramerlab.cfpservice.api.impl.util.CFPDepictUtil;
+import org.mg.cdklib.CDKConverter;
+import org.mg.cdklib.depict.CDKDepict;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.ColorUtil;
 import org.mg.javalib.util.StringUtil;
@@ -35,7 +35,7 @@ public class DepictService
 				int s = -1;
 				if (size != null)
 					s = Integer.parseInt(size);
-				CFPDepict.depictToPNG(pngFile, CDKUtil.parseSmiles(smiles), s);
+				CDKDepict.depictToPNG(pngFile, CDKConverter.parseSmiles(smiles), s);
 			}
 			return new FileInputStream(pngFile);
 		}
@@ -65,7 +65,7 @@ public class DepictService
 				int s = -1;
 				if (size != null)
 					s = Integer.parseInt(size);
-				CFPDepict.depictMatchToPNG(pngFile, CDKUtil.parseSmiles(smiles), a, h, col, c, s);
+				CDKDepict.depictMatchToPNG(pngFile, CDKConverter.parseSmiles(smiles), a, h, col, c, s);
 			}
 			return new FileInputStream(pngFile);
 		}
@@ -86,7 +86,7 @@ public class DepictService
 				int s = -1;
 				if (size != null)
 					s = Integer.parseInt(size);
-				CFPDepictUtil.depictMultiMatchToPNG(pngFile, CDKUtil.parseSmiles(smiles), prediction, model, s);
+				CFPDepictUtil.depictMultiMatchToPNG(pngFile, CDKConverter.parseSmiles(smiles), prediction, model, s);
 			}
 			return new FileInputStream(pngFile);
 		}
