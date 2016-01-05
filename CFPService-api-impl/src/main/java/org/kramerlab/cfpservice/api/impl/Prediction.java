@@ -15,6 +15,7 @@ import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
 import org.mg.cdklib.CDKConverter;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.StringUtil;
+import org.mg.wekalib.attribute_ranking.AttributeProvidingClassifier;
 import org.mg.wekalib.attribute_ranking.PredictionAttribute;
 import org.mg.wekalib.attribute_ranking.PredictionAttributeComputation;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -105,7 +106,8 @@ public class Prediction extends PredictionObj
 			Prediction p = new Prediction();
 			p.smiles = smiles;
 
-			Instances data = CFPtoArff.getTestDataset(m.getCFPMiner(), "DUD_vegfr2", p.getMolecule());
+			Instances data = CFPtoArff.getTestDataset(m.getCFPMiner(), "DUD_vegfr2",
+					p.getMolecule());
 			Instance inst = data.get(0);
 			data.setClassIndex(data.numAttributes() - 1);
 			double dist[] = ((Classifier) m.getClassifier()).distributionForInstance(inst);
@@ -117,9 +119,15 @@ public class Prediction extends PredictionObj
 			p.predictedDistribution = dist;
 			p.trainingActivity = m.getCFPMiner().getTrainingActivity(smiles);
 
-			Set<Integer> atts = m.getClassifier().getAttributesEmployedForPrediction(inst);
-			p.setPredictionAttributes(PredictionAttributeComputation.compute((Classifier) m.getClassifier(), inst,
-					dist, atts));
+			Set<Integer> atts;
+			if (m.getClassifier() instanceof AttributeProvidingClassifier)
+				atts = ((AttributeProvidingClassifier) m.getClassifier())
+						.getAttributesEmployedForPrediction(inst);
+			else
+				atts = PredictionAttributeComputation.allAttributes(inst);
+
+			p.setPredictionAttributes(PredictionAttributeComputation.compute(
+					(Classifier) m.getClassifier(), inst, dist, atts));
 
 			PersistanceAdapter.INSTANCE.savePrediction(p);
 

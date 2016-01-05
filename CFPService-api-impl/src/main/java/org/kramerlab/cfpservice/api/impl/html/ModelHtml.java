@@ -41,24 +41,29 @@ public class ModelHtml extends DefaultHtml
 		set.setResultValue(idx, "Dataset sources", citations);
 
 		set.setResultValue(idx, "Num compounds", m.getCFPMiner().getNumCompounds());
-		set.setResultValue(idx, "Endpoint values", CountedSet.create(m.getCFPMiner().getEndpoints()));
+		set.setResultValue(idx, "Endpoint values",
+				CountedSet.create(m.getCFPMiner().getEndpoints()));
 
 		//		ResultSet setM = new ResultSet();
 		//		setM.addResult();
-		set.setResultValue(idx, "Classifier",
-				getMouseoverHelp(text("model.tip") + " " + moreLink(DocHtml.CLASSIFIERS), m.getClassifier().getName()));
+		set.setResultValue(
+				idx,
+				"Classifier",
+				getMouseoverHelp(text("model.tip") + " " + moreLink(DocHtml.CLASSIFIERS),
+						text("classifier." + m.getClassifier().getClass().getSimpleName())));
 
 		set.setResultValue(
 				idx,
 				"Fragment type",
-				getMouseoverHelp(text("fragment.type.tip") + " " + moreLink(DocHtml.FRAGMENTS), m.getCFPMiner()
-						.getFeatureType()));
+				getMouseoverHelp(text("fragment.type.tip") + " " + moreLink(DocHtml.FRAGMENTS), m
+						.getCFPMiner().getFeatureType()));
 		set.setResultValue(idx, "Num fragments", new Renderable()
 		{
 			public void renderOn(HtmlCanvas html) throws IOException
 			{
 				html.write(m.getCFPMiner().getNumFragments() + " ");
-				new TextWithLinks(encodeLink("/" + m.getId() + "/fragment/1", "(inspect fragments)"), true)
+				new TextWithLinks(
+						encodeLink("/" + m.getId() + "/fragment/1", "(inspect fragments)"), true)
 						.renderOn(html);
 				//html.write("bla");
 			}
@@ -100,7 +105,8 @@ public class ModelHtml extends DefaultHtml
 				String url = "/" + m.getId() + "/prediction/" + predIds[i];
 				int rIdx = res.addResult();
 				res.setResultValue(rIdx, "Compound", encodeLink(url, p.getSmiles()));
-				res.setResultValue(rIdx, "Prediction", PredictionHtml.getPrediction(p, m.getClassValues(), true, url));
+				res.setResultValue(rIdx, "Prediction",
+						PredictionHtml.getPrediction(p, m.getClassValues(), true, url));
 				//				res.setResultValue(rIdx, "Date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(p.getDate()));
 			}
 			if (res.getNumResults() > 0)

@@ -13,5 +13,5 @@ persistance/model/*.classifier
 */.settings
 .settings
 .project
-CFPService-api-impl/.project CFPService-api/.project CFPService-webapp-exec/.project CFPService-webapp-it/.project CFPService-webapp/.project
-persistance/data
+*/.project
+

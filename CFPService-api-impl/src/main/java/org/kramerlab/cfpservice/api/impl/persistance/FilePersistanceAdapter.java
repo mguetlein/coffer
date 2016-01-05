@@ -20,7 +20,8 @@ import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.cdklib.data.DataLoader;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.FileUtil;
-import org.mg.wekalib.attribute_ranking.AttributeProvidingClassifier;
+
+import weka.classifiers.Classifier;
 
 public class FilePersistanceAdapter implements PersistanceAdapter
 {
@@ -80,7 +81,8 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 	{
 		try
 		{
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(getModelFile(modelId)));
+			ObjectInputStream ois = new ObjectInputStream(
+					new FileInputStream(getModelFile(modelId)));
 			Model m = (Model) ois.readObject();
 			ois.close();
 			return m;
@@ -91,12 +93,13 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		}
 	}
 
-	public AttributeProvidingClassifier readClassifier(String modelId)
+	public Classifier readClassifier(String modelId)
 	{
 		try
 		{
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(getModelClassifierFile(modelId)));
-			AttributeProvidingClassifier classi = (AttributeProvidingClassifier) ois.readObject();
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
+					getModelClassifierFile(modelId)));
+			Classifier classi = (Classifier) ois.readObject();
 			ois.close();
 			return classi;
 		}
@@ -110,7 +113,8 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 	{
 		try
 		{
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(getModelCFPFile(modelId)));
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
+					getModelCFPFile(modelId)));
 			CFPMiner miner = (CFPMiner) ois.readObject();
 			ois.close();
 			return miner;
@@ -157,7 +161,8 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 	{
 		try
 		{
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(getPredictionFile(modelId, predictionId)));
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(getPredictionFile(
+					modelId, predictionId)));
 			Prediction pred = (Prediction) ois.readObject();
 			ois.close();
 			return pred;

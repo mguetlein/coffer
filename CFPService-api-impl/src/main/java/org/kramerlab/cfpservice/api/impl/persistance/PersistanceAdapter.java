@@ -8,7 +8,8 @@ import java.util.Set;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
 import org.mg.cdklib.cfp.CFPMiner;
-import org.mg.wekalib.attribute_ranking.AttributeProvidingClassifier;
+
+import weka.classifiers.Classifier;
 
 public interface PersistanceAdapter
 {
@@ -16,7 +17,7 @@ public interface PersistanceAdapter
 
 	public boolean modelExists(String modelId);
 
-	public AttributeProvidingClassifier readClassifier(String modelId);
+	public Classifier readClassifier(String modelId);
 
 	public CFPMiner readCFPMiner(String modelId);
 

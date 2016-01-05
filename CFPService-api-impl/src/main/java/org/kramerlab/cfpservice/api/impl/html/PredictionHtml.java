@@ -22,8 +22,8 @@ public class PredictionHtml extends DefaultHtml
 
 	public PredictionHtml(Prediction p, String maxNumFragments)
 	{
-		super("Prediction of compound " + p.getSmiles(), p.getModelId(), Model.getName(p.getModelId()), "prediction/"
-				+ p.getId(), "Prediction");
+		super("Prediction of compound " + p.getSmiles(), p.getModelId(), Model.getName(p
+				.getModelId()), "prediction/" + p.getId(), "Prediction");
 		setHidePageTitle(true);
 		this.p = p;
 		miner = Model.find(p.getModelId()).getCFPMiner();
@@ -40,13 +40,15 @@ public class PredictionHtml extends DefaultHtml
 		return getPrediction(dist, miner.getClassValues(), predIdx, hideNonMax, null);
 	}
 
-	public static Renderable getPrediction(Prediction p, String classValues[], boolean hideNonMax, String url)
+	public static Renderable getPrediction(Prediction p, String classValues[], boolean hideNonMax,
+			String url)
 	{
-		return getPrediction(p.getPredictedDistribution(), classValues, p.getPredictedIdx(), hideNonMax, url);
+		return getPrediction(p.getPredictedDistribution(), classValues, p.getPredictedIdx(),
+				hideNonMax, url);
 	}
 
-	private static Renderable getPrediction(final double dist[], final String classValues[], final int predIdx,
-			final boolean hideNonMax, final String url)
+	private static Renderable getPrediction(final double dist[], final String classValues[],
+			final int predIdx, final boolean hideNonMax, final String url)
 	{
 		return new Renderable()
 		{
@@ -60,7 +62,8 @@ public class PredictionHtml extends DefaultHtml
 				{
 					if (i != predIdx && hide)
 						html.div(HtmlAttributesFactory.class_("smallGrey"));
-					html.write(classValues[i] + " (" + StringUtil.formatDouble(dist[i] * 100) + "%)");
+					html.write(classValues[i] + " (" + StringUtil.formatDouble(dist[i] * 100)
+							+ "%)");
 					if (i != predIdx && hide)
 						html._div();
 					else if (i < dist.length - 1)
@@ -72,8 +75,8 @@ public class PredictionHtml extends DefaultHtml
 		};
 	}
 
-	public static void setAdditionalInfo(HTMLReport rep, ResultSet tableSet, int rIdx, final String smiles)
-			throws UnsupportedEncodingException
+	public static void setAdditionalInfo(HTMLReport rep, ResultSet tableSet, int rIdx,
+			final String smiles) throws UnsupportedEncodingException
 	{
 		rep.setHeaderHelp("Info", "Looking up the compound smiles in PubChem and ChEMBL.");
 		final String smi = URLEncoder.encode(smiles, "UTF-8");
@@ -103,7 +106,9 @@ public class PredictionHtml extends DefaultHtml
 			set.setResultValue(
 					rIdx,
 					"Structure",
-					getImage(depictMultiMatch(p.getSmiles(), p.getId(), p.getModelId(), maxMolPicSize),
+					getImage(
+							depictMultiMatch(p.getSmiles(), p.getId(), p.getModelId(),
+									maxMolPicSize),
 							depictMultiMatch(p.getSmiles(), p.getId(), p.getModelId(), -1), false));
 			setAdditionalInfo(this, set, rIdx, p.getSmiles());
 
@@ -130,10 +135,15 @@ public class PredictionHtml extends DefaultHtml
 			Model m = Model.find(p.getModelId());
 			set.setResultValue(rIdx, "Dataset", encodeLink(url, m.getName()));
 			set.setResultValue(rIdx, "Target", encodeLink(url, m.getTarget()));
-			set.setResultValue(rIdx, "Classifier", encodeLink(url, m.getClassifier().getName()));
+			set.setResultValue(
+					rIdx,
+					"Classifier",
+					encodeLink(url, text("classifier."
+							+ m.getClassifier().getClass().getSimpleName())));
 			set.setResultValue(rIdx, "Fragments", encodeLink(url, m.getCFPMiner().getFeatureType()));
 
-			setHeaderHelp("Prediction", text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
+			setHeaderHelp("Prediction", text("model.prediction.tip") + " "
+					+ moreLink(DocHtml.CLASSIFIERS));
 			setHeaderHelp("Activity", text("model.activity.tip"));
 
 			setTableRowsAlternating(false);
@@ -171,8 +181,9 @@ public class PredictionHtml extends DefaultHtml
 					if (pa.getAlternativeDistributionForInstance()[miner.getActiveIdx()] != p
 							.getPredictedDistribution()[miner.getActiveIdx()])
 					{
-						moreActive = pa.getAlternativeDistributionForInstance()[miner.getActiveIdx()] > p
-								.getPredictedDistribution()[miner.getActiveIdx()];
+						moreActive = pa.getAlternativeDistributionForInstance()[miner
+								.getActiveIdx()] > p.getPredictedDistribution()[miner
+								.getActiveIdx()];
 						if (match)
 							activating = !moreActive;
 						else
@@ -185,20 +196,25 @@ public class PredictionHtml extends DefaultHtml
 								+ " probability ("
 								+ //
 								StringUtil
-										.formatDouble(pa.getAlternativeDistributionForInstance()[miner.getActiveIdx()] * 100)
+										.formatDouble(pa.getAlternativeDistributionForInstance()[miner
+												.getActiveIdx()] * 100)
 								+ "% instead of "
-								+ StringUtil.formatDouble(p.getPredictedDistribution()[miner.getActiveIdx()] * 100)
-								+ "%).";
+								+ StringUtil.formatDouble(p.getPredictedDistribution()[miner
+										.getActiveIdx()] * 100) + "%).";
 
 						if (match)
-							txt = "The " + fragmentLink + " is present in the test compound, it has "
+							txt = "The " + fragmentLink
+									+ " is present in the test compound, it has "
 									+ (activating ? "an activating" : "a de-activating")
-									+ " effect on the prediction:<br>" + "If absent, the " + alternativePredStr + " "
+									+ " effect on the prediction:<br>" + "If absent, the "
+									+ alternativePredStr + " "
 									+ moreLink(DocHtml.PREDICTION_FRAGMENTS);
 						else
-							txt = "The " + fragmentLink + " is absent in the test compound. If present, it would have "
+							txt = "The " + fragmentLink
+									+ " is absent in the test compound. If present, it would have "
 									+ (activating ? "an activating" : "a de-activating")
-									+ " effect on the prediction:<br>" + "The " + alternativePredStr + " "
+									+ " effect on the prediction:<br>" + "The "
+									+ alternativePredStr + " "
 									+ moreLink(DocHtml.PREDICTION_FRAGMENTS);
 					}
 					else
@@ -210,8 +226,8 @@ public class PredictionHtml extends DefaultHtml
 					set.setResultValue(
 							rIdx,
 							"Fragment",
-							getImage(depictMatch(attIdx, true, activating, true), "/" + p.getModelId() + "/fragment/"
-									+ (attIdx + 1), true));
+							getImage(depictMatch(attIdx, true, activating, true),
+									"/" + p.getModelId() + "/fragment/" + (attIdx + 1), true));
 					//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
 
 					set.setResultValue(rIdx, "Effect", new Renderable()
@@ -257,8 +273,10 @@ public class PredictionHtml extends DefaultHtml
 				set.setResultValue(
 						rIdx,
 						"Fragment",
-						encodeLink(p.getId() + "?size=" + Math.min(maxNumElements + defaultMaxNumElements, fIdx) + "#"
-								+ (rIdx + 1), "More fragments"));
+						encodeLink(
+								p.getId() + "?size="
+										+ Math.min(maxNumElements + defaultMaxNumElements, fIdx)
+										+ "#" + (rIdx + 1), "More fragments"));
 			}
 			addTable(set);
 		}
@@ -268,25 +286,27 @@ public class PredictionHtml extends DefaultHtml
 
 	private boolean testInstanceContains(int attIdx) throws Exception
 	{
-		return miner.getFragmentsForTestCompound(p.getSmiles()).contains(miner.getFragmentViaIdx(attIdx));
+		return miner.getFragmentsForTestCompound(p.getSmiles()).contains(
+				miner.getFragmentViaIdx(attIdx));
 	}
 
-	private String depictMatch(int attIdx, boolean fallbackToTraining, Boolean activating, boolean crop)
-			throws Exception
+	private String depictMatch(int attIdx, boolean fallbackToTraining, Boolean activating,
+			boolean crop) throws Exception
 	{
 		String m = p.getSmiles();
 		if (!testInstanceContains(attIdx))
 			//		if (testInstance.stringValue(attr).equals("0"))
 			if (fallbackToTraining)
 				m = miner.getTrainingDataSmiles().get(
-						miner.getCompoundsForFragment(miner.getFragmentViaIdx(attIdx)).iterator().next());
+						miner.getCompoundsForFragment(miner.getFragmentViaIdx(attIdx)).iterator()
+								.next());
 			else
 				crop = false;
 		if (miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)) == null)
-			throw new IllegalStateException("no atoms in " + m + " for att-idx " + attIdx + ", hashcode: "
-					+ miner.getFragmentViaIdx(attIdx));
-		return depictMatch(m, miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)), miner.getCFPType().isECFP(),
-				activating, crop, crop ? croppedPicSize : maxMolPicSize);
+			throw new IllegalStateException("no atoms in " + m + " for att-idx " + attIdx
+					+ ", hashcode: " + miner.getFragmentViaIdx(attIdx));
+		return depictMatch(m, miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)), miner
+				.getCFPType().isECFP(), activating, crop, crop ? croppedPicSize : maxMolPicSize);
 	}
 
 }
