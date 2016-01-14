@@ -7,6 +7,7 @@ CFPService-webapp/src/main/webapp/css/styles.css~
 persistance/img/*.png
 persistance/prediction/*.prediction
 persistance/model/*.model
+persistance/warn/*.warn
 persistance/model/*.cfp
 persistance/model/*.arff
 persistance/model/*.classifier
@@ -14,5 +15,4 @@ persistance/model/*.classifier
 .settings
 .project
 */.project
-
 */.classpath
