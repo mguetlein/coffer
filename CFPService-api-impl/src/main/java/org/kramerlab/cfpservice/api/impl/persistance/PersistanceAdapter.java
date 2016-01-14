@@ -25,6 +25,8 @@ public interface PersistanceAdapter
 
 	public List<String> readDatasetSmiles(String modelId);
 
+	public List<String> readModelDatasetWarnings(String id);
+
 	public List<String> readDatasetEndpoints(String modelId);
 
 	public void saveModel(Model model);

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
 import org.mg.cdklib.cfp.CFPMiner;
@@ -44,12 +46,17 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 
 	public String getModelValidationResultsFile(String id)
 	{
-		return "persistance/model/" + id + ".arff";
+		return "persistance/model/" + id + ".res";
 	}
 
 	public String getModelValidationImageFile(String id)
 	{
 		return "persistance/img/" + id + ".png";
+	}
+
+	public String getWarningFile(String id)
+	{
+		return "persistance/warn/" + id + ".warn";
 	}
 
 	private static String getPredictionFile(String modelId, String predictionId)
@@ -77,6 +84,27 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		return dataLoader.getDataset(modelId).getSmiles();
 	}
 
+	public List<String> readModelDatasetWarnings(String modelId)
+	{
+		try
+		{
+			String f = getWarningFile(modelId);
+			if (!new File(f).exists())
+			{
+				List<String> warnings = dataLoader.getDataset(modelId).getWarnings();
+				System.out.println("Write warnings to " + f);
+				IOUtils.writeLines(warnings, null, new FileOutputStream(f));
+				return warnings;
+			}
+			else
+				return IOUtils.readLines(new FileInputStream(f));
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
 	public Model readModel(String modelId)
 	{
 		try
@@ -97,8 +125,8 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 	{
 		try
 		{
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
-					getModelClassifierFile(modelId)));
+			ObjectInputStream ois = new ObjectInputStream(
+					new FileInputStream(getModelClassifierFile(modelId)));
 			Classifier classi = (Classifier) ois.readObject();
 			ois.close();
 			return classi;
@@ -113,8 +141,8 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 	{
 		try
 		{
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
-					getModelCFPFile(modelId)));
+			ObjectInputStream ois = new ObjectInputStream(
+					new FileInputStream(getModelCFPFile(modelId)));
 			CFPMiner miner = (CFPMiner) ois.readObject();
 			ois.close();
 			return miner;
@@ -161,8 +189,8 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 	{
 		try
 		{
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(getPredictionFile(
-					modelId, predictionId)));
+			ObjectInputStream ois = new ObjectInputStream(
+					new FileInputStream(getPredictionFile(modelId, predictionId)));
 			Prediction pred = (Prediction) ois.readObject();
 			ois.close();
 			return pred;
@@ -230,6 +258,10 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		new File(getModelCFPFile(id)).delete();
 		new File(getModelClassifierFile(id)).delete();
 		new File(getModelFile(id)).delete();
+		if (new File(getModelValidationResultsFile(id)).exists())
+			new File(getModelValidationResultsFile(id)).delete();
+		if (new File(getModelValidationImageFile(id)).exists())
+			new File(getModelValidationImageFile(id)).delete();
 	}
 
 	private void deletePrediction(String modelId, String predictionId)
@@ -261,6 +293,8 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 			oos.flush();
 			oos.close();
 			System.out.println("cfps written to " + file);
+
+			readModelDatasetWarnings(model.getId());
 		}
 		catch (Exception e)
 		{

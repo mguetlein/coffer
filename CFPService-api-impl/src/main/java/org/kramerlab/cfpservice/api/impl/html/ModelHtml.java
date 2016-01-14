@@ -1,6 +1,7 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
@@ -40,23 +41,23 @@ public class ModelHtml extends DefaultHtml
 		}
 		set.setResultValue(idx, "Dataset sources", citations);
 
-		set.setResultValue(idx, "Num compounds", m.getCFPMiner().getNumCompounds());
-		set.setResultValue(idx, "Endpoint values",
-				CountedSet.create(m.getCFPMiner().getEndpoints()));
+		List<String> w = m.getDatasetWarnings();
+		if (w != null && w.size() > 0)
+			set.setResultValue(idx, "Dataset warnings",
+					getMouseoverHelp(getList(w), w.size() + " warnings"));
+
+		//set.setResultValue(idx, "Num compounds", m.getCFPMiner().getNumCompounds());
+		set.setResultValue(idx, "Compounds", CountedSet.create(m.getCFPMiner().getEndpoints()));
 
 		//		ResultSet setM = new ResultSet();
 		//		setM.addResult();
-		set.setResultValue(
-				idx,
-				"Classifier",
-				getMouseoverHelp(text("model.tip") + " " + moreLink(DocHtml.CLASSIFIERS),
-						text("classifier." + m.getClassifier().getClass().getSimpleName())));
 
-		set.setResultValue(
-				idx,
-				"Fragment type",
-				getMouseoverHelp(text("fragment.type.tip") + " " + moreLink(DocHtml.FRAGMENTS), m
-						.getCFPMiner().getFeatureType()));
+		set.setResultValue(idx, "Classifier", getMouseoverHelp(
+				text("model.tip") + " " + moreLink(DocHtml.CLASSIFIERS), m.getClassifierName()));
+
+		set.setResultValue(idx, "Fragment type",
+				getMouseoverHelp(text("fragment.type.tip") + " " + moreLink(DocHtml.FRAGMENTS),
+						m.getCFPMiner().getFeatureType()));
 		set.setResultValue(idx, "Num fragments", new Renderable()
 		{
 			public void renderOn(HtmlCanvas html) throws IOException
@@ -64,7 +65,7 @@ public class ModelHtml extends DefaultHtml
 				html.write(m.getCFPMiner().getNumFragments() + " ");
 				new TextWithLinks(
 						encodeLink("/" + m.getId() + "/fragment/1", "(inspect fragments)"), true)
-						.renderOn(html);
+								.renderOn(html);
 				//html.write("bla");
 			}
 		});

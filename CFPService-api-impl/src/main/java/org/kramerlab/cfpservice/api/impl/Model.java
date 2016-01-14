@@ -12,7 +12,10 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.kramerlab.cfpminer.CFPtoArff;
+import org.kramerlab.cfpminer.weka.CFPValidate;
 import org.kramerlab.cfpminer.weka.ValidationResultsProvider;
+import org.kramerlab.cfpminer.weka.eval2.CFPFeatureProvider;
+import org.kramerlab.cfpminer.weka.eval2.CFPNestedCV;
 import org.kramerlab.cfpservice.api.ModelObj;
 import org.kramerlab.cfpservice.api.impl.html.ModelHtml;
 import org.kramerlab.cfpservice.api.impl.html.ModelsHtml;
@@ -27,9 +30,15 @@ import org.mg.javalib.util.FileUtil;
 import org.mg.javalib.util.ListUtil;
 import org.mg.wekalib.attribute_ranking.ExtendedNaiveBayes;
 import org.mg.wekalib.attribute_ranking.ExtendedRandomForest;
+import org.mg.wekalib.eval2.model.AbstractModel;
+import org.mg.wekalib.eval2.model.FeatureModel;
 
 import weka.classifiers.Classifier;
+import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.functions.SMO;
+import weka.classifiers.functions.supportVector.PolyKernel;
+import weka.classifiers.functions.supportVector.RBFKernel;
+import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 import weka.core.Randomizable;
 
@@ -37,10 +46,11 @@ import weka.core.Randomizable;
 @XmlRootElement
 public class Model extends ModelObj
 {
-	private static final long serialVersionUID = 5L;
+	private static final long serialVersionUID = 7L;
 
 	protected transient CFPMiner miner;
-	protected transient Classifier erf;
+	protected transient Classifier classifier;
+	protected transient List<String> datasetWarnings;
 
 	public Model()
 	{
@@ -84,11 +94,41 @@ public class Model extends ModelObj
 		}
 	}
 
+	public String getClassifierName()
+	{
+		if (getClassifier() instanceof NaiveBayes)
+			return "Naive Bayes";
+		else if (getClassifier() instanceof RandomForest)
+			return "Random Forest (trees: " + ((RandomForest) getClassifier()).getNumTrees() + ")";
+		else if (getClassifier() instanceof SMO)
+		{
+			SMO smo = (SMO) getClassifier();
+			String name = "Support Vector Machine (c:";
+			if (smo.getC() % 1.0 == 0)
+				name += (int) smo.getC();
+			else
+				name += smo.getC();
+			if (smo.getKernel() instanceof PolyKernel)
+			{
+				if (((PolyKernel) smo.getKernel()).getExponent() == 1)
+					name += ", Linear";
+				else
+					name += ", Poly-Kernel e:" + ((PolyKernel) smo.getKernel()).getExponent();
+			}
+			else if (smo.getKernel() instanceof RBFKernel)
+			{
+				name += ", RBF-Kernel \u03B3:" + ((RBFKernel) smo.getKernel()).getGamma();
+			}
+			return name + ")";
+		}
+		throw new IllegalStateException();
+	}
+
 	public Classifier getClassifier()
 	{
-		if (erf == null)
-			erf = PersistanceAdapter.INSTANCE.readClassifier(id);
-		return erf;
+		if (classifier == null)
+			classifier = PersistanceAdapter.INSTANCE.readClassifier(id);
+		return classifier;
 	}
 
 	public CFPMiner getCFPMiner()
@@ -96,6 +136,13 @@ public class Model extends ModelObj
 		if (miner == null)
 			miner = PersistanceAdapter.INSTANCE.readCFPMiner(id);
 		return miner;
+	}
+
+	public List<String> getDatasetWarnings()
+	{
+		if (datasetWarnings == null)
+			datasetWarnings = PersistanceAdapter.INSTANCE.readModelDatasetWarnings(id);
+		return datasetWarnings;
 	}
 
 	public void saveModel()
@@ -112,11 +159,19 @@ public class Model extends ModelObj
 	{
 		try
 		{
-			ValidationResultsProvider val = new ValidationResultsProvider(
-					PersistanceAdapter.INSTANCE.getModelValidationResultsFile(id));
 			String valPng = PersistanceAdapter.INSTANCE.getModelValidationImageFile(id);
-			val.plot(valPng);
+			//			if (!new File(valPng).exists())
+			//			{
+			ResultSet rs = ResultSetIO.readFromFile(
+					new File(PersistanceAdapter.INSTANCE.getModelValidationResultsFile(id)));
+			CFPNestedCV.plotValidationResult(rs, valPng);
+			//			}
 			return new FileInputStream(valPng);
+			//			ValidationResultsProvider val = new ValidationResultsProvider(
+			//					PersistanceAdapter.INSTANCE.getModelValidationResultsFile(id));
+			//			String valPng = PersistanceAdapter.INSTANCE.getModelValidationImageFile(id);
+			//			val.plot(valPng);
+			//			return new FileInputStream(valPng);
 		}
 		catch (Exception e)
 		{
@@ -168,8 +223,13 @@ public class Model extends ModelObj
 		//		buildModel("CPDBAS_Rat", true);
 		//buildModel("CPDBAS_Hamster", false);
 		//		buildModel("ChEMBL_61");
-		//		buildModel("MUV_859");
-		buildModel("CPDBAS_MultiCellCall", false);
+		buildModelFromNestedCV("CPDBAS_Dog_Primates");
+		//		buildModelFromNestedCV("DUD_vegfr2");
+		//		buildModelFromNestedCV("MUV_859");
+		//		buildModelFromNestedCV("NCTRER");
+		//		buildModelFromNestedCV("CPDBAS_MultiCellCall");
+		//		buildModelFromNestedCV("ChEMBL_61");
+		//buildModelFromNestedCV("AMES");
 		//		buildModel("ChEMBL_87");
 
 		//		for (String dataset : new CFPDataLoader("persistance/data").allDatasets())
@@ -208,6 +268,63 @@ public class Model extends ModelObj
 	}
 
 	@SuppressWarnings("unchecked")
+	public static void buildModelFromNestedCV(String dataset) throws Exception
+	{
+		if (PersistanceAdapter.INSTANCE.modelExists(dataset))
+			PersistanceAdapter.INSTANCE.deleteModel(dataset);
+
+		Model model = new Model();
+		model.id = dataset;
+
+		List<String> endpoints = PersistanceAdapter.INSTANCE.readDatasetEndpoints(dataset);
+		List<String> smiles = PersistanceAdapter.INSTANCE.readDatasetSmiles(dataset);
+		ListUtil.scramble(new Random(1), smiles, endpoints);
+		model.miner = new CFPMiner(endpoints);
+
+		FeatureModel featureModel = CFPNestedCV.selectModel(dataset);
+		CFPFeatureProvider featureSetting = (CFPFeatureProvider) featureModel.getFeatureProvider();
+		org.mg.wekalib.eval2.model.Model algorithmSetting = featureModel.getModel();
+
+		System.out.println("\nMining selected features: " + featureSetting.getName());
+		model.miner.setHashfoldsize(featureSetting.getHashfoldSize());
+		model.miner.setType(featureSetting.getType());
+		model.miner.setFeatureSelection(featureSetting.getFeatureSelection());
+		model.miner.mine(smiles);
+		model.miner.applyFilter();
+		System.out.println(model.miner);
+		if (model.miner.getNumCompounds() != endpoints.size())
+			throw new IllegalStateException();
+
+		Instances inst = CFPtoArff.getTrainingDataset(model.miner, dataset);
+		inst.setClassIndex(inst.numAttributes() - 1);
+		if (inst.size() != smiles.size())
+			throw new IllegalStateException();
+		if (inst.numAttributes() != model.miner.getNumFragments() + 1)
+			throw new IllegalStateException();
+		if (!model.miner.getClassValues()[0].equals(inst.classAttribute().value(0)))
+			throw new IllegalArgumentException();
+		if (!model.miner.getClassValues()[1].equals(inst.classAttribute().value(1)))
+			throw new IllegalArgumentException();
+
+		System.out.println("Building selected algorithm: " + algorithmSetting.getName());
+		model.classifier = ((AbstractModel) algorithmSetting).getWekaClassifer();
+		//		int seed = 1;
+		//		if (model.classifier instanceof Randomizable)
+		//			((Randomizable) model.classifier).setSeed(seed);
+		((Classifier) model.classifier).buildClassifier(inst);
+
+		model.setActiveClassIdx(model.miner.getActiveIdx());
+		model.setClassValues(model.miner.getClassValues());
+		model.saveModel();
+
+		System.out.println("\nStoring validation results");
+		String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(dataset);
+		ResultSetIO.writeToFile(new File(outfile), CFPNestedCV.validateModel(dataset));
+
+		//		CFPNestedCV.plotValidationResult(dataset, null);
+	}
+
+	@SuppressWarnings("unchecked")
 	public static void buildModel(String dataset, boolean forceExistingValidation) throws Exception
 	{
 		String algorithm = null;
@@ -234,12 +351,12 @@ public class Model extends ModelObj
 				{
 					algorithm = r.getResultValue(i, "Algorithm").toString();
 					CFPType type = CFPType.valueOf(r.getResultValue(i, "CFPType").toString());
-					FeatureSelection sel = FeatureSelection.valueOf(r.getResultValue(i,
-							"FeatureSelection").toString());
+					FeatureSelection sel = FeatureSelection
+							.valueOf(r.getResultValue(i, "FeatureSelection").toString());
 					if (sel != FeatureSelection.none)
 					{
-						int hashfoldsize = Double.valueOf(
-								r.getResultValue(i, "hashfoldSize").toString()).intValue();
+						int hashfoldsize = Double
+								.valueOf(r.getResultValue(i, "hashfoldSize").toString()).intValue();
 						model.miner.setHashfoldsize(hashfoldsize);
 					}
 					model.miner.setType(type);
@@ -260,15 +377,14 @@ public class Model extends ModelObj
 
 		String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(dataset);
 		if (ValidationResultsProvider.resultsExist(dataset, model.miner, algorithm))
-			FileUtil.copy(
-					ValidationResultsProvider.getResultsFile(dataset, model.miner, algorithm),
+			FileUtil.copy(ValidationResultsProvider.getResultsFile(dataset, model.miner, algorithm),
 					outfile);
 		else
 		{
 			if (forceExistingValidation)
 				throw new IllegalStateException("validation missing");
-			//			CFPValidate.validate(dataset, 1, outfile, new String[] { algorithm }, endpoints,
-			//					model.miner);
+			CFPValidate.validate(dataset, 1, outfile, new String[] { algorithm }, endpoints,
+					model.miner);
 		}
 
 		model.miner.applyFilter();
@@ -293,19 +409,19 @@ public class Model extends ModelObj
 
 		int seed = 1;
 		if (algorithm.equals("RnF"))
-			model.erf = new ExtendedRandomForest();
+			model.classifier = new ExtendedRandomForest();
 		else if (algorithm.equals("NBy"))
-			model.erf = new ExtendedNaiveBayes(); //NaiveBayes();
+			model.classifier = new ExtendedNaiveBayes(); //NaiveBayes();
 		else if (algorithm.equals("SMO"))
 		{
-			model.erf = new SMO();
-			((SMO) model.erf).setBuildLogisticModels(true);
+			model.classifier = new SMO();
+			((SMO) model.classifier).setBuildLogisticModels(true);
 		}
 		else
 			throw new IllegalStateException();
-		if (model.erf instanceof Randomizable)
-			((Randomizable) model.erf).setSeed(seed);
-		((Classifier) model.erf).buildClassifier(inst);
+		if (model.classifier instanceof Randomizable)
+			((Randomizable) model.classifier).setSeed(seed);
+		((Classifier) model.classifier).buildClassifier(inst);
 
 		//		model.erf.printTrees();
 

@@ -22,8 +22,8 @@ public class PredictionHtml extends DefaultHtml
 
 	public PredictionHtml(Prediction p, String maxNumFragments)
 	{
-		super("Prediction of compound " + p.getSmiles(), p.getModelId(), Model.getName(p
-				.getModelId()), "prediction/" + p.getId(), "Prediction");
+		super("Prediction of compound " + p.getSmiles(), p.getModelId(),
+				Model.getName(p.getModelId()), "prediction/" + p.getId(), "Prediction");
 		setHidePageTitle(true);
 		this.p = p;
 		miner = Model.find(p.getModelId()).getCFPMiner();
@@ -62,8 +62,8 @@ public class PredictionHtml extends DefaultHtml
 				{
 					if (i != predIdx && hide)
 						html.div(HtmlAttributesFactory.class_("smallGrey"));
-					html.write(classValues[i] + " (" + StringUtil.formatDouble(dist[i] * 100)
-							+ "%)");
+					html.write(
+							classValues[i] + " (" + StringUtil.formatDouble(dist[i] * 100) + "%)");
 					if (i != predIdx && hide)
 						html._div();
 					else if (i < dist.length - 1)
@@ -103,9 +103,7 @@ public class PredictionHtml extends DefaultHtml
 			ResultSet set = new ResultSet();
 			int rIdx = set.addResult();
 			//			set.setResultValue(rIdx, "Smiles", p.getSmiles());
-			set.setResultValue(
-					rIdx,
-					"Structure",
+			set.setResultValue(rIdx, "Structure",
 					getImage(
 							depictMultiMatch(p.getSmiles(), p.getId(), p.getModelId(),
 									maxMolPicSize),
@@ -135,15 +133,12 @@ public class PredictionHtml extends DefaultHtml
 			Model m = Model.find(p.getModelId());
 			set.setResultValue(rIdx, "Dataset", encodeLink(url, m.getName()));
 			set.setResultValue(rIdx, "Target", encodeLink(url, m.getTarget()));
-			set.setResultValue(
-					rIdx,
-					"Classifier",
-					encodeLink(url, text("classifier."
-							+ m.getClassifier().getClass().getSimpleName())));
-			set.setResultValue(rIdx, "Fragments", encodeLink(url, m.getCFPMiner().getFeatureType()));
+			set.setResultValue(rIdx, "Classifier", encodeLink(url, m.getClassifierName()));
+			set.setResultValue(rIdx, "Fragments",
+					encodeLink(url, m.getCFPMiner().getFeatureType()));
 
-			setHeaderHelp("Prediction", text("model.prediction.tip") + " "
-					+ moreLink(DocHtml.CLASSIFIERS));
+			setHeaderHelp("Prediction",
+					text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
 			setHeaderHelp("Activity", text("model.activity.tip"));
 
 			setTableRowsAlternating(false);
@@ -183,7 +178,7 @@ public class PredictionHtml extends DefaultHtml
 					{
 						moreActive = pa.getAlternativeDistributionForInstance()[miner
 								.getActiveIdx()] > p.getPredictedDistribution()[miner
-								.getActiveIdx()];
+										.getActiveIdx()];
 						if (match)
 							activating = !moreActive;
 						else
@@ -192,15 +187,14 @@ public class PredictionHtml extends DefaultHtml
 						String fragmentLink = "fragment";
 						// HTMLReport.encodeLink(imageProvider.hrefFragment(p.getModelId(), attIdx),"fragment");
 						String alternativePredStr = "compound would be predicted as active with "
-								+ (moreActive ? "increased" : "decreased")
-								+ " probability ("
-								+ //
-								StringUtil
-										.formatDouble(pa.getAlternativeDistributionForInstance()[miner
+								+ (moreActive ? "increased" : "decreased") + " probability (" + //
+								StringUtil.formatDouble(
+										pa.getAlternativeDistributionForInstance()[miner
 												.getActiveIdx()] * 100)
 								+ "% instead of "
-								+ StringUtil.formatDouble(p.getPredictedDistribution()[miner
-										.getActiveIdx()] * 100) + "%).";
+								+ StringUtil.formatDouble(
+										p.getPredictedDistribution()[miner.getActiveIdx()] * 100)
+								+ "%).";
 
 						if (match)
 							txt = "The " + fragmentLink
@@ -213,9 +207,8 @@ public class PredictionHtml extends DefaultHtml
 							txt = "The " + fragmentLink
 									+ " is absent in the test compound. If present, it would have "
 									+ (activating ? "an activating" : "a de-activating")
-									+ " effect on the prediction:<br>" + "The "
-									+ alternativePredStr + " "
-									+ moreLink(DocHtml.PREDICTION_FRAGMENTS);
+									+ " effect on the prediction:<br>" + "The " + alternativePredStr
+									+ " " + moreLink(DocHtml.PREDICTION_FRAGMENTS);
 					}
 					else
 					{
@@ -223,9 +216,7 @@ public class PredictionHtml extends DefaultHtml
 						activating = null;
 					}
 
-					set.setResultValue(
-							rIdx,
-							"Fragment",
+					set.setResultValue(rIdx, "Fragment",
 							getImage(depictMatch(attIdx, true, activating, true),
 									"/" + p.getModelId() + "/fragment/" + (attIdx + 1), true));
 					//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
@@ -270,13 +261,10 @@ public class PredictionHtml extends DefaultHtml
 			if (fIdx > maxNumElements)
 			{
 				int rIdx = set.addResult();
-				set.setResultValue(
-						rIdx,
-						"Fragment",
-						encodeLink(
-								p.getId() + "?size="
-										+ Math.min(maxNumElements + defaultMaxNumElements, fIdx)
-										+ "#" + (rIdx + 1), "More fragments"));
+				set.setResultValue(rIdx, "Fragment",
+						encodeLink(p.getId() + "?size="
+								+ Math.min(maxNumElements + defaultMaxNumElements, fIdx) + "#"
+								+ (rIdx + 1), "More fragments"));
 			}
 			addTable(set);
 		}
@@ -286,8 +274,8 @@ public class PredictionHtml extends DefaultHtml
 
 	private boolean testInstanceContains(int attIdx) throws Exception
 	{
-		return miner.getFragmentsForTestCompound(p.getSmiles()).contains(
-				miner.getFragmentViaIdx(attIdx));
+		return miner.getFragmentsForTestCompound(p.getSmiles())
+				.contains(miner.getFragmentViaIdx(attIdx));
 	}
 
 	private String depictMatch(int attIdx, boolean fallbackToTraining, Boolean activating,
@@ -297,16 +285,17 @@ public class PredictionHtml extends DefaultHtml
 		if (!testInstanceContains(attIdx))
 			//		if (testInstance.stringValue(attr).equals("0"))
 			if (fallbackToTraining)
-				m = miner.getTrainingDataSmiles().get(
-						miner.getCompoundsForFragment(miner.getFragmentViaIdx(attIdx)).iterator()
-								.next());
+				m = miner.getTrainingDataSmiles()
+						.get(miner.getCompoundsForFragment(miner.getFragmentViaIdx(attIdx))
+								.iterator().next());
 			else
 				crop = false;
 		if (miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)) == null)
 			throw new IllegalStateException("no atoms in " + m + " for att-idx " + attIdx
 					+ ", hashcode: " + miner.getFragmentViaIdx(attIdx));
-		return depictMatch(m, miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)), miner
-				.getCFPType().isECFP(), activating, crop, crop ? croppedPicSize : maxMolPicSize);
+		return depictMatch(m, miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)),
+				miner.getCFPType().isECFP(), activating, crop,
+				crop ? croppedPicSize : maxMolPicSize);
 	}
 
 }

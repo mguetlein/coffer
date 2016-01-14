@@ -11,10 +11,9 @@ public class DefaultHtml extends HTMLReport
 {
 	private String footer()
 	{
-		return "<div><a href='/'>Home</a> - "
-				+ "<a href='/doc'>Documentation</a> - "
-				+ "</a><a href='http://www.informatik.uni-mainz.de/groups/information-systems/people-infosys/martin.guetlein'>Contact: Martin G&uuml;tlein</a>"
-				+ "</div><div><a href='http://infosys.informatik.uni-mainz.de'><img src=\"/img/jgu.png\" /></div>";
+		return "<div><a href='/'>Home</a> - " + "<a href='/doc'>Documentation</a> - "
+				+ "</a><a href='http://www.datamining.informatik.uni-mainz.de/martin-guetlein'>Contact: Martin G&uuml;tlein</a>"
+				+ "</div><div><a href='http://www.datamining.informatik.uni-mainz.de/'><img src=\"/img/jgu.png\" /></div>";
 	}
 
 	private String serviceHeader()
@@ -91,8 +90,8 @@ public class DefaultHtml extends HTMLReport
 		return "/depict?smiles=" + URLEncoder.encode(smiles, "UTF8") + sizeStr;
 	}
 
-	public String depictMatch(String smiles, int[] atoms, boolean highlightOutgoingBonds, Boolean activating,
-			boolean crop, int size) throws Exception
+	public String depictMatch(String smiles, int[] atoms, boolean highlightOutgoingBonds,
+			Boolean activating, boolean crop, int size) throws Exception
 	{
 		String sizeStr = "";
 		if (size != -1)
@@ -100,7 +99,8 @@ public class DefaultHtml extends HTMLReport
 		String cropStr = "&crop=" + crop;
 		if (atoms == null || atoms.length == 0)
 			throw new IllegalArgumentException("atoms missing");
-		String atomsStr = "&atoms=" + ArrayUtil.toString(ArrayUtil.toIntegerArray(atoms), ",", "", "", "");
+		String atomsStr = "&atoms="
+				+ ArrayUtil.toString(ArrayUtil.toIntegerArray(atoms), ",", "", "", "");
 		String highlightOutgoingBondsStr = "&highlightOutgoingBonds=" + highlightOutgoingBonds;
 		String activatingStr = "";
 		if (activating != null)
@@ -109,12 +109,13 @@ public class DefaultHtml extends HTMLReport
 				+ highlightOutgoingBondsStr + cropStr + activatingStr;
 	}
 
-	public String depictMultiMatch(String smiles, String predictionId, String modelId, int size) throws Exception
+	public String depictMultiMatch(String smiles, String predictionId, String modelId, int size)
+			throws Exception
 	{
 		String sizeStr = "";
 		if (size != -1)
 			sizeStr = "&size=" + size;
-		return "/depictMultiMatch?smiles=" + URLEncoder.encode(smiles, "UTF8") + "&model=" + modelId + "&prediction="
-				+ predictionId + sizeStr;
+		return "/depictMultiMatch?smiles=" + URLEncoder.encode(smiles, "UTF8") + "&model=" + modelId
+				+ "&prediction=" + predictionId + sizeStr;
 	}
 }

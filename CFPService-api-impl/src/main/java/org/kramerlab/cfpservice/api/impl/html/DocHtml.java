@@ -6,7 +6,7 @@ public class DocHtml extends DefaultHtml
 
 	public static String PREDICTION_FRAGMENTS = "Prediction Fragments";
 
-	public static String FRAGMENTS = "UCFP Fragments";
+	public static String FRAGMENTS = "CFP Fragments";
 
 	public static String getAnker(String section)
 	{
@@ -25,10 +25,6 @@ public class DocHtml extends DefaultHtml
 		newSection("Background");
 
 		addParagraph(text("doc.background"));
-
-		newSection("Contact");
-
-		addParagraph(text("doc.contact"));
 
 		newSection(FRAGMENTS);
 
