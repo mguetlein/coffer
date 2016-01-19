@@ -8,6 +8,8 @@ public class DocHtml extends DefaultHtml
 
 	public static String FRAGMENTS = "CFP Fragments";
 
+	public static String VALIDATION = "Validation";
+
 	public static String getAnker(String section)
 	{
 		return section.toLowerCase().replaceAll(" ", "-");
@@ -37,6 +39,10 @@ public class DocHtml extends DefaultHtml
 		newSection(PREDICTION_FRAGMENTS);
 
 		addParagraph(text("doc.predictionFragments"));
+
+		newSection(VALIDATION);
+
+		addParagraph(text("doc.validation"));
 
 		newSection("Source Code");
 

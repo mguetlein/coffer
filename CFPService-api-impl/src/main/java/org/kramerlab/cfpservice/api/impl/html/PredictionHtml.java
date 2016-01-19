@@ -4,13 +4,14 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
+import org.kramerlab.cfpservice.api.impl.SubgraphPredictionAttribute;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.util.StringUtil;
-import org.mg.wekalib.attribute_ranking.PredictionAttribute;
 import org.rendersnake.HtmlAttributesFactory;
 import org.rendersnake.HtmlCanvas;
 import org.rendersnake.Renderable;
@@ -18,14 +19,16 @@ import org.rendersnake.Renderable;
 public class PredictionHtml extends DefaultHtml
 {
 	Prediction p;
+	boolean showSuper;
 	CFPMiner miner;
 
-	public PredictionHtml(Prediction p, String maxNumFragments)
+	public PredictionHtml(Prediction p, boolean showSuper, String maxNumFragments)
 	{
 		super("Prediction of compound " + p.getSmiles(), p.getModelId(),
 				Model.getName(p.getModelId()), "prediction/" + p.getId(), "Prediction");
 		setHidePageTitle(true);
 		this.p = p;
+		this.showSuper = showSuper;
 		miner = Model.find(p.getModelId()).getCFPMiner();
 		parseMaxNumElements(maxNumFragments);
 	}
@@ -124,7 +127,7 @@ public class PredictionHtml extends DefaultHtml
 
 			String endpoint = p.getTrainingActivity();
 			if (endpoint != null)
-				set.setResultValue(rIdx, "Activity", endpoint);
+				set.setResultValue(rIdx, text("model.measured"), endpoint);
 
 			set.setResultValue(rIdx, "Prediction", getPrediction(true));
 			set.setResultValue(rIdx, " ", " ");
@@ -139,7 +142,7 @@ public class PredictionHtml extends DefaultHtml
 
 			setHeaderHelp("Prediction",
 					text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
-			setHeaderHelp("Activity", text("model.activity.tip"));
+			setHeaderHelp(text("model.measured"), text("model.measured.tip"));
 
 			setTableRowsAlternating(false);
 			setTableColWidthLimited(false);
@@ -157,8 +160,11 @@ public class PredictionHtml extends DefaultHtml
 		{
 			ResultSet set = new ResultSet();
 			int fIdx = 0;
-			for (final PredictionAttribute pa : p.getPredictionAttributes())
+			for (final SubgraphPredictionAttribute pa : p.getPredictionAttributes())
 			{
+				if (pa.isSuperGraph && !showSuper)
+					continue;
+
 				int attIdx = pa.getAttribute();
 				if (match == testInstanceContains(attIdx))
 				{
@@ -221,6 +227,17 @@ public class PredictionHtml extends DefaultHtml
 									"/" + p.getModelId() + "/fragment/" + (attIdx + 1), true));
 					//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
 
+					if (!showSuper)
+						setHeaderHelp("Fragment",
+								text("fragment.showSuper") + " "
+										+ encodeLink(
+												p.getId() + "?showFragments="
+														+ ModelService.SHOW_SUPER_GRAPH_FRAGMENTS,
+												"show"));
+					else
+						setHeaderHelp("Fragment",
+								text("fragment.hideSuper") + " " + encodeLink(p.getId(), "show"));
+
 					set.setResultValue(rIdx, "Effect", new Renderable()
 					{
 						public void renderOn(HtmlCanvas html) throws IOException
@@ -261,8 +278,11 @@ public class PredictionHtml extends DefaultHtml
 			if (fIdx > maxNumElements)
 			{
 				int rIdx = set.addResult();
+				String showSup = "";
+				if (showSuper)
+					showSup = "showFragments=" + ModelService.SHOW_SUPER_GRAPH_FRAGMENTS + "&";
 				set.setResultValue(rIdx, "Fragment",
-						encodeLink(p.getId() + "?size="
+						encodeLink(p.getId() + "?" + showSup + "size="
 								+ Math.min(maxNumElements + defaultMaxNumElements, fIdx) + "#"
 								+ (rIdx + 1), "More fragments"));
 			}

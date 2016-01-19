@@ -62,17 +62,19 @@ public class ModelServiceImpl implements ModelService
 		{
 			CDKConverter.validateSmiles(smiles);
 			final Model models[] = Model.listModels();
-			Prediction.createPrediction(models[0], smiles);
+			Prediction.createPrediction(models[0], smiles, false);
 			Thread th = new Thread(new Runnable()
 			{
 				public void run()
 				{
 					for (int i = 1; i < models.length; i++)
-						Prediction.createPrediction(models[i], smiles);
+						Prediction.createPrediction(models[i], smiles, false);
 				}
 			});
 			th.start();
-			return Response.seeOther(new URI("/prediction/" + StringUtil.getMD5(smiles) + "?wait=" + models.length))
+			return Response
+					.seeOther(new URI(
+							"/prediction/" + StringUtil.getMD5(smiles) + "?wait=" + models.length))
 					.build();
 		}
 		catch (Exception e)
@@ -86,7 +88,7 @@ public class ModelServiceImpl implements ModelService
 		try
 		{
 			CDKConverter.validateSmiles(smiles);
-			Prediction p = Prediction.createPrediction(Model.find(id), smiles);
+			Prediction p = Prediction.createPrediction(Model.find(id), smiles, true);
 			return Response.seeOther(new URI(id + "/prediction/" + p.getId())).build();
 		}
 		catch (Exception e)
@@ -105,9 +107,11 @@ public class ModelServiceImpl implements ModelService
 		return Prediction.find(modelId, predictionId);
 	}
 
-	public String getPredictionHTML(String modelId, String predictionId, String maxNumFragments)
+	public String getPredictionHTML(String modelId, String predictionId, String showFragments,
+			String maxNumFragments)
 	{
-		return Prediction.find(modelId, predictionId).getHTML(maxNumFragments);
+		boolean showSuperGraphs = SHOW_SUPER_GRAPH_FRAGMENTS.equals(showFragments);
+		return Prediction.find(modelId, predictionId).getHTML(showSuperGraphs, maxNumFragments);
 	}
 
 	public Prediction[] getPredictions(String predictionId, String wait)
@@ -151,10 +155,11 @@ public class ModelServiceImpl implements ModelService
 		return DepictService.depict(smiles, size);
 	}
 
-	public InputStream depictMatch(String smiles, String size, String atoms, String highlightOutgoingBonds,
-			String activating, String crop)
+	public InputStream depictMatch(String smiles, String size, String atoms,
+			String highlightOutgoingBonds, String activating, String crop)
 	{
-		return DepictService.depictMatch(smiles, size, atoms, highlightOutgoingBonds, activating, crop);
+		return DepictService.depictMatch(smiles, size, atoms, highlightOutgoingBonds, activating,
+				crop);
 	}
 
 	public InputStream depictMultiMatch(String smiles, String size, String prediction, String model)

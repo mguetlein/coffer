@@ -38,10 +38,11 @@ public class PredictionsHtml extends DefaultHtml
 			String endpoint = p.getTrainingActivity();
 			if (endpoint != null)
 			{
-				res.setResultValue(idx, "Activity", endpoint);
-				setHeaderHelp("Activity", text("model.activity.tip"));
+				res.setResultValue(idx, text("model.measured"), encodeLink(url, endpoint));
+				setHeaderHelp(text("model.measured"), text("model.measured.tip"));
 			}
-			res.setResultValue(idx, "Prediction", PredictionHtml.getPrediction(p, m.getClassValues(), true, url));
+			res.setResultValue(idx, "Prediction",
+					PredictionHtml.getPrediction(p, m.getClassValues(), true, url));
 			res.setResultValue(idx, "p", p.getPredictedDistribution()[m.getActiveClassIdx()]);
 			//							HTMLReport.encodeLink("/" + m.getId() + "/prediction/" + predictionId,
 			//									p.getPredictedClass())
@@ -76,12 +77,13 @@ public class PredictionsHtml extends DefaultHtml
 			addImage("/img/wait.gif");
 			startRightColumn();
 			addGap();
-			addParagraph(count + "/" + wait + " model predictions done, this page reloads every 10 seconds.");
+			addParagraph(count + "/" + wait
+					+ " model predictions done, this page reloads every 10 seconds.");
 			stopColumns();
 		}
 		else
 		{
-			newSection("Predictions (select to list fragments)");
+			newSection("Predictions (select to show fragments)");
 			//newSubsection("Select a target to list fragments that explain each prediction:");
 			addTable(res);
 		}

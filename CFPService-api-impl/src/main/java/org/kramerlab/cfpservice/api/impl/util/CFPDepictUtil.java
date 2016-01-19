@@ -22,17 +22,17 @@ import org.openscience.cdk.interfaces.IChemObject;
 
 public class CFPDepictUtil
 {
-	public static void depictMultiMatchToPNG(String pngFile, IAtomContainer mol, String predictionId, String modelId,
-			int maxSize) throws Exception
+	public static void depictMultiMatchToPNG(String pngFile, IAtomContainer mol,
+			String predictionId, String modelId, int maxSize) throws Exception
 	{
 		Model m = Model.find(modelId);
 		Prediction p = Prediction.find(modelId, predictionId);
-		depictMultiMatchToPNG(pngFile, mol, m.getCFPMiner(), p.getPredictedDistribution(), p.getPredictionAttributes(),
-				maxSize);
+		depictMultiMatchToPNG(pngFile, mol, m.getCFPMiner(), p.getPredictedDistribution(),
+				p.getPredictionAttributes(), maxSize);
 	}
 
-	static void depictMultiMatchToPNG(String pngFile, IAtomContainer mol, CFPMiner miner, double dist[],
-			List<PredictionAttribute> pAtt, int maxSize) throws Exception
+	static void depictMultiMatchToPNG(String pngFile, IAtomContainer mol, CFPMiner miner,
+			double dist[], List<? extends PredictionAttribute> pAtt, int maxSize) throws Exception
 	{
 		setAtomBondWeights(mol, miner, pAtt, dist);
 		Color cols[] = weightsToColorGradient(mol, new ColorGradient(DepictService.ACTIVE_BRIGHT,
@@ -73,8 +73,8 @@ public class CFPDepictUtil
 	 * @param att
 	 * @param dist
 	 */
-	private static void setAtomBondWeights(IAtomContainer mol, CFPMiner cfp, List<PredictionAttribute> att,
-			double dist[])
+	private static void setAtomBondWeights(IAtomContainer mol, CFPMiner cfp,
+			List<? extends PredictionAttribute> att, double dist[])
 	{
 		try
 		{
@@ -90,14 +90,16 @@ public class CFPDepictUtil
 				if (atoms != null && atoms.size() > 0)
 				{
 					// use only matching attributes
-					double altPropActive = a.getAlternativeDistributionForInstance()[cfp.getActiveIdx()];
+					double altPropActive = a.getAlternativeDistributionForInstance()[cfp
+							.getActiveIdx()];
 					double weight = propActive - altPropActive;
 
 					for (int i = 0; i < mol.getAtomCount(); i++)
 					{
 						IAtom atom = mol.getAtom(i);
 						if (atoms.contains(i))
-							atom.setProperty(WEIGHT_PROP, atom.getProperty(WEIGHT_PROP, Double.class) + weight);
+							atom.setProperty(WEIGHT_PROP,
+									atom.getProperty(WEIGHT_PROP, Double.class) + weight);
 					}
 					for (int i = 0; i < mol.getBondCount(); i++)
 					{
@@ -110,7 +112,8 @@ public class CFPDepictUtil
 							else
 								matchingAll = false;
 						if ((cfp.getCFPType().isECFP() && matchingOne) || matchingAll)
-							bond.setProperty(WEIGHT_PROP, bond.getProperty(WEIGHT_PROP, Double.class) + weight);
+							bond.setProperty(WEIGHT_PROP,
+									bond.getProperty(WEIGHT_PROP, Double.class) + weight);
 					}
 				}
 			}
@@ -121,8 +124,11 @@ public class CFPDepictUtil
 			for (IChemObject c : AtomContainerUtil.getAtomsAndBonds(mol))
 			{
 				double w = c.getProperty(WEIGHT_PROP, Double.class);
+				//				System.out.println(c.toString() + "\nweight " + w);
 				w /= maxAbs; // normalize to [-1,0,1]
+				//				System.out.println("normalized " + w);
 				w = w / 2.0 + 0.5; // normalize to [0, 0.5, 1]
+				//				System.out.println("scaled " + w);
 				c.setProperty(WEIGHT_PROP, w);
 			}
 		}

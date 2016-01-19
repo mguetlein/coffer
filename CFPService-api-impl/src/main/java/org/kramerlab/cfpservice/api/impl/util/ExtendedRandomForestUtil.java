@@ -9,8 +9,8 @@ import org.mg.cdklib.CDKConverter;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.cdklib.cfp.CFPType;
 import org.mg.cdklib.cfp.FeatureSelection;
-import org.mg.cdklib.data.DataLoader;
 import org.mg.cdklib.data.CDKDataset;
+import org.mg.cdklib.data.DataLoader;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.wekalib.attribute_ranking.AttributeProvidingClassifier;
 import org.mg.wekalib.attribute_ranking.ExtendedRandomForest;
@@ -68,10 +68,10 @@ public class ExtendedRandomForestUtil
 				double dist[] = clazzy.distributionForInstance(inst.get(test));
 				System.out.println("Prediction " + ArrayUtil.toString(dist));
 
-				Set<Integer> atts = ((AttributeProvidingClassifier) clazzy).getAttributesEmployedForPrediction(inst
-						.get(test));
-				List<PredictionAttribute> pAtt = PredictionAttributeComputation.compute(clazzy, inst.get(test), dist,
-						atts);
+				Set<Integer> atts = ((AttributeProvidingClassifier) clazzy)
+						.getAttributesEmployedForPrediction(inst.get(test));
+				List<PredictionAttribute> pAtt = PredictionAttributeComputation.compute(clazzy,
+						inst.get(test), dist, atts, null);
 				System.out.println("Num prediction attributes: " + pAtt.size() + "\n");
 
 				int idx = 0;

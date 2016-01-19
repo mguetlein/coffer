@@ -3,6 +3,7 @@ package org.kramerlab.cfpservice.api.impl;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.InputStream;
 
 import org.kramerlab.cfpservice.api.impl.util.CFPDepictUtil;
@@ -45,17 +46,19 @@ public class DepictService
 		}
 	}
 
-	public static InputStream depictMatch(String smiles, String size, String atoms, String highlightOutgoingBonds,
-			String activating, String crop)
+	public static InputStream depictMatch(String smiles, String size, String atoms,
+			String highlightOutgoingBonds, String activating, String crop)
 	{
 		try
 		{
-			String pngFile = relativeImgPath + StringUtil.getMD5(smiles) + "_" + atoms.replaceAll(",", "-") + "_"
-					+ highlightOutgoingBonds + "_" + activating + "_" + crop + "_" + size + ".png";
+			String pngFile = relativeImgPath + StringUtil.getMD5(smiles) + "_"
+					+ atoms.replaceAll(",", "-") + "_" + highlightOutgoingBonds + "_" + activating
+					+ "_" + crop + "_" + size + ".png";
 			if (!new File(pngFile).exists())
 			{
 				int a[] = ArrayUtil.toPrimitiveIntArray(ArrayUtil.parseIntegers(atoms.split(",")));
-				boolean h = (highlightOutgoingBonds != null) && highlightOutgoingBonds.equals("true");
+				boolean h = (highlightOutgoingBonds != null)
+						&& highlightOutgoingBonds.equals("true");
 				Color col = NEUTRAL_MODERATE;
 				if (activating != null && activating.equals("true"))
 					col = ACTIVE_MODERATE;
@@ -65,7 +68,8 @@ public class DepictService
 				int s = -1;
 				if (size != null)
 					s = Integer.parseInt(size);
-				CDKDepict.depictMatchToPNG(pngFile, CDKConverter.parseSmiles(smiles), a, h, col, c, s);
+				CDKDepict.depictMatchToPNG(pngFile, CDKConverter.parseSmiles(smiles), a, h, col, c,
+						s);
 			}
 			return new FileInputStream(pngFile);
 		}
@@ -75,25 +79,40 @@ public class DepictService
 		}
 	}
 
-	public static InputStream depictMultiMatch(String smiles, String size, String prediction, String model)
+	public static InputStream depictMultiMatch(String smiles, String size, String prediction,
+			String model)
 	{
 		try
 		{
-			String pngFile = relativeImgPath + StringUtil.getMD5(smiles) + "_" + prediction + "_" + model + "_" + size
-					+ ".png";
-			if (!new File(pngFile).exists())
-			{
-				int s = -1;
-				if (size != null)
-					s = Integer.parseInt(size);
-				CFPDepictUtil.depictMultiMatchToPNG(pngFile, CDKConverter.parseSmiles(smiles), prediction, model, s);
-			}
+			String pngFile = relativeImgPath + StringUtil.getMD5(smiles) + "_" + prediction + "_"
+					+ model + "_" + size + ".png";
+			//			if (!new File(pngFile).exists())
+			//			{
+			int s = -1;
+			if (size != null)
+				s = Integer.parseInt(size);
+			CFPDepictUtil.depictMultiMatchToPNG(pngFile, CDKConverter.parseSmiles(smiles),
+					prediction, model, s);
+			//			}
 			return new FileInputStream(pngFile);
 		}
 		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static void deleteAllImagesForModel(final String modelId)
+	{
+		File files[] = new File(relativeImgPath).listFiles(new FilenameFilter()
+		{
+			public boolean accept(File dir, String name)
+			{
+				return name.contains(modelId);
+			}
+		});
+		for (File f : files)
+			f.delete();
 	}
 
 	public static void main(String[] args) throws InvalidSmilesException, Exception

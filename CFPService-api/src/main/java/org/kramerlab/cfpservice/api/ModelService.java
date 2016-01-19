@@ -39,8 +39,8 @@ import javax.ws.rs.core.Response;
 @Path("")
 public interface ModelService
 {
-	public static String SERVICE_HOME = "http://ucfps.informatik.uni-mainz.de";
-	public static String SERVICE_TITLE = "Unfolded Circular Fingerprints";
+	public static String SERVICE_HOME = "http://cfp-qsar.informatik.uni-mainz.de";
+	public static String SERVICE_TITLE = "Circular Fingerprint QSARs";
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<br>
@@ -108,12 +108,14 @@ public interface ModelService
 	@Path("prediction/{predictionId}")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	PredictionObj[] getPredictions(@PathParam("predictionId") String predictionId, @FormParam("wait") String wait);
+	PredictionObj[] getPredictions(@PathParam("predictionId") String predictionId,
+			@FormParam("wait") String wait);
 
 	@Path("prediction/{predictionId}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	String getPredictionsHTML(@PathParam("predictionId") String predictionId, @FormParam("wait") String wait);
+	String getPredictionsHTML(@PathParam("predictionId") String predictionId,
+			@FormParam("wait") String wait);
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i>/prediction/<i>predictionId</i><br>
@@ -123,13 +125,20 @@ public interface ModelService
 	@Path("{modelId}/prediction/{predictionId}")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	PredictionObj getPrediction(@PathParam("modelId") String modelId, @PathParam("predictionId") String predictionId);
+	PredictionObj getPrediction(@PathParam("modelId") String modelId,
+			@PathParam("predictionId") String predictionId);
 
+	public static final String SHOW_SUPER_GRAPH_FRAGMENTS = "showSuperGraphFragments";
+
+	/**
+	 * {@value SHOW_SUPER_GRAPH_FRAGMENTS}
+	 */
 	@Path("{modelId}/prediction/{predictionId}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	String getPredictionHTML(@PathParam("modelId") String modelId, @PathParam("predictionId") String predictionId,
-			@FormParam("size") String size);
+	String getPredictionHTML(@PathParam("modelId") String modelId,
+			@PathParam("predictionId") String predictionId,
+			@FormParam("showFragments") String showFragments, @FormParam("size") String size);
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i>/fragment/<i>fragmentId</i><br>
@@ -139,18 +148,20 @@ public interface ModelService
 	@Path("{modelId}/fragment/{fragmentId}")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON })
-	FragmentObj getFragment(@PathParam("modelId") String modelId, @PathParam("fragmentId") String fragmentId);
+	FragmentObj getFragment(@PathParam("modelId") String modelId,
+			@PathParam("fragmentId") String fragmentId);
 
 	@Path("{modelId}/fragment/{fragmentId}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	String getFragmentHTML(@PathParam("modelId") String modelId, @PathParam("fragmentId") String fragmentId,
-			@FormParam("size") String size);
+	String getFragmentHTML(@PathParam("modelId") String modelId,
+			@PathParam("fragmentId") String fragmentId, @FormParam("size") String size);
 
 	@Path("info/{service}/{smiles}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	String getCompoundInfo(@PathParam("service") String service, @PathParam("smiles") String smiles);
+	String getCompoundInfo(@PathParam("service") String service,
+			@PathParam("smiles") String smiles);
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/depict<br>
@@ -171,7 +182,8 @@ public interface ModelService
 	@GET
 	@Produces({ "image/png" })
 	InputStream depictMatch(@FormParam("smiles") String smiles, @FormParam("size") String size,
-			@FormParam("atoms") String atoms, @FormParam("highlightOutgoingBonds") String highlightOutgoingBonds,
+			@FormParam("atoms") String atoms,
+			@FormParam("highlightOutgoingBonds") String highlightOutgoingBonds,
 			@FormParam("activating") String activating, @FormParam("crop") String crop);
 
 	@Path("depictMultiMatch")

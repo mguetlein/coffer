@@ -83,7 +83,8 @@ public class ModelHtml extends DefaultHtml
 		setHideTableBorder(false);
 		setTableRowsAlternating(true);
 		startRightColumn();
-		addImage(HTMLReport.getImage("/" + m.getId() + "/validation"));
+		addImage(getImage("/" + m.getId() + "/validation",
+				"/doc#" + DocHtml.getAnker(DocHtml.VALIDATION), false));
 
 		stopColumns();
 		setTableColWidthLimited(false);

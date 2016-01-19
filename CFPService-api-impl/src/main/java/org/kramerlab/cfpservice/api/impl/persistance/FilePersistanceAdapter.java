@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.kramerlab.cfpservice.api.impl.DepictService;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
 import org.mg.cdklib.cfp.CFPMiner;
@@ -258,6 +259,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		new File(getModelCFPFile(id)).delete();
 		new File(getModelClassifierFile(id)).delete();
 		new File(getModelFile(id)).delete();
+		DepictService.deleteAllImagesForModel(id);
 		if (new File(getModelValidationResultsFile(id)).exists())
 			new File(getModelValidationResultsFile(id)).delete();
 		if (new File(getModelValidationImageFile(id)).exists())

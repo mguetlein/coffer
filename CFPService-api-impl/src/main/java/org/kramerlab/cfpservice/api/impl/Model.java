@@ -32,6 +32,8 @@ import org.mg.wekalib.attribute_ranking.ExtendedNaiveBayes;
 import org.mg.wekalib.attribute_ranking.ExtendedRandomForest;
 import org.mg.wekalib.eval2.model.AbstractModel;
 import org.mg.wekalib.eval2.model.FeatureModel;
+import org.mg.wekalib.eval2.persistance.DB;
+import org.mg.wekalib.eval2.persistance.ResultProviderImpl;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;
@@ -211,6 +213,8 @@ public class Model extends ModelObj
 
 	public static void main(String[] args) throws Exception
 	{
+		trainModel("AMES");
+
 		//		buildModel("REID-3", false);
 		//		buildModel("REID-4", false);
 		//		buildModel("REID-11", false);
@@ -218,21 +222,25 @@ public class Model extends ModelObj
 		//buildModel("DUD_vegfr2", false);
 		//		buildModel("ChEMBL_61", true);
 		//buildModel("NCTRER", false);
-		//buildModel("CPDBAS_Mutagenicity", false);
+		//		buildModelFromNestedCV("CPDBAS_Mutagenicity");
 		//		//				buildModel("READ", false);
 		//		buildModel("CPDBAS_Rat", true);
-		//buildModel("CPDBAS_Hamster", false);
+		//		buildModelFromNestedCV("CPDBAS_Hamster");//, false);
 		//		buildModel("ChEMBL_61");
-		buildModelFromNestedCV("CPDBAS_Dog_Primates");
+		//		buildModelFromNestedCV("CPDBAS_Dog_Primates");
 		//		buildModelFromNestedCV("DUD_vegfr2");
 		//		buildModelFromNestedCV("MUV_859");
-		//		buildModelFromNestedCV("NCTRER");
+
+		//deleteAllModels();
+
+		//buildModelFromNestedCV("AMES");
 		//		buildModelFromNestedCV("CPDBAS_MultiCellCall");
 		//		buildModelFromNestedCV("ChEMBL_61");
 		//buildModelFromNestedCV("AMES");
 		//		buildModel("ChEMBL_87");
 
-		//		for (String dataset : new CFPDataLoader("persistance/data").allDatasets())
+		//		for (String dataset : new DataLoader("data").allDatasetsSorted())
+		//			buildModelFromNestedCV(dataset);
 		//		{
 		//			//			//			if (!PersistanceAdapter.INSTANCE.modelExists(dataset))
 		//			//			//            if (dataset.equals("AMES"))
@@ -261,9 +269,18 @@ public class Model extends ModelObj
 
 	}
 
-	public static void predict(Model model, String smiles) throws Exception
+	public static void deleteAllModels() throws Exception
 	{
-		Prediction p = Prediction.createPrediction(model, smiles);
+		for (Model m : Model.listModels())
+		{
+			PersistanceAdapter.INSTANCE.deleteModel(m.id);
+		}
+	}
+
+	public static void predict(Model model, String smiles, boolean createPredictionAttributes)
+			throws Exception
+	{
+		Prediction p = Prediction.createPrediction(model, smiles, createPredictionAttributes);
 		System.out.println(p.getPredictedDistribution()[model.getActiveClassIdx()]);
 	}
 
@@ -281,6 +298,7 @@ public class Model extends ModelObj
 		ListUtil.scramble(new Random(1), smiles, endpoints);
 		model.miner = new CFPMiner(endpoints);
 
+		DB.init(new ResultProviderImpl("jobs/store", "jobs/tmp"), null);
 		FeatureModel featureModel = CFPNestedCV.selectModel(dataset);
 		CFPFeatureProvider featureSetting = (CFPFeatureProvider) featureModel.getFeatureProvider();
 		org.mg.wekalib.eval2.model.Model algorithmSetting = featureModel.getModel();
@@ -322,6 +340,30 @@ public class Model extends ModelObj
 		ResultSetIO.writeToFile(new File(outfile), CFPNestedCV.validateModel(dataset));
 
 		//		CFPNestedCV.plotValidationResult(dataset, null);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static void trainModel(String dataset) throws Exception
+	{
+		List<String> endpoints = PersistanceAdapter.INSTANCE.readDatasetEndpoints(dataset);
+		List<String> smiles = PersistanceAdapter.INSTANCE.readDatasetSmiles(dataset);
+		ListUtil.scramble(new Random(1), smiles, endpoints);
+
+		CFPMiner miner = new CFPMiner(endpoints);
+		miner.setType(CFPType.ecfp4);
+		miner.setHashfoldsize(1024);
+		miner.setFeatureSelection(FeatureSelection.filt);
+		miner.mine(smiles);
+		miner.applyFilter();
+		System.out.println(miner);
+
+		Instances inst = CFPtoArff.getTrainingDataset(miner, dataset);
+		inst.setClassIndex(inst.numAttributes() - 1);
+
+		Classifier classifier = new SMO();
+		//		((SMO) classifier).setBuildLogisticModels(true);
+		((SMO) classifier).setC(100.0);
+		classifier.buildClassifier(inst);
 	}
 
 	@SuppressWarnings("unchecked")
