@@ -121,16 +121,20 @@ public class CFPDepictUtil
 			double maxAbs = 0;
 			for (IChemObject c : AtomContainerUtil.getAtomsAndBonds(mol))
 				maxAbs = Math.max(maxAbs, Math.abs(c.getProperty(WEIGHT_PROP, Double.class)));
-			for (IChemObject c : AtomContainerUtil.getAtomsAndBonds(mol))
-			{
-				double w = c.getProperty(WEIGHT_PROP, Double.class);
-				//				System.out.println(c.toString() + "\nweight " + w);
-				w /= maxAbs; // normalize to [-1,0,1]
-				//				System.out.println("normalized " + w);
-				w = w / 2.0 + 0.5; // normalize to [0, 0.5, 1]
-				//				System.out.println("scaled " + w);
-				c.setProperty(WEIGHT_PROP, w);
-			}
+			if (maxAbs == 0)
+				for (IChemObject c : AtomContainerUtil.getAtomsAndBonds(mol))
+					c.setProperty(WEIGHT_PROP, 0.5);
+			else
+				for (IChemObject c : AtomContainerUtil.getAtomsAndBonds(mol))
+				{
+					double w = c.getProperty(WEIGHT_PROP, Double.class);
+					//				System.out.println(c.toString() + "\nweight " + w);
+					w /= maxAbs; // normalize to [-1,0,1]
+					//				System.out.println("normalized " + w);
+					w = w / 2.0 + 0.5; // normalize to [0, 0.5, 1]
+					//				System.out.println("scaled " + w);
+					c.setProperty(WEIGHT_PROP, w);
+				}
 		}
 		catch (Exception e)
 		{

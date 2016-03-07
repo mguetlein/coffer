@@ -77,6 +77,10 @@ h2{
 	font-size: 1.3rem;
 }
 
+.inline {
+	display: inline;	
+}
+
 h3{
 	font-size: 1.15rem;
 }
@@ -159,7 +163,6 @@ table, th, td{
     border-collapse: collapse;
 }
 
-
 table.noBorder{
 	border: 0px;
 }
@@ -188,6 +191,10 @@ table.table_footer, th, td {
   border:0px;
   margin-left: auto;
   margin-right: auto;
+}
+
+.removePaddingRight {
+   padding-right:0px;
 }
 
 .error {

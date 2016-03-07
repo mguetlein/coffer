@@ -10,6 +10,7 @@ import org.kramerlab.cfpservice.api.FragmentObj;
 import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.PredictionObj;
 import org.kramerlab.cfpservice.api.impl.html.DocHtml;
+import org.kramerlab.cfpservice.api.impl.html.PredictionHtml.HideFragments;
 import org.kramerlab.cfpservice.api.impl.util.CompoundInfo;
 import org.mg.cdklib.CDKConverter;
 import org.mg.javalib.util.StopWatchUtil;
@@ -107,11 +108,11 @@ public class ModelServiceImpl implements ModelService
 		return Prediction.find(modelId, predictionId);
 	}
 
-	public String getPredictionHTML(String modelId, String predictionId, String showFragments,
+	public String getPredictionHTML(String modelId, String predictionId, String hideFragments,
 			String maxNumFragments)
 	{
-		boolean showSuperGraphs = SHOW_SUPER_GRAPH_FRAGMENTS.equals(showFragments);
-		return Prediction.find(modelId, predictionId).getHTML(showSuperGraphs, maxNumFragments);
+		return Prediction.find(modelId, predictionId)
+				.getHTML(HideFragments.fromString(hideFragments), maxNumFragments);
 	}
 
 	public Prediction[] getPredictions(String predictionId, String wait)
@@ -133,9 +134,10 @@ public class ModelServiceImpl implements ModelService
 		return Fragment.find(modelId, fragmentId);
 	}
 
-	public String getFragmentHTML(String modelId, String fragmentId, String maxNumCompounds)
+	public String getFragmentHTML(String modelId, String fragmentId, String maxNumCompounds,
+			String smiles)
 	{
-		return Fragment.find(modelId, fragmentId).getHTML(maxNumCompounds);
+		return Fragment.find(modelId, fragmentId).getHTML(maxNumCompounds, smiles);
 	}
 
 	public String getCompoundInfo(String service, String smiles)

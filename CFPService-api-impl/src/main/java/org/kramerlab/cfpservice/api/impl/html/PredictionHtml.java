@@ -8,10 +8,13 @@ import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
 import org.kramerlab.cfpservice.api.impl.SubgraphPredictionAttribute;
+import org.mg.cdklib.CDKConverter;
+import org.mg.cdklib.cfp.CFPFragment;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.util.StringUtil;
+import org.openscience.cdk.interfaces.IAtomContainer;
 import org.rendersnake.HtmlAttributesFactory;
 import org.rendersnake.HtmlCanvas;
 import org.rendersnake.Renderable;
@@ -19,16 +22,50 @@ import org.rendersnake.Renderable;
 public class PredictionHtml extends DefaultHtml
 {
 	Prediction p;
-	boolean showSuper;
+	HideFragments hideFragments;
 	CFPMiner miner;
 
-	public PredictionHtml(Prediction p, boolean showSuper, String maxNumFragments)
+	public static enum HideFragments
+	{
+		SUPER, NONE, SUB;
+
+		public String stringKey()
+		{
+			switch (this)
+			{
+				case NONE:
+					return ModelService.HIDE_NO_FRAGMENTS;
+				case SUB:
+					return ModelService.HIDE_SUB_FRAGMENTS;
+				default:
+					return ModelService.HIDE_SUPER_FRAGMENTS;
+			}
+		}
+
+		public static HideFragments fromString(String s)
+		{
+			if (s == null || s.length() == 0)
+				return HIDE_FRAGMENTS_DEFAULT;
+			if (s.equals(ModelService.HIDE_NO_FRAGMENTS))
+				return NONE;
+			else if (s.equals(ModelService.HIDE_SUB_FRAGMENTS))
+				return SUB;
+			else if (s.equals(ModelService.HIDE_SUPER_FRAGMENTS))
+				return SUPER;
+			else
+				throw new IllegalArgumentException("param for hiding fragments invalid: " + s);
+		}
+	}
+
+	public static HideFragments HIDE_FRAGMENTS_DEFAULT = HideFragments.NONE;
+
+	public PredictionHtml(Prediction p, HideFragments showFragments, String maxNumFragments)
 	{
 		super("Prediction of compound " + p.getSmiles(), p.getModelId(),
 				Model.getName(p.getModelId()), "prediction/" + p.getId(), "Prediction");
 		setHidePageTitle(true);
 		this.p = p;
-		this.showSuper = showSuper;
+		this.hideFragments = showFragments;
 		miner = Model.find(p.getModelId()).getCFPMiner();
 		parseMaxNumElements(maxNumFragments);
 	}
@@ -137,8 +174,7 @@ public class PredictionHtml extends DefaultHtml
 			set.setResultValue(rIdx, "Dataset", encodeLink(url, m.getName()));
 			set.setResultValue(rIdx, "Target", encodeLink(url, m.getTarget()));
 			set.setResultValue(rIdx, "Classifier", encodeLink(url, m.getClassifierName()));
-			set.setResultValue(rIdx, "Fragments",
-					encodeLink(url, m.getCFPMiner().getFeatureType()));
+			set.setResultValue(rIdx, "Fragments", encodeLink(url, miner.getFeatureType()));
 
 			setHeaderHelp("Prediction",
 					text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
@@ -150,19 +186,40 @@ public class PredictionHtml extends DefaultHtml
 			setTableRowsAlternating(true);
 		}
 		addGap();
+		//addGap();
 		//		stopInlineTables();
 
 		//addParagraph("The compound ");
 
 		//		addGap();
 
+		newSection("Fragments", true);
+
+		String hideTxt = "";
+		for (HideFragments hide : HideFragments.values())
+		{
+			String h = text("fragment.hide." + hide + ".link");
+			if (hideFragments != hide)
+				h = encodeLink(p.getId() + "?hideFragments=" + hide.stringKey(), h);
+			hideTxt += h + " ";
+		}
+		getHtml().div();//HtmlAttributesFactory.align("right"));
+		getHtml().render(new TextWithLinks(hideTxt, true));
+		getHtml().render(getMouseoverHelp(text("fragment.hide"), null));
+		getHtml()._div();
+		addGap();
+
 		for (final boolean match : new Boolean[] { true, false })
 		{
+			String fragmentCol = (match ? "PRESENT" : "ABSENT") + " Fragment";
+
 			ResultSet set = new ResultSet();
 			int fIdx = 0;
 			for (final SubgraphPredictionAttribute pa : p.getPredictionAttributes())
 			{
-				if (pa.isSuperGraph && !showSuper)
+				if (hideFragments == HideFragments.SUPER && pa.hasSubGraph)
+					continue;
+				if (hideFragments == HideFragments.SUB && pa.hasSuperGraph)
 					continue;
 
 				int attIdx = pa.getAttribute();
@@ -173,7 +230,7 @@ public class PredictionHtml extends DefaultHtml
 						continue;
 
 					int rIdx = set.addResult();
-					set.setResultValue(rIdx, "No.", fIdx + "");
+					set.setResultValue(rIdx, "", fIdx + "");
 
 					Boolean moreActive = null;
 					final String txt;
@@ -222,21 +279,39 @@ public class PredictionHtml extends DefaultHtml
 						activating = null;
 					}
 
-					set.setResultValue(rIdx, "Fragment",
-							getImage(depictMatch(attIdx, true, activating, true),
-									"/" + p.getModelId() + "/fragment/" + (attIdx + 1), true));
-					//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
+					if (match)
+					{
+						try
+						{
+							IAtomContainer mol = CDKConverter.parseSmiles(p.getSmiles());
+							CFPFragment frag = miner.getFragmentViaIdx(pa.getAttribute());
+							int numMatches = miner.getAtomsMultipleDistinct(mol, frag).size();
+							if (numMatches == 0)
+								throw new IllegalStateException();
+							set.setResultValue(rIdx, "#",
+									(numMatches > 1) ? (numMatches + "x") : "");
+						}
+						catch (Exception e)
+						{
+							e.printStackTrace();
+						}
+					}
 
-					if (!showSuper)
-						setHeaderHelp("Fragment",
-								text("fragment.showSuper") + " "
-										+ encodeLink(
-												p.getId() + "?showFragments="
-														+ ModelService.SHOW_SUPER_GRAPH_FRAGMENTS,
-												"show"));
-					else
-						setHeaderHelp("Fragment",
-								text("fragment.hideSuper") + " " + encodeLink(p.getId(), "show"));
+					set.setResultValue(rIdx, fragmentCol,
+							getImage(depictMatch(attIdx, true, activating, true),
+									"/" + p.getModelId() + "/fragment/" + (attIdx + 1) + "?smiles="
+											+ URLEncoder.encode(p.getSmiles(), "UTF8"),
+									true));
+									//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
+
+					//					String hideTxt = "";
+					//					hideTxt = text("fragment.hide." + hideFragments);
+					//					for (HideFragments hide : HideFragments.values())
+					//						if (hideFragments != hide)
+					//							hideTxt += " "
+					//									+ encodeLink(p.getId() + "?hideFragments=" + hide.stringKey(),
+					//											text("fragment.hide." + hide + ".link"));
+					//					setHeaderHelp("Fragment", hideTxt);
 
 					set.setResultValue(rIdx, "Effect", new Renderable()
 					{
@@ -273,16 +348,16 @@ public class PredictionHtml extends DefaultHtml
 				startLeftColumn();
 			else
 				startRightColumn();
-			newSection((match ? "Present" : "Absent") + " fragments");
+			//getHtml().br();//hr(HtmlAttributesFactory.style("height:1pt; visibility:hidden;"));
 
 			if (fIdx > maxNumElements)
 			{
 				int rIdx = set.addResult();
-				String showSup = "";
-				if (showSuper)
-					showSup = "showFragments=" + ModelService.SHOW_SUPER_GRAPH_FRAGMENTS + "&";
-				set.setResultValue(rIdx, "Fragment",
-						encodeLink(p.getId() + "?" + showSup + "size="
+				String hideSup = "";
+				if (hideFragments != HIDE_FRAGMENTS_DEFAULT)
+					hideSup = "hideFragments=" + hideFragments.stringKey() + "&";
+				set.setResultValue(rIdx, fragmentCol,
+						encodeLink(p.getId() + "?" + hideSup + "size="
 								+ Math.min(maxNumElements + defaultMaxNumElements, fIdx) + "#"
 								+ (rIdx + 1), "More fragments"));
 			}

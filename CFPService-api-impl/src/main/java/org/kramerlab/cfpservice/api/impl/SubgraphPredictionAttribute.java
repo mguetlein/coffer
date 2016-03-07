@@ -4,28 +4,41 @@ import org.mg.wekalib.attribute_ranking.PredictionAttribute;
 
 public class SubgraphPredictionAttribute extends PredictionAttribute
 {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
-	public boolean isSuperGraph = false;
+	public boolean hasSuperGraph = false;
+
+	public boolean hasSubGraph = false;
 
 	public SubgraphPredictionAttribute()
 	{
 	}
 
 	public SubgraphPredictionAttribute(int attribute, double[] alternativeDistributionForInstance,
-			double diffToOrigProp, boolean isSuperGraph)
+			double diffToOrigProp, boolean hasSuperGraph, boolean hasSubGraph)
 	{
 		super(attribute, alternativeDistributionForInstance, diffToOrigProp);
-		this.isSuperGraph = isSuperGraph;
+		this.hasSuperGraph = hasSuperGraph;
+		this.hasSubGraph = hasSubGraph;
 	}
 
-	public void setSuperGraph(boolean isSuperGraph)
+	public void setHasSuperGraph(boolean hasSuperGraph)
 	{
-		this.isSuperGraph = isSuperGraph;
+		this.hasSuperGraph = hasSuperGraph;
 	}
 
-	public boolean isSuperGraph()
+	public boolean hasSuperGraph()
 	{
-		return isSuperGraph;
+		return hasSuperGraph;
+	}
+
+	public void setHashSubGraph(boolean hasSubGraph)
+	{
+		this.hasSubGraph = hasSubGraph;
+	}
+
+	public boolean hasSubGraph()
+	{
+		return hasSubGraph;
 	}
 }

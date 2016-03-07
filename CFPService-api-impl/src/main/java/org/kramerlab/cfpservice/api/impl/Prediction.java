@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.kramerlab.cfpminer.CFPtoArff;
 import org.kramerlab.cfpservice.api.PredictionObj;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml;
+import org.kramerlab.cfpservice.api.impl.html.PredictionHtml.HideFragments;
 import org.kramerlab.cfpservice.api.impl.html.PredictionsHtml;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
 import org.mg.cdklib.CDKConverter;
@@ -95,11 +96,6 @@ public class Prediction extends PredictionObj
 		return PersistanceAdapter.INSTANCE.getPredictionDate(modelId, id);
 	}
 
-	public static void main(String[] args) throws Exception
-	{
-		createPrediction(Model.find("DUD_vegfr2"), "c1c(CC(=O)O)cncc1", true);
-	}
-
 	public static Prediction createPrediction(Model m, String smiles,
 			boolean createPredictionAttributes)
 	{
@@ -137,17 +133,17 @@ public class Prediction extends PredictionObj
 			Instances data = CFPtoArff.getTestDataset(m.getCFPMiner(), "DUD_vegfr2", getMolecule());
 			Instance inst = data.get(0);
 			data.setClassIndex(data.numAttributes() - 1);
-			double dist[] = ((Classifier) m.getClassifier()).distributionForInstance(inst);
-			int maxIdx = ArrayUtil.getMaxIndex(dist);
 
+			double dist[] = ((Classifier) m.getClassifier()).distributionForInstance(inst);
+
+			int maxIdx = ArrayUtil.getMaxIndex(dist);
 			predictedIdx = maxIdx;
 			predictedDistribution = dist;
 			trainingActivity = m.getCFPMiner().getTrainingActivity(smiles);
 
 			if (createPredictionAttributes)
 			{
-				//				System.out.println("creating prediction attributes");
-
+				// System.out.println("collect list of attributes that should be ranked");
 				Set<Integer> atts;
 				if (m.getClassifier() instanceof AttributeProvidingClassifier)
 					atts = ((AttributeProvidingClassifier) m.getClassifier())
@@ -159,6 +155,7 @@ public class Prediction extends PredictionObj
 				//				for (int i = 0; i < m.getCFPMiner().getNumFragments(); i++)
 				//					System.out.println((i + 1) + " " + m.getCFPMiner().getFragmentViaIdx(i));
 
+				// for each attribute, create a set of attributes that will be toggled with the attribute
 				HashMap<Integer, Set<Integer>> subAndSuperAtts = new HashMap<Integer, Set<Integer>>();
 				for (Integer a : atts)
 				{
@@ -167,14 +164,23 @@ public class Prediction extends PredictionObj
 					Set<CFPFragment> fs;
 					if (m.getCFPMiner().getFragmentsForTestCompound(smiles).contains(f))
 					{
-						//						System.out.println(
-						//								"present in test compound\nalso disable super fragments: ");
+						//	System.out.println("fragment is present in test compound\nalso disable super fragments: ");
 						fs = m.getCFPMiner().getSuperFragments(f);
+
+						//	System.out.println("fragment is present in test compound\nalso disable included sub fragments within test compound: ");
+						Set<CFPFragment> fs2 = m.getCFPMiner().getIncludedFragments(f, smiles);
+						//System.out.println("fs2: " + f + " includes " + fs2);
+						if (fs2 != null)
+						{
+							if (fs == null)
+								fs = fs2;
+							else
+								fs.addAll(fs2);
+						}
 					}
 					else
 					{
-						//						System.out.println(
-						//								"NOT present in test compound\nalso enable sub fragments: ");
+						//	System.out.println("fragment is NOT present in test compound\nalso enable sub fragments: ");
 						fs = m.getCFPMiner().getSubFragments(f);
 					}
 					Set<Integer> fIdx = new HashSet<Integer>();
@@ -182,25 +188,36 @@ public class Prediction extends PredictionObj
 						for (CFPFragment frag : fs)
 						{
 							fIdx.add(m.getCFPMiner().getIdxForFragment(frag));
-							//							System.out.println(
-							//									(m.getCFPMiner().getIdxForFragment(frag) + 1) + " " + frag);
+							//	System.out.println((m.getCFPMiner().getIdxForFragment(frag) + 1) + " " + frag);
 						}
 					//					System.out.println();
 					subAndSuperAtts.put(a, fIdx);
 				}
 
+				Set<Integer> hasSuper = new HashSet<Integer>();
+				Set<Integer> hasSub = new HashSet<Integer>();
+				for (Integer a : atts)
+				{
+					CFPFragment f = m.getCFPMiner().getFragmentViaIdx(a);
+					Set<CFPFragment> fs = m.getCFPMiner().getSubFragments(f);
+					if (fs != null)
+					{
+						hasSub.add(a);
+						for (CFPFragment cfpFragment : fs)
+							hasSuper.add(m.getCFPMiner().getIdxForFragment(cfpFragment));
+					}
+				}
+
 				List<PredictionAttribute> pAtts = PredictionAttributeComputation
 						.compute((Classifier) m.getClassifier(), inst, dist, atts, subAndSuperAtts);
+
 				List<SubgraphPredictionAttribute> l = new ArrayList<SubgraphPredictionAttribute>();
 				for (PredictionAttribute pa : pAtts)
 				{
 					int a = pa.getAttribute();
-					CFPFragment f = m.getCFPMiner().getFragmentViaIdx(a);
-					Set<CFPFragment> fs = m.getCFPMiner().getSubFragments(f);
-					boolean isSuper = (fs != null && fs.size() > 0);
 					l.add(new SubgraphPredictionAttribute(pa.getAttribute(),
 							pa.getAlternativeDistributionForInstance(), pa.getDiffToOrigProp(),
-							isSuper));
+							hasSuper.contains(a), hasSub.contains(a)));
 				}
 				predictionAttributes = l;
 			}
@@ -223,16 +240,49 @@ public class Prediction extends PredictionObj
 		}
 	}
 
-	public String getHTML(boolean showSuper, String maxNumFragments)
+	public String getHTML(HideFragments hideSuper, String maxNumFragments)
 	{
 		try
 		{
-			return new PredictionHtml(this, showSuper, maxNumFragments).build();
+			return new PredictionHtml(this, hideSuper, maxNumFragments).build();
 		}
 		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static void main(String[] args)
+	{
+		//		String modelId = "AMES";
+		//		String smiles[] = { "C1=CC(=CC=C1NC(=O)C2=CSC(=C2)[N+](=O)[O-])Cl",
+		//				"C1=CC=C(C=C1)S(=O)(=O)N(C2=CC=CC=N2)[N+](=O)[O-]",
+		//				"C1=CC=NC(=C1)NS(=O)(=O)C2=CC=C(C=C2)[N+](=O)[O-]" };
+
+		//		String modelId = "NCTRER";
+		//		String smiles[] = { "C[Si](O[Si](Cc1ccccc1)(C)C)(Cc1ccccc1)C" };
+		//		//		String smiles[] = FileUtil.readStringFromFile("/home/martin/tmp/nctrer_no_phenolic.smi")
+		//		//				.split("\n");
+		//		//List<String> smiles = new DataLoader("data").getDataset("NCTRER").getSmiles();
+
+		String modelIds[] = { "AMES", "ChEMBL_93", "MUV_733" };
+		String smiles[] = { "CC1(C2CCC(O1)(CC2)C)C" };
+
+		for (String modelId : modelIds)
+		{
+			Model m = Model.find(modelId);
+			for (String smi : smiles)
+			{
+				String predictionId = StringUtil.getMD5(smi);
+				if (exists(m.getId(), predictionId))
+					PersistanceAdapter.INSTANCE.deletePrediction(m.getId(), predictionId);
+
+				Prediction p = Prediction.createPrediction(m, smi, true);
+				System.out.println(
+						p.getSmiles() + " " + ArrayUtil.toString(p.getPredictedDistribution()));
+			}
+		}
+
 	}
 
 }

@@ -17,11 +17,11 @@ import org.openscience.cdk.exception.InvalidSmilesException;
 public class DepictService
 {
 	public static Color ACTIVE_BRIGHT = Color.RED;
-	public static Color INACTIVE_BRIGHT = Color.GREEN;
+	public static Color INACTIVE_BRIGHT = Color.BLUE;
 	public static Color NEUTRAL_BRIGHT = Color.WHITE;
 
 	public static Color ACTIVE_MODERATE = ColorUtil.transparent(Color.RED, 150);
-	public static Color INACTIVE_MODERATE = ColorUtil.transparent(Color.GREEN, 200);
+	public static Color INACTIVE_MODERATE = ColorUtil.transparent(Color.BLUE, 150);
 	public static Color NEUTRAL_MODERATE = ColorUtil.transparent(Color.GRAY, 200);
 
 	private static String relativeImgPath = "persistance/img/";
@@ -117,9 +117,10 @@ public class DepictService
 
 	public static void main(String[] args) throws InvalidSmilesException, Exception
 	{
-		DepictService.depictMatch("Cl.c1ccc(CCCCCC(=O)O)cc1", null, "1,2", "true", "true", "false");
-		//        DepictService.depict("c1ccc(CCCCCC(=O)O)cc1", null, "1,2", "false");
-		//        DepictService.depict("c1ccc(CCCCCC(=O)O)cc1", null, null, null);
+		System.out.println(DepictService.depictMatch("Cl.c1ccc(CCCCCC(=O)O)cc1", null, "1,2",
+				"true", "true", "false"));
+				//        DepictService.depict("c1ccc(CCCCCC(=O)O)cc1", null, "1,2", "false");
+				//        DepictService.depict("c1ccc(CCCCCC(=O)O)cc1", null, null, null);
 
 		//		DefaultImageProvider.drawFP("/tmp/delme.png",
 		//				new SmilesParser(SilentChemObjectBuilder.getInstance()).parseSmiles("c1c(CCCCCCCCCCCCCCCC)cccc1"),

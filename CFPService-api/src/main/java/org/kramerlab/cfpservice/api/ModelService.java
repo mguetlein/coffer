@@ -128,7 +128,9 @@ public interface ModelService
 	PredictionObj getPrediction(@PathParam("modelId") String modelId,
 			@PathParam("predictionId") String predictionId);
 
-	public static final String SHOW_SUPER_GRAPH_FRAGMENTS = "showSuperGraphFragments";
+	public static final String HIDE_SUPER_FRAGMENTS = "hideSuperFragments";
+	public static final String HIDE_SUB_FRAGMENTS = "hideSubFragments";
+	public static final String HIDE_NO_FRAGMENTS = "hideNoFragments";
 
 	/**
 	 * {@value SHOW_SUPER_GRAPH_FRAGMENTS}
@@ -138,7 +140,7 @@ public interface ModelService
 	@Produces({ MediaType.TEXT_HTML })
 	String getPredictionHTML(@PathParam("modelId") String modelId,
 			@PathParam("predictionId") String predictionId,
-			@FormParam("showFragments") String showFragments, @FormParam("size") String size);
+			@FormParam("hideFragments") String hideFragments, @FormParam("size") String size);
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i>/fragment/<i>fragmentId</i><br>
@@ -155,7 +157,8 @@ public interface ModelService
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
 	String getFragmentHTML(@PathParam("modelId") String modelId,
-			@PathParam("fragmentId") String fragmentId, @FormParam("size") String size);
+			@PathParam("fragmentId") String fragmentId, @FormParam("size") String size,
+			@FormParam("smiles") String smiles);
 
 	@Path("info/{service}/{smiles}")
 	@GET

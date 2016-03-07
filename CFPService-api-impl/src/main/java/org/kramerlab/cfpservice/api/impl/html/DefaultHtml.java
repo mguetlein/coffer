@@ -25,7 +25,7 @@ public class DefaultHtml extends HTMLReport
 
 	protected int maxMolPicSize = 300;
 	protected int croppedPicSize = 150;
-	protected int defaultMaxNumElements = 100;
+	protected int defaultMaxNumElements = 10;
 	protected int maxNumElements = defaultMaxNumElements;
 
 	public DefaultHtml(String id, String name, String subId, String subName)

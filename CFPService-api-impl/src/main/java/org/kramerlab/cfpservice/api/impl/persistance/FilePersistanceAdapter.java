@@ -266,7 +266,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 			new File(getModelValidationImageFile(id)).delete();
 	}
 
-	private void deletePrediction(String modelId, String predictionId)
+	public void deletePrediction(String modelId, String predictionId)
 	{
 		new File(getPredictionFile(modelId, predictionId)).delete();
 	}

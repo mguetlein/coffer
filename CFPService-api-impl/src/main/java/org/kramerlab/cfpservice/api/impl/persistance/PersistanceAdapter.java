@@ -57,4 +57,6 @@ public interface PersistanceAdapter
 
 	public void deleteModel(String modelId);
 
+	public void deletePrediction(String modelId, String predictionId);
+
 }

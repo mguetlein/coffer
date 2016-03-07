@@ -37,7 +37,8 @@ public abstract class CompoundInfo implements Renderable
 
 	protected abstract String getIdName();
 
-	public static String get(Service service, String smiles) throws MalformedURLException, JSONException, IOException
+	public static String get(Service service, String smiles)
+			throws MalformedURLException, JSONException, IOException
 	{
 		if (service == Service.pubchem)
 			return new PubChemCompoundInfo(smiles).getHTML();
@@ -73,7 +74,8 @@ public abstract class CompoundInfo implements Renderable
 		@Override
 		public String getJsonUrl(String encodedSmiles)
 		{
-			return "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/" + encodedSmiles + "/JSON";
+			return "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/" + encodedSmiles
+					+ "/JSON";
 		}
 
 		@Override
@@ -86,21 +88,24 @@ public abstract class CompoundInfo implements Renderable
 			JSONArray props = obj.getJSONArray("props");
 			for (int i = 0; i < props.length(); i++)
 			{
-				if (props.getJSONObject(i).getJSONObject("urn").getString("label").equals("IUPAC Name"))
+				if (props.getJSONObject(i).getJSONObject("urn").getString("label")
+						.equals("IUPAC Name"))
 				{
 					name = props.getJSONObject(i).getJSONObject("value").getString("sval");
-					if (props.getJSONObject(i).getJSONObject("urn").getString("name").equals("Traditional"))
+					if (props.getJSONObject(i).getJSONObject("urn").getString("name")
+							.equals("Traditional"))
 						break;
 				}
 			}
 			for (int i = 0; i < props.length(); i++)
 			{
 				if (props.getJSONObject(i).getJSONObject("urn").getString("label").equals("Log P"))
-					fields.put("LogP", StringUtil.formatDouble(
-							Double.parseDouble(props.getJSONObject(i).getJSONObject("value").getString("fval")), 1));
-				if (props.getJSONObject(i).getJSONObject("urn").getString("label").equals("Molecular Weight"))
-					fields.put("Molecular Weight", StringUtil.formatDouble(
-							Double.parseDouble(props.getJSONObject(i).getJSONObject("value").getString("fval")), 1));
+					fields.put("LogP", StringUtil.formatDouble(Double.parseDouble(
+							props.getJSONObject(i).getJSONObject("value").getString("fval")), 1));
+				if (props.getJSONObject(i).getJSONObject("urn").getString("label")
+						.equals("Molecular Weight"))
+					fields.put("Molecular Weight", StringUtil.formatDouble(Double.parseDouble(
+							props.getJSONObject(i).getJSONObject("value").getString("fval")), 1));
 			}
 		}
 
@@ -126,7 +131,8 @@ public abstract class CompoundInfo implements Renderable
 	public static class ChEMBLCompoundInfo extends CompoundInfo
 	{
 
-		public ChEMBLCompoundInfo(String smiles) throws MalformedURLException, JSONException, IOException
+		public ChEMBLCompoundInfo(String smiles)
+				throws MalformedURLException, JSONException, IOException
 		{
 			super(smiles);
 		}
@@ -134,14 +140,22 @@ public abstract class CompoundInfo implements Renderable
 		@Override
 		public String getJsonUrl(String encodedSmiles)
 		{
-			return "https://www.ebi.ac.uk/chembl/api/data/molecule/" + encodedSmiles + "?format=json";
+			//			return "https://www.ebi.ac.uk/chembl/api/data/molecule/" + encodedSmiles
+			//					+ "?format=json";
+			return "https://www.ebi.ac.uk/chembl/api/data/similarity/" + encodedSmiles
+					+ "/100?format=json";
 		}
 
 		@Override
 		protected void parseJson(JSONObject obj) throws JSONException
 		{
-			id = obj.getString("molecule_chembl_id");
-			name = obj.getString("pref_name");
+			JSONArray array = obj.getJSONArray("molecules");
+			if (array.length() > 0)
+			{
+				obj = array.getJSONObject(0);
+				id = obj.getString("molecule_chembl_id");
+				name = obj.getString("pref_name");
+			}
 		}
 
 		@Override
@@ -171,18 +185,19 @@ public abstract class CompoundInfo implements Renderable
 	{
 		try
 		{
-			JSONObject obj = new JSONObject(IOUtils.toString(new URL(getJsonUrl(URLEncoder.encode(smiles, "UTF-8"))),
-					Charsets.UTF_8));
+			JSONObject obj = new JSONObject(IOUtils.toString(
+					new URL(getJsonUrl(URLEncoder.encode(smiles, "UTF-8"))), Charsets.UTF_8));
 			parseJson(obj);
 		}
 		catch (UnknownHostException e)
 		{
-			System.err.println("Compound info fetching failed - cannot conect to host : " + e.getMessage());
+			System.err.println(
+					"Compound info fetching failed - cannot conect to host : " + e.getMessage());
 		}
 		catch (FileNotFoundException e)
 		{
-			System.err.println("Compound info fetching failed - no compound found for smiles " + smiles + " : "
-					+ e.getMessage());
+			System.err.println("Compound info fetching failed - no compound found for smiles "
+					+ smiles + " : " + e.getMessage());
 		}
 		catch (Exception e)
 		{
@@ -234,8 +249,8 @@ public abstract class CompoundInfo implements Renderable
 
 	public static void main(String[] args) throws MalformedURLException, JSONException, IOException
 	{
-		String smiles = "C1CCCCCCCCCCCCCCCCCCCCNCCCCCCCCCCCCCCCCCCCCCCCC1";
-		System.out.println(new PubChemCompoundInfo(smiles).getHTML());
+		String smiles = "CC1(C2CCC(O1)(CC2)C)CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC";
+		//		System.out.println(new PubChemCompoundInfo(smiles).getHTML());
 		System.out.println(new ChEMBLCompoundInfo(smiles).getHTML());
 	}
 }

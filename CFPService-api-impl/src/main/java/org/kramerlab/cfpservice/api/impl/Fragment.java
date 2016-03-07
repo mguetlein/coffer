@@ -21,11 +21,11 @@ public class Fragment extends FragmentObj
 		return f;
 	}
 
-	public String getHTML(String maxNumCompounds)
+	public String getHTML(String maxNumCompounds, String smiles)
 	{
 		try
 		{
-			return new FragmentHtml(this, maxNumCompounds).build();
+			return new FragmentHtml(this, maxNumCompounds, smiles).build();
 		}
 		catch (Exception e)
 		{

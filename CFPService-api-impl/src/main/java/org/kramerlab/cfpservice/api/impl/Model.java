@@ -12,10 +12,10 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.kramerlab.cfpminer.CFPtoArff;
+import org.kramerlab.cfpminer.experiments.InnerValidationResults;
 import org.kramerlab.cfpminer.weka.CFPValidate;
 import org.kramerlab.cfpminer.weka.ValidationResultsProvider;
 import org.kramerlab.cfpminer.weka.eval2.CFPFeatureProvider;
-import org.kramerlab.cfpminer.weka.eval2.CFPNestedCV;
 import org.kramerlab.cfpservice.api.ModelObj;
 import org.kramerlab.cfpservice.api.impl.html.ModelHtml;
 import org.kramerlab.cfpservice.api.impl.html.ModelsHtml;
@@ -23,6 +23,7 @@ import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.cdklib.cfp.CFPType;
 import org.mg.cdklib.cfp.FeatureSelection;
+import org.mg.cdklib.data.DataLoader;
 import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.datamining.ResultSetIO;
 import org.mg.javalib.util.CountedSet;
@@ -166,7 +167,9 @@ public class Model extends ModelObj
 			//			{
 			ResultSet rs = ResultSetIO.readFromFile(
 					new File(PersistanceAdapter.INSTANCE.getModelValidationResultsFile(id)));
-			CFPNestedCV.plotValidationResult(rs, valPng);
+
+			InnerValidationResults.plotValidationResult(rs, valPng);
+			//CFPNestedValidation.plotValidationResult(rs, valPng);
 			//			}
 			return new FileInputStream(valPng);
 			//			ValidationResultsProvider val = new ValidationResultsProvider(
@@ -213,8 +216,10 @@ public class Model extends ModelObj
 
 	public static void main(String[] args) throws Exception
 	{
-		trainModel("AMES");
-
+		for (String dataset : new DataLoader("data").allDatasetsSorted())
+			buildModelFromNestedCV(dataset);
+		//buildModelFromNestedCV("CPDBAS_Mouse");
+		//buildModelFromNestedCV("NCTRER");
 		//		buildModel("REID-3", false);
 		//		buildModel("REID-4", false);
 		//		buildModel("REID-11", false);
@@ -299,7 +304,7 @@ public class Model extends ModelObj
 		model.miner = new CFPMiner(endpoints);
 
 		DB.init(new ResultProviderImpl("jobs/store", "jobs/tmp"), null);
-		FeatureModel featureModel = CFPNestedCV.selectModel(dataset);
+		FeatureModel featureModel = InnerValidationResults.getSelectedModel(dataset);
 		CFPFeatureProvider featureSetting = (CFPFeatureProvider) featureModel.getFeatureProvider();
 		org.mg.wekalib.eval2.model.Model algorithmSetting = featureModel.getModel();
 
@@ -337,7 +342,8 @@ public class Model extends ModelObj
 
 		System.out.println("\nStoring validation results");
 		String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(dataset);
-		ResultSetIO.writeToFile(new File(outfile), CFPNestedCV.validateModel(dataset));
+		ResultSetIO.writeToFile(new File(outfile),
+				InnerValidationResults.getValidationResults(dataset));
 
 		//		CFPNestedCV.plotValidationResult(dataset, null);
 	}
@@ -351,10 +357,10 @@ public class Model extends ModelObj
 
 		CFPMiner miner = new CFPMiner(endpoints);
 		miner.setType(CFPType.ecfp4);
-		miner.setHashfoldsize(1024);
-		miner.setFeatureSelection(FeatureSelection.filt);
+		//		miner.setHashfoldsize(1024);
+		miner.setFeatureSelection(FeatureSelection.none);
 		miner.mine(smiles);
-		miner.applyFilter();
+		//		miner.applyFilter();
 		System.out.println(miner);
 
 		Instances inst = CFPtoArff.getTrainingDataset(miner, dataset);
