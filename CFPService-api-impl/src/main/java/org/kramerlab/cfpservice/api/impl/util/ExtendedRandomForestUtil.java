@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import org.kramerlab.cfpminer.CFPtoArff;
+import org.kramerlab.cfpminer.weka.eval2.CFPtoArff;
 import org.mg.cdklib.CDKConverter;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.cdklib.cfp.CFPType;
@@ -29,7 +29,7 @@ public class ExtendedRandomForestUtil
 		try
 		{
 			String name = "CPDBAS_Hamster";
-			CDKDataset d = new DataLoader("/home/martin/workspace/CFPMiner/data/").getDataset(name);
+			CDKDataset d = DataLoader.INSTANCE.getDataset(name);
 
 			CFPMiner cfp = new CFPMiner(d.getEndpoints());
 			cfp.setType(CFPType.ecfp6);

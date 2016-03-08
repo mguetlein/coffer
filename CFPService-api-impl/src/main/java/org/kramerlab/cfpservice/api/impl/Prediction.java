@@ -9,7 +9,7 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.kramerlab.cfpminer.CFPtoArff;
+import org.kramerlab.cfpminer.weka.eval2.CFPtoArff;
 import org.kramerlab.cfpservice.api.PredictionObj;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml.HideFragments;

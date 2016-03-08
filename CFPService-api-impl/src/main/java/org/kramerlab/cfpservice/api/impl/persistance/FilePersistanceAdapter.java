@@ -28,7 +28,7 @@ import weka.classifiers.Classifier;
 
 public class FilePersistanceAdapter implements PersistanceAdapter
 {
-	DataLoader dataLoader = new DataLoader("persistance/data");
+	DataLoader dataLoader = DataLoader.INSTANCE;
 
 	private static String getModelFile(String id)
 	{

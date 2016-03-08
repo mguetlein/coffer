@@ -11,11 +11,9 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.kramerlab.cfpminer.CFPtoArff;
-import org.kramerlab.cfpminer.experiments.InnerValidationResults;
-import org.kramerlab.cfpminer.weka.CFPValidate;
-import org.kramerlab.cfpminer.weka.ValidationResultsProvider;
+import org.kramerlab.cfpminer.experiments.validation.InnerValidationResults;
 import org.kramerlab.cfpminer.weka.eval2.CFPFeatureProvider;
+import org.kramerlab.cfpminer.weka.eval2.CFPtoArff;
 import org.kramerlab.cfpservice.api.ModelObj;
 import org.kramerlab.cfpservice.api.impl.html.ModelHtml;
 import org.kramerlab.cfpservice.api.impl.html.ModelsHtml;
@@ -26,15 +24,13 @@ import org.mg.cdklib.cfp.FeatureSelection;
 import org.mg.cdklib.data.DataLoader;
 import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.datamining.ResultSetIO;
+import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.CountedSet;
-import org.mg.javalib.util.FileUtil;
 import org.mg.javalib.util.ListUtil;
 import org.mg.wekalib.attribute_ranking.ExtendedNaiveBayes;
 import org.mg.wekalib.attribute_ranking.ExtendedRandomForest;
 import org.mg.wekalib.eval2.model.AbstractModel;
 import org.mg.wekalib.eval2.model.FeatureModel;
-import org.mg.wekalib.eval2.persistance.DB;
-import org.mg.wekalib.eval2.persistance.ResultProviderImpl;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;
@@ -216,8 +212,8 @@ public class Model extends ModelObj
 
 	public static void main(String[] args) throws Exception
 	{
-		for (String dataset : new DataLoader("data").allDatasetsSorted())
-			buildModelFromNestedCV(dataset);
+		buildModelFromNestedCV();
+
 		//buildModelFromNestedCV("CPDBAS_Mouse");
 		//buildModelFromNestedCV("NCTRER");
 		//		buildModel("REID-3", false);
@@ -290,62 +286,69 @@ public class Model extends ModelObj
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void buildModelFromNestedCV(String dataset) throws Exception
+	public static void buildModelFromNestedCV(String... datasets) throws Exception
 	{
-		if (PersistanceAdapter.INSTANCE.modelExists(dataset))
-			PersistanceAdapter.INSTANCE.deleteModel(dataset);
+		InnerValidationResults val = new InnerValidationResults();
 
-		Model model = new Model();
-		model.id = dataset;
+		for (String dataset : DataLoader.INSTANCE.allDatasetsSorted())
+		{
+			if (datasets != null && ArrayUtil.indexOf(datasets, dataset) == -1)
+				continue;
 
-		List<String> endpoints = PersistanceAdapter.INSTANCE.readDatasetEndpoints(dataset);
-		List<String> smiles = PersistanceAdapter.INSTANCE.readDatasetSmiles(dataset);
-		ListUtil.scramble(new Random(1), smiles, endpoints);
-		model.miner = new CFPMiner(endpoints);
+			if (PersistanceAdapter.INSTANCE.modelExists(dataset))
+				PersistanceAdapter.INSTANCE.deleteModel(dataset);
 
-		DB.init(new ResultProviderImpl("jobs/store", "jobs/tmp"), null);
-		FeatureModel featureModel = InnerValidationResults.getSelectedModel(dataset);
-		CFPFeatureProvider featureSetting = (CFPFeatureProvider) featureModel.getFeatureProvider();
-		org.mg.wekalib.eval2.model.Model algorithmSetting = featureModel.getModel();
+			Model model = new Model();
+			model.id = dataset;
 
-		System.out.println("\nMining selected features: " + featureSetting.getName());
-		model.miner.setHashfoldsize(featureSetting.getHashfoldSize());
-		model.miner.setType(featureSetting.getType());
-		model.miner.setFeatureSelection(featureSetting.getFeatureSelection());
-		model.miner.mine(smiles);
-		model.miner.applyFilter();
-		System.out.println(model.miner);
-		if (model.miner.getNumCompounds() != endpoints.size())
-			throw new IllegalStateException();
+			List<String> endpoints = PersistanceAdapter.INSTANCE.readDatasetEndpoints(dataset);
+			List<String> smiles = PersistanceAdapter.INSTANCE.readDatasetSmiles(dataset);
+			ListUtil.scramble(new Random(1), smiles, endpoints);
+			model.miner = new CFPMiner(endpoints);
 
-		Instances inst = CFPtoArff.getTrainingDataset(model.miner, dataset);
-		inst.setClassIndex(inst.numAttributes() - 1);
-		if (inst.size() != smiles.size())
-			throw new IllegalStateException();
-		if (inst.numAttributes() != model.miner.getNumFragments() + 1)
-			throw new IllegalStateException();
-		if (!model.miner.getClassValues()[0].equals(inst.classAttribute().value(0)))
-			throw new IllegalArgumentException();
-		if (!model.miner.getClassValues()[1].equals(inst.classAttribute().value(1)))
-			throw new IllegalArgumentException();
+			FeatureModel featureModel = val.getSelectedModel(dataset);
+			CFPFeatureProvider featureSetting = (CFPFeatureProvider) featureModel
+					.getFeatureProvider();
+			org.mg.wekalib.eval2.model.Model algorithmSetting = featureModel.getModel();
 
-		System.out.println("Building selected algorithm: " + algorithmSetting.getName());
-		model.classifier = ((AbstractModel) algorithmSetting).getWekaClassifer();
-		//		int seed = 1;
-		//		if (model.classifier instanceof Randomizable)
-		//			((Randomizable) model.classifier).setSeed(seed);
-		((Classifier) model.classifier).buildClassifier(inst);
+			System.out.println("\nMining selected features: " + featureSetting.getName());
+			model.miner.setHashfoldsize(featureSetting.getHashfoldSize());
+			model.miner.setType(featureSetting.getType());
+			model.miner.setFeatureSelection(featureSetting.getFeatureSelection());
+			model.miner.mine(smiles);
+			model.miner.applyFilter();
+			System.out.println(model.miner);
+			if (model.miner.getNumCompounds() != endpoints.size())
+				throw new IllegalStateException();
 
-		model.setActiveClassIdx(model.miner.getActiveIdx());
-		model.setClassValues(model.miner.getClassValues());
-		model.saveModel();
+			Instances inst = CFPtoArff.getTrainingDataset(model.miner, dataset);
+			inst.setClassIndex(inst.numAttributes() - 1);
+			if (inst.size() != smiles.size())
+				throw new IllegalStateException();
+			if (inst.numAttributes() != model.miner.getNumFragments() + 1)
+				throw new IllegalStateException();
+			if (!model.miner.getClassValues()[0].equals(inst.classAttribute().value(0)))
+				throw new IllegalArgumentException();
+			if (!model.miner.getClassValues()[1].equals(inst.classAttribute().value(1)))
+				throw new IllegalArgumentException();
 
-		System.out.println("\nStoring validation results");
-		String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(dataset);
-		ResultSetIO.writeToFile(new File(outfile),
-				InnerValidationResults.getValidationResults(dataset));
+			System.out.println("Building selected algorithm: " + algorithmSetting.getName());
+			model.classifier = ((AbstractModel) algorithmSetting).getWekaClassifer();
+			//		int seed = 1;
+			//		if (model.classifier instanceof Randomizable)
+			//			((Randomizable) model.classifier).setSeed(seed);
+			((Classifier) model.classifier).buildClassifier(inst);
 
-		//		CFPNestedCV.plotValidationResult(dataset, null);
+			model.setActiveClassIdx(model.miner.getActiveIdx());
+			model.setClassValues(model.miner.getClassValues());
+			model.saveModel();
+
+			System.out.println("\nStoring validation results");
+			String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(dataset);
+			ResultSetIO.writeToFile(new File(outfile), val.getValidationResults(dataset));
+
+			//		CFPNestedCV.plotValidationResult(dataset, null);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -373,7 +376,7 @@ public class Model extends ModelObj
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void buildModel(String dataset, boolean forceExistingValidation) throws Exception
+	public static void buildModel(String dataset) throws Exception
 	{
 		String algorithm = null;
 
@@ -389,52 +392,11 @@ public class Model extends ModelObj
 
 		model.miner = new CFPMiner(endpoints);
 
-		File f = new File(ValidationResultsProvider.RESULTS_MERGED_FOLDER + "AUP.best");
-		if (f.exists())
-		{
-			ResultSet r = ResultSetIO.parseFromTxtFile(f);
-			for (int i = 0; i < r.getNumResults(); i++)
-			{
-				if (r.getResultValue(i, "Dataset").toString().equals(dataset))
-				{
-					algorithm = r.getResultValue(i, "Algorithm").toString();
-					CFPType type = CFPType.valueOf(r.getResultValue(i, "CFPType").toString());
-					FeatureSelection sel = FeatureSelection
-							.valueOf(r.getResultValue(i, "FeatureSelection").toString());
-					if (sel != FeatureSelection.none)
-					{
-						int hashfoldsize = Double
-								.valueOf(r.getResultValue(i, "hashfoldSize").toString()).intValue();
-						model.miner.setHashfoldsize(hashfoldsize);
-					}
-					model.miner.setType(type);
-					model.miner.setFeatureSelection(sel);
-					break;
-				}
-			}
-		}
-		if (algorithm == null)
-		{
-			algorithm = "SMO";
-			model.miner.setType(CFPType.ecfp4);
-			model.miner.setHashfoldsize(1024);
-			model.miner.setFeatureSelection(FeatureSelection.filt);
-		}
-
+		algorithm = "SMO";
+		model.miner.setType(CFPType.ecfp4);
+		model.miner.setHashfoldsize(1024);
+		model.miner.setFeatureSelection(FeatureSelection.filt);
 		model.miner.mine(smiles);
-
-		String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(dataset);
-		if (ValidationResultsProvider.resultsExist(dataset, model.miner, algorithm))
-			FileUtil.copy(ValidationResultsProvider.getResultsFile(dataset, model.miner, algorithm),
-					outfile);
-		else
-		{
-			if (forceExistingValidation)
-				throw new IllegalStateException("validation missing");
-			CFPValidate.validate(dataset, 1, outfile, new String[] { algorithm }, endpoints,
-					model.miner);
-		}
-
 		model.miner.applyFilter();
 		System.out.println(model.miner);
 

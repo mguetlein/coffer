@@ -118,12 +118,6 @@
   	<version>0.0.1-SNAPSHOT</version>
 	  </dependency>
 	  
-	      	 <dependency>
-	  <groupId>org.mg.wekalib</groupId>
-	  <artifactId>WEKALib</artifactId>
-  	<version>0.0.2-SNAPSHOT</version>
-	  </dependency> 
-	  
 	  <dependency>
 	   	<groupId>org.mg.htmlreporting</groupId>
 	   	<artifactId>HTMLReporting</artifactId>
