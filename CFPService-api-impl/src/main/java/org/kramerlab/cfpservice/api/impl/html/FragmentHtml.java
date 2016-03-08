@@ -1,5 +1,6 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
+import java.net.URLEncoder;
 import java.util.Set;
 
 import org.kramerlab.cfpservice.api.impl.Fragment;
@@ -127,93 +128,108 @@ public class FragmentHtml extends DefaultHtml
 		}
 		stopColumns();
 
-		boolean skipSubAndSuper = true;
-		if (!skipSubAndSuper)
+		addGap();
+		if (smiles != null)
 		{
+			newSection("Matching compound: " + smiles);
+			int atoms[] = miner.getAtoms(smiles, miner.getFragmentViaIdx(selectedAttributeIdx));
+			Image img;
+			if (atoms != null)
+				img = getImage(depictMatch(smiles, atoms, miner.getCFPType().isECFP(), null, false,
+						maxMolPicSize));
+			else
+				img = getImage(depict(smiles, maxMolPicSize), depict(smiles, -1), false);
+			set = new ResultSet();
+			rIdx = set.addResult();
+			set.setResultValue(rIdx, "Match", (atoms != null && atoms.length > 0 ? "Yes" : "-"));
+			set.setResultValue(rIdx, "Compound", img);
+			addTable(set);
 			addGap();
-			newSection("Sub and super fragments" + (smiles != null ? (" in " + smiles) : ""));
-			setTableRowsAlternating(false);
-			CFPFragment frag = miner.getFragmentViaIdx(selectedAttributeIdx);
-			for (Boolean sub : new Boolean[] { true, false })
+		}
+		newSection("Sub and super fragments");
+		setTableRowsAlternating(false);
+		CFPFragment frag = miner.getFragmentViaIdx(selectedAttributeIdx);
+		for (Boolean sub : new Boolean[] { true, false })
+		{
+			Set<CFPFragment> frags;
+			if (sub)
+				frags = miner.getSubFragments(frag);
+			else
+				frags = miner.getSuperFragments(frag);
+			set = new ResultSet();
+			int cIdx = 0;
+			if (frags != null)
 			{
-				Set<CFPFragment> frags;
-				if (sub)
-					frags = miner.getSubFragments(frag);
-				else
-					frags = miner.getSuperFragments(frag);
-				set = new ResultSet();
-				int cIdx = 0;
-				if (frags != null)
+				for (CFPFragment fragment : frags)
 				{
-					for (CFPFragment fragment : frags)
+					int attIdx = miner.getIdxForFragment(fragment);
+					int atoms[] = null;
+					String smi = "";
+					if (smiles != null)
 					{
-						int attIdx = miner.getIdxForFragment(fragment);
-						String smi;
-						if (smiles == null)
+						smi = smiles;
+						atoms = miner.getAtoms(smi, fragment);
+					}
+					if (atoms == null)
+					{
+						int cmpIdx = miner.getCompoundsForFragment(miner.getFragmentViaIdx(attIdx))
+								.iterator().next();
+						smi = miner.getTrainingDataSmiles().get(cmpIdx);
+						atoms = miner.getAtoms(smi, fragment);
+					}
+
+					cIdx++;
+					if (cIdx > maxNumElements)
+						continue;
+
+					String dep = depictMatch(smi, atoms, miner.getCFPType().isECFP(), null, true,
+							croppedPicSize);
+					rIdx = set.addResult();
+					set.setResultValue(rIdx, "", (rIdx + 1));
+					if (smiles != null && smi.equals(smiles))
+					{
+						boolean inc;
+						if (sub)
 						{
-							int cmpIdx = miner
-									.getCompoundsForFragment(miner.getFragmentViaIdx(attIdx))
-									.iterator().next();
-							smi = miner.getTrainingDataSmiles().get(cmpIdx);
+							Set<CFPFragment> incl = miner.getIncludedFragments(frag, smi);
+							inc = incl != null && incl.contains(fragment);
 						}
 						else
-							smi = smiles;
-						int atoms[] = miner.getAtoms(smi, fragment);
-						if (atoms == null || atoms.length == 0)
-							continue;
-						cIdx++;
-						if (cIdx > maxNumElements)
-							continue;
-
-						String dep = depictMatch(smi, atoms, miner.getCFPType().isECFP(), null,
-								true, croppedPicSize);
-						rIdx = set.addResult();
-						set.setResultValue(rIdx, "", (rIdx + 1));
-						if (smiles != null)
 						{
-							boolean inc;
-							if (sub)
-							{
-								Set<CFPFragment> incl = miner.getIncludedFragments(frag, smi);
-								inc = incl != null && incl.contains(fragment);
-							}
-							else
-							{
-								Set<CFPFragment> incl = miner.getIncludedFragments(fragment, smi);
-								inc = incl != null && incl.contains(frag);
-							}
-							if (set.getProperties().contains("Included"))
-								setHeaderHelp("Included",
-										"This sub/super fragment and the fragment always match together. I.e., the smaller fragment does not match elsewhere separately.");
-							set.setResultValue(rIdx, "Included", (inc ? "X" : ""));
+							Set<CFPFragment> incl = miner.getIncludedFragments(fragment, smi);
+							inc = incl != null && incl.contains(frag);
 						}
-						set.setResultValue(rIdx, (sub ? "Sub" : "Super") + " Fragment",
-								getImage(dep, "/" + modelId + "/fragment/" + (attIdx + 1), true));
+						if (inc)
+							setHeaderHelp("Match",
+									"Yes (Exclusive): this sub/super fragment and the fragment always match the compound at the same location/s. I.e., the smaller fragment does not match elsewhere separately.");
+						set.setResultValue(rIdx, "Match", (inc ? "Yes (Exclusive)" : "Yes"));
 					}
-					if (cIdx > maxNumElements)
-					{
-						rIdx = set.addResult();
-						set.setResultValue(rIdx,
-								(sub ? "Sub" : "Super")
-										+ " Fragment",
-								encodeLink(
-										(selectedAttributeIdx + 1) + "?size="
-												+ Math.min(maxNumElements + defaultMaxNumElements,
-														cIdx)
-												+ "#" + (rIdx + 1),
-										"More compounds"));
-					}
+					else if (smiles != null)
+						set.setResultValue(rIdx, "Match", "-");
+					set.setResultValue(rIdx, (sub ? "Sub" : "Super") + " Fragment",
+							getImage(dep, "/" + modelId + "/fragment/" + (attIdx + 1)
+									+ ((smiles != null
+											? "?smiles=" + URLEncoder.encode(smiles, "UTF8") : "")),
+							true));
 				}
-
-				setTableColWidthLimited(true);
-				if (sub)
-					startLeftColumn();
-				else
-					startRightColumn();
-				addTable(set);
+				if (cIdx > maxNumElements)
+				{
+					rIdx = set.addResult();
+					set.setResultValue(rIdx, (sub ? "Sub" : "Super") + " Fragment",
+							encodeLink((selectedAttributeIdx + 1) + "?size="
+									+ Math.min(maxNumElements + defaultMaxNumElements, cIdx) + "#"
+									+ (rIdx + 1), "More compounds"));
+				}
 			}
-			stopColumns();
+
+			setTableColWidthLimited(true);
+			if (sub)
+				startLeftColumn();
+			else
+				startRightColumn();
+			addTable(set);
 		}
+		stopColumns();
 
 		return close();
 	}
