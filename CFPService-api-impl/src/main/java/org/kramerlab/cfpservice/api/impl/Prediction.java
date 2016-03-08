@@ -19,7 +19,6 @@ import org.mg.cdklib.CDKConverter;
 import org.mg.cdklib.cfp.CFPFragment;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.StringUtil;
-import org.mg.wekalib.attribute_ranking.AttributeProvidingClassifier;
 import org.mg.wekalib.attribute_ranking.PredictionAttribute;
 import org.mg.wekalib.attribute_ranking.PredictionAttributeComputation;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -143,22 +142,12 @@ public class Prediction extends PredictionObj
 
 			if (createPredictionAttributes)
 			{
-				// System.out.println("collect list of attributes that should be ranked");
-				Set<Integer> atts;
-				if (m.getClassifier() instanceof AttributeProvidingClassifier)
-					atts = ((AttributeProvidingClassifier) m.getClassifier())
-							.getAttributesEmployedForPrediction(inst);
-				else
-					atts = PredictionAttributeComputation.allAttributes(inst);
-
-				//				System.out.println(atts);
-				//				for (int i = 0; i < m.getCFPMiner().getNumFragments(); i++)
-				//					System.out.println((i + 1) + " " + m.getCFPMiner().getFragmentViaIdx(i));
-
 				// for each attribute, create a set of attributes that will be toggled with the attribute
 				HashMap<Integer, Set<Integer>> subAndSuperAtts = new HashMap<Integer, Set<Integer>>();
-				for (Integer a : atts)
+				for (int a = 0; a < data.numAttributes(); a++)
 				{
+					if (data.classIndex() == a)
+						continue;
 					CFPFragment f = m.getCFPMiner().getFragmentViaIdx(a);
 					//					System.out.println("\nfragment " + (a + 1) + " " + f);
 					Set<CFPFragment> fs;
@@ -196,8 +185,10 @@ public class Prediction extends PredictionObj
 
 				Set<Integer> hasSuper = new HashSet<Integer>();
 				Set<Integer> hasSub = new HashSet<Integer>();
-				for (Integer a : atts)
+				for (int a = 0; a < data.numAttributes(); a++)
 				{
+					if (data.classIndex() == a)
+						continue;
 					CFPFragment f = m.getCFPMiner().getFragmentViaIdx(a);
 					Set<CFPFragment> fs = m.getCFPMiner().getSubFragments(f);
 					if (fs != null)
@@ -209,7 +200,7 @@ public class Prediction extends PredictionObj
 				}
 
 				List<PredictionAttribute> pAtts = PredictionAttributeComputation
-						.compute((Classifier) m.getClassifier(), inst, dist, atts, subAndSuperAtts);
+						.compute((Classifier) m.getClassifier(), inst, dist, subAndSuperAtts);
 
 				List<SubgraphPredictionAttribute> l = new ArrayList<SubgraphPredictionAttribute>();
 				for (PredictionAttribute pa : pAtts)

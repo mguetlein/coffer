@@ -27,8 +27,6 @@ import org.mg.javalib.datamining.ResultSetIO;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.CountedSet;
 import org.mg.javalib.util.ListUtil;
-import org.mg.wekalib.attribute_ranking.ExtendedNaiveBayes;
-import org.mg.wekalib.attribute_ranking.ExtendedRandomForest;
 import org.mg.wekalib.eval2.model.AbstractModel;
 import org.mg.wekalib.eval2.model.FeatureModel;
 
@@ -419,9 +417,9 @@ public class Model extends ModelObj
 
 		int seed = 1;
 		if (algorithm.equals("RnF"))
-			model.classifier = new ExtendedRandomForest();
+			model.classifier = new RandomForest();
 		else if (algorithm.equals("NBy"))
-			model.classifier = new ExtendedNaiveBayes(); //NaiveBayes();
+			model.classifier = new NaiveBayes();
 		else if (algorithm.equals("SMO"))
 		{
 			model.classifier = new SMO();
