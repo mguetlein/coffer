@@ -114,8 +114,13 @@ public class ModelServiceImpl implements ModelService
 	{
 		int num = wait == null ? -1 : Integer.parseInt(wait);
 		Prediction[] res = Prediction.find(predictionId);
-		if (res.length < num) // add trailing nulls
+		if (res.length < num) // add trailing empty predictions
+		{
 			res = Arrays.copyOf(res, num);
+			for (int i = 0; i < res.length; i++)
+				if (res[i] == null)
+					res[i] = new Prediction();
+		}
 		return res;
 	}
 

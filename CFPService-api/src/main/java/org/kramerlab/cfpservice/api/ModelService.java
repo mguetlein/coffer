@@ -104,7 +104,7 @@ public interface ModelService
 	 * <b>request:</b> GET {@value SERVICE_HOME}/prediction/<i>modelId</i><br>
 	 * <b>content-type:</b> application/json, text/html<br>
 	 * <b>params:</b><br><i>wait</i> integer encoding the number of expected results<br> 
-	 * <b>returns:</b> list of single-model predictions, empty if num predictions is < wait
+	 * <b>returns:</b> list of single-model predictions, empty predictions trailing if num predictions is < wait
 	 */
 	@Path("prediction/{predictionId}")
 	@GET

@@ -26,7 +26,7 @@ public class PredictionsHtml extends DefaultHtml
 
 		for (Prediction p : predictions)
 		{
-			if (p == null)
+			if (p == null || p.getId() == null)
 				break;
 
 			int idx = res.addResult();
