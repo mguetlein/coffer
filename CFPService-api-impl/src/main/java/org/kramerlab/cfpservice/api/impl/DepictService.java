@@ -24,13 +24,14 @@ public class DepictService
 	public static Color INACTIVE_MODERATE = ColorUtil.transparent(Color.BLUE, 150);
 	public static Color NEUTRAL_MODERATE = ColorUtil.transparent(Color.GRAY, 200);
 
-	private static String relativeImgPath = "persistance/img/";
+	private static String FOLDER = System.getProperty("user.home")
+			+ "/results/cfpservice/persistance/img/";
 
 	public static InputStream depict(String smiles, String size)
 	{
 		try
 		{
-			String pngFile = relativeImgPath + StringUtil.getMD5(smiles) + "_" + size + ".png";
+			String pngFile = FOLDER + StringUtil.getMD5(smiles) + "_" + size + ".png";
 			if (!new File(pngFile).exists())
 			{
 				int s = -1;
@@ -51,7 +52,7 @@ public class DepictService
 	{
 		try
 		{
-			String pngFile = relativeImgPath + StringUtil.getMD5(smiles) + "_"
+			String pngFile = FOLDER + StringUtil.getMD5(smiles) + "_"
 					+ atoms.replaceAll(",", "-") + "_" + highlightOutgoingBonds + "_" + activating
 					+ "_" + crop + "_" + size + ".png";
 			if (!new File(pngFile).exists())
@@ -79,20 +80,21 @@ public class DepictService
 		}
 	}
 
-	public static InputStream depictMultiMatch(String smiles, String size, String prediction,
-			String model)
+	public static InputStream depictMultiMatch(String smiles, String size, String model)
 	{
 		try
 		{
-			String pngFile = relativeImgPath + StringUtil.getMD5(smiles) + "_" + prediction + "_"
-					+ model + "_" + size + ".png";
+			String pngFile = FOLDER + StringUtil.getMD5(smiles) + "_" + model + "_" + size
+					+ ".png";
 			//			if (!new File(pngFile).exists())
 			//			{
+
 			int s = -1;
 			if (size != null)
 				s = Integer.parseInt(size);
-			CFPDepictUtil.depictMultiMatchToPNG(pngFile, CDKConverter.parseSmiles(smiles),
-					prediction, model, s);
+			Model m = Model.find(model);
+			Prediction p = Prediction.createPrediction(m, smiles, true);
+			CFPDepictUtil.depictMultiMatchToPNG(pngFile, CDKConverter.parseSmiles(smiles), p, m, s);
 			//			}
 			return new FileInputStream(pngFile);
 		}
@@ -104,7 +106,7 @@ public class DepictService
 
 	public static void deleteAllImagesForModel(final String modelId)
 	{
-		File files[] = new File(relativeImgPath).listFiles(new FilenameFilter()
+		File files[] = new File(FOLDER).listFiles(new FilenameFilter()
 		{
 			public boolean accept(File dir, String name)
 			{

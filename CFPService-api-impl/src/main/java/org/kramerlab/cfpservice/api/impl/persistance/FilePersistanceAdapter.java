@@ -7,6 +7,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
@@ -29,40 +30,42 @@ import weka.classifiers.Classifier;
 public class FilePersistanceAdapter implements PersistanceAdapter
 {
 	DataLoader dataLoader = DataLoader.INSTANCE;
+	private static final String FOLDER = System.getProperty("user.home")
+			+ "/results/cfpservice/persistance";
 
 	private static String getModelFile(String id)
 	{
-		return "persistance/model/" + id + ".model";
+		return FOLDER + "/model/" + id + ".model";
 	}
 
 	private static String getModelClassifierFile(String id)
 	{
-		return "persistance/model/" + id + ".classifier";
+		return FOLDER + "/model/" + id + ".classifier";
 	}
 
 	private static String getModelCFPFile(String id)
 	{
-		return "persistance/model/" + id + ".cfp";
+		return FOLDER + "/model/" + id + ".cfp";
 	}
 
 	public String getModelValidationResultsFile(String id)
 	{
-		return "persistance/model/" + id + ".res";
+		return FOLDER + "/model/" + id + ".res";
 	}
 
 	public String getModelValidationImageFile(String id)
 	{
-		return "persistance/img/" + id + ".png";
+		return FOLDER + "/img/" + id + ".png";
 	}
 
 	public String getWarningFile(String id)
 	{
-		return "persistance/warn/" + id + ".warn";
+		return FOLDER + "/warn/" + id + ".warn";
 	}
 
 	private static String getPredictionFile(String modelId, String predictionId)
 	{
-		return "persistance/prediction/" + modelId + "_" + predictionId + ".prediction";
+		return FOLDER + "/prediction/" + modelId + "_" + predictionId + ".prediction";
 	}
 
 	public Date getPredictionDate(String modelId, String predictionId)
@@ -77,12 +80,12 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 
 	public List<String> readDatasetEndpoints(String modelId)
 	{
-		return dataLoader.getDataset(modelId).getEndpoints();
+		return new ArrayList<String>(dataLoader.getDataset(modelId).getEndpoints());
 	}
 
 	public List<String> readDatasetSmiles(String modelId)
 	{
-		return dataLoader.getDataset(modelId).getSmiles();
+		return new ArrayList<String>(dataLoader.getDataset(modelId).getSmiles());
 	}
 
 	public List<String> readModelDatasetWarnings(String modelId)
@@ -156,7 +159,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 
 	public Model[] readModels()
 	{
-		String models[] = new File("persistance/model").list(new FilenameFilter()
+		String models[] = new File(FOLDER + "/model").list(new FilenameFilter()
 		{
 			public boolean accept(File dir, String name)
 			{
@@ -205,7 +208,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 	public String[] findAllPredictions(final String... modelIds)
 	{
 		final HashSet<String> checked = new HashSet<String>();
-		File preds[] = new File("persistance/prediction").listFiles(new FilenameFilter()
+		File preds[] = new File(FOLDER + "/prediction").listFiles(new FilenameFilter()
 		{
 			public boolean accept(File dir, String name)
 			{

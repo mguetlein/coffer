@@ -2,6 +2,8 @@ package org.kramerlab.cfpservice.api.impl.persistance;
 
 public class PersistanceException extends RuntimeException
 {
+	private static final long serialVersionUID = 1L;
+
 	public PersistanceException(String msg)
 	{
 		super(msg);

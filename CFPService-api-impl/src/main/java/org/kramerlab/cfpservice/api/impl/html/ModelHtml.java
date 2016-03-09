@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
-import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.util.CountedSet;
 import org.rendersnake.HtmlCanvas;

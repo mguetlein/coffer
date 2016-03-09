@@ -9,14 +9,12 @@ import org.mg.javalib.datamining.ResultSet;
 public class PredictionsHtml extends DefaultHtml
 {
 	Prediction[] predictions;
-	int wait;
 
-	public PredictionsHtml(Prediction[] predictions, int wait)
+	public PredictionsHtml(Prediction[] predictions)
 	{
 		super(predictions[0].getId(), "Prediction", null, null);
 		setHidePageTitle(true);
 		this.predictions = predictions;
-		this.wait = wait;
 	}
 
 	public String build() throws Exception
@@ -28,6 +26,9 @@ public class PredictionsHtml extends DefaultHtml
 
 		for (Prediction p : predictions)
 		{
+			if (p == null)
+				break;
+
 			int idx = res.addResult();
 			String url = "/" + p.getModelId() + "/prediction/" + p.getId();
 			//				res.setResultValue(idx, "Model", HTMLReport.encodeLink(url /*"/" + m.getId()*/, m.getId()));
@@ -48,7 +49,7 @@ public class PredictionsHtml extends DefaultHtml
 			//									p.getPredictedClass())
 			count++;
 		}
-		if (count < wait)
+		if (count < predictions.length)
 			setRefresh(10);
 
 		res.sortResults("p", new Comparator<Object>()
@@ -71,22 +72,21 @@ public class PredictionsHtml extends DefaultHtml
 		addTable(set);
 		addGap();
 
-		if (count < wait)
+		if (count < predictions.length)
 		{
 			startLeftColumn();
 			addImage("/img/wait.gif");
 			startRightColumn();
 			addGap();
-			addParagraph(count + "/" + wait
+			addParagraph(count + "/" + predictions.length
 					+ " model predictions done, this page reloads every 10 seconds.");
 			stopColumns();
 		}
-		else
-		{
-			newSection("Predictions (select to show fragments)");
-			//newSubsection("Select a target to list fragments that explain each prediction:");
-			addTable(res);
-		}
+
+		newSection("Predictions (select to show fragments)");
+		//newSubsection("Select a target to list fragments that explain each prediction:");
+		addTable(res);
+
 		return close();
 	}
 }

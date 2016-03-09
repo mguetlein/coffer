@@ -37,7 +37,7 @@ public abstract class CompoundInfo implements Renderable
 
 	protected abstract String getIdName();
 
-	public static String get(Service service, String smiles)
+	public static String getHTML(Service service, String smiles)
 			throws MalformedURLException, JSONException, IOException
 	{
 		if (service == Service.pubchem)

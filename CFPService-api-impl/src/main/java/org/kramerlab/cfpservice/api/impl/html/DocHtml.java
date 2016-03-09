@@ -45,16 +45,16 @@ public class DocHtml extends DefaultHtml
 		addParagraph(text("doc.validation"));
 
 		newSection("Source Code");
-
-		addParagraph(text("doc.source"));
+		addParagraphExternal(text("doc.source"));
 
 		newSection("REST API");
-
-		addParagraph(text("doc.rest"));
+		addParagraphExternal(text("doc.rest"));
 
 		newSection("How to cite this service");
-
 		addParagraph(text("doc.cite"));
+
+		newSection("License");
+		addParagraphExternal(text("doc.license"));
 
 		return close();
 	}

@@ -5,7 +5,6 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-@SuppressWarnings("restriction")
 @XmlRootElement
 public class ModelObj implements Serializable
 {

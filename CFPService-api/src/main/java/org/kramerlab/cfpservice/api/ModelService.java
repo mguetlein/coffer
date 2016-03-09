@@ -44,57 +44,57 @@ public interface ModelService
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<br>
-	 * <b>content-type:</b> application/json<br>
+	 * <b>content-type:</b> application/json, text/html<br>
 	 * <b>returns:</b> list of models
 	 */
 	@Path("")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
 	ModelObj[] getModels();
 
 	/**
 	 * <b>request:</b> POST {@value SERVICE_HOME}/<br>
-	 * <b>params:</b> </i>compound</i> SMILES String<br>
+	 * <b>params:</b><br></i>compound</i> SMILES String<br>
 	 * <b>returns:</b> redirect to prediction with all models
 	 */
 	@Path("")
 	@POST
 	Response predict(@FormParam("compound") String compound);
 
-	@Path("")
-	@GET
-	@Produces({ MediaType.TEXT_HTML })
-	String getModelsHTML();
-
+	/**
+	 * <b>request:</b> GET {@value SERVICE_HOME}/doc<br>
+	 * <b>content-type:</b> text/html<br>
+	 * <b>returns:</b> documentation
+	 */
 	@Path("doc")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
-	String getDocHTML();
+	String getDocumentation();
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i><br>
-	 * <b>content-type:</b> application/json<br>
+	 * <b>content-type:</b> application/json, text/html<br>
 	 * <b>returns:</b> model
 	 */
 	@Path("{modelId}")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
 	ModelObj getModel(@PathParam("modelId") String modelId);
-
-	@Path("{modelId}")
-	@GET
-	@Produces({ MediaType.TEXT_HTML })
-	String getModelHTML(@PathParam("modelId") String modelId);
 
 	/**
 	 * <b>request:</b> POST {@value SERVICE_HOME}/<i>modelId</i><br>
-	 * <b>params:</b> <i>compound</i> SMILES String<br>
+	 * <b>params:</b><br><i>compound</i> SMILES String<br>
 	 * <b>returns:</b> redirect to single-model prediction
 	 */
 	@Path("{modelId}")
 	@POST
 	Response predict(@PathParam("modelId") String modelId, @FormParam("compound") String compound);
 
+	/**
+	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i>/validation<br>
+	 * <b>content-type:</b> image/png<br>
+	 * <b>returns:</b> image
+	 */
 	@Path("{modelId}/validation")
 	@GET
 	@Produces({ "image/png" })
@@ -102,64 +102,54 @@ public interface ModelService
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/prediction/<i>modelId</i><br>
-	 * <b>content-type:</b> application/json<br>
-	 * <b>returns:</b> list of single-model predictions
+	 * <b>content-type:</b> application/json, text/html<br>
+	 * <b>params:</b><br><i>wait</i> integer encoding the number of expected results<br> 
+	 * <b>returns:</b> list of single-model predictions, empty if num predictions is < wait
 	 */
 	@Path("prediction/{predictionId}")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
 	PredictionObj[] getPredictions(@PathParam("predictionId") String predictionId,
 			@FormParam("wait") String wait);
 
-	@Path("prediction/{predictionId}")
-	@GET
-	@Produces({ MediaType.TEXT_HTML })
-	String getPredictionsHTML(@PathParam("predictionId") String predictionId,
-			@FormParam("wait") String wait);
-
-	/**
-	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i>/prediction/<i>predictionId</i><br>
-	 * <b>content-type:</b> application/json<br>
-	 * <b>returns:</b> single-model prediction
-	 */
-	@Path("{modelId}/prediction/{predictionId}")
-	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
-	PredictionObj getPrediction(@PathParam("modelId") String modelId,
-			@PathParam("predictionId") String predictionId);
-
+	public static final int DEFAULT_NUM_ENTRIES = 10;
 	public static final String HIDE_SUPER_FRAGMENTS = "hideSuperFragments";
 	public static final String HIDE_SUB_FRAGMENTS = "hideSubFragments";
 	public static final String HIDE_NO_FRAGMENTS = "hideNoFragments";
 
 	/**
-	 * {@value SHOW_SUPER_GRAPH_FRAGMENTS}
+	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i>/prediction/<i>predictionId</i><br>
+	 * <b>content-type:</b> application/json, text/html<br>
+	 * <b>params:</b><br><i>hideFragments</i> filter options for fragments: {@value HIDE_SUPER_FRAGMENTS}|{@value HIDE_SUB_FRAGMENTS}|{@value HIDE_NO_FRAGMENTS}<br>
+	 * <i>size:</i> integer specifying the number of fragments shown (default: {@value DEFAULT_NUM_ENTRIES})<br>
+	 * <b>returns:</b> single-model prediction
 	 */
 	@Path("{modelId}/prediction/{predictionId}")
 	@GET
-	@Produces({ MediaType.TEXT_HTML })
-	String getPredictionHTML(@PathParam("modelId") String modelId,
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
+	PredictionObj getPrediction(@PathParam("modelId") String modelId,
 			@PathParam("predictionId") String predictionId,
 			@FormParam("hideFragments") String hideFragments, @FormParam("size") String size);
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i>/fragment/<i>fragmentId</i><br>
 	 * <b>content-type:</b> application/json<br>
+	 * <b>params:</b><br><i>size:</i> integer specifying the number of fragments shown (default: {@value DEFAULT_NUM_ENTRIES})<br>
+	 * <i>smiles:</i> a compound that the fragment is matched on (optional)<br>
 	 * <b>returns:</b> fragment
 	 */
 	@Path("{modelId}/fragment/{fragmentId}")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
 	FragmentObj getFragment(@PathParam("modelId") String modelId,
-			@PathParam("fragmentId") String fragmentId);
-
-	@Path("{modelId}/fragment/{fragmentId}")
-	@GET
-	@Produces({ MediaType.TEXT_HTML })
-	String getFragmentHTML(@PathParam("modelId") String modelId,
 			@PathParam("fragmentId") String fragmentId, @FormParam("size") String size,
 			@FormParam("smiles") String smiles);
 
+	/**
+	 * <b>request:</b> GET {@value SERVICE_HOME}/info/<i>service</i>/<i>smiles</i><br>
+	 * <b>content-type:</b> text/html<br>
+	 * <b>returns:</b> compound info fetched from another service
+	 */
 	@Path("info/{service}/{smiles}")
 	@GET
 	@Produces({ MediaType.TEXT_HTML })
@@ -169,11 +159,8 @@ public interface ModelService
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/depict<br>
 	 * <b>content-type:</b> image/png<br>
-	 * <b>params:</b> <i>smiles</i> compound smiles string<br>
+	 * <b>params:</b><br><i>smiles</i> compound smiles string<br>
 	 * <i>size</i> integer to specify width and height (optional), otherwise depends on compound with default bond size<br>
-	 * <i>atoms</i> comma separated atom indices (optional) to be highlighted<br>
-	 * <i>highlightOutgoingBonds</i> true (optional) if outgoing bonds of fragment should be highlighted<br> 
-	 * <i>crop</i> true (optional) if image should be cropped around matching atoms<br>
 	 * <b>returns:</b> image
 	 */
 	@Path("depict")
@@ -181,6 +168,17 @@ public interface ModelService
 	@Produces({ "image/png" })
 	InputStream depict(@FormParam("smiles") String smiles, @FormParam("size") String size);
 
+	/**
+	 * <b>request:</b> GET {@value SERVICE_HOME}/depictMatch<br>
+	 * <b>content-type:</b> image/png<br>
+	 * <b>params:</b><br><i>smiles</i> compound smiles string<br>
+	 * <i>size</i> integer to specify width and height (optional), otherwise depends on compound with default bond size<br>
+	 * <i>atoms</i> comma separated atom indices to be highlighted<br>
+	 * <i>highlightOutgoingBonds</i> true (optional) if outgoing bonds of fragment should be highlighted<br>
+	 * <i>activating</i> true/false (optional) if match should be colored as activating/de-activating instead of neutral<br> 
+	 * <i>crop</i> true (optional) if image should be cropped around matching atoms<br>
+	 * <b>returns:</b> image
+	 */
 	@Path("depictMatch")
 	@GET
 	@Produces({ "image/png" })
@@ -189,10 +187,18 @@ public interface ModelService
 			@FormParam("highlightOutgoingBonds") String highlightOutgoingBonds,
 			@FormParam("activating") String activating, @FormParam("crop") String crop);
 
+	/**
+	 * <b>request:</b> GET {@value SERVICE_HOME}/depictMultiMatch<br>
+	 * <b>content-type:</b> image/png<br>
+	 * <b>params:</b><br><i>smiles</i> compound smiles string<br>
+	 * <i>size</i> integer to specify width and height (optional), otherwise depends on compound with default bond size<br>
+	 * <i>model</i> id of the model that is used to predict the compound<br>
+	 * <b>returns:</b> image
+	 */
 	@Path("depictMultiMatch")
 	@GET
 	@Produces({ "image/png" })
 	InputStream depictMultiMatch(@FormParam("smiles") String smiles, @FormParam("size") String size,
-			@FormParam("prediction") String prediction, @FormParam("model") String model);
+			@FormParam("model") String model);
 
 }

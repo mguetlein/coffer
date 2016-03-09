@@ -18,6 +18,7 @@ import org.kramerlab.cfpservice.api.ModelObj;
 import org.kramerlab.cfpservice.api.impl.html.ModelHtml;
 import org.kramerlab.cfpservice.api.impl.html.ModelsHtml;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
+import org.kramerlab.cfpservice.api.impl.util.HTMLProvider;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.cdklib.cfp.CFPType;
 import org.mg.cdklib.cfp.FeatureSelection;
@@ -39,11 +40,10 @@ import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 import weka.core.Randomizable;
 
-@SuppressWarnings("restriction")
 @XmlRootElement
-public class Model extends ModelObj
+public class Model extends ModelObj implements HTMLProvider
 {
-	private static final long serialVersionUID = 7L;
+	private static final long serialVersionUID = 8L;
 
 	protected transient CFPMiner miner;
 	protected transient Classifier classifier;
@@ -67,6 +67,7 @@ public class Model extends ModelObj
 		return PersistanceAdapter.INSTANCE.readModel(id);
 	}
 
+	@Override
 	public String getHTML()
 	{
 		try
@@ -79,11 +80,11 @@ public class Model extends ModelObj
 		}
 	}
 
-	public static String getModelListHTML()
+	public static String getModelListHTML(Model models[])
 	{
 		try
 		{
-			return new ModelsHtml().build();
+			return new ModelsHtml(models).build();
 		}
 		catch (Exception e)
 		{
@@ -283,14 +284,14 @@ public class Model extends ModelObj
 		System.out.println(p.getPredictedDistribution()[model.getActiveClassIdx()]);
 	}
 
-	@SuppressWarnings("unchecked")
 	public static void buildModelFromNestedCV(String... datasets) throws Exception
 	{
 		InnerValidationResults val = new InnerValidationResults();
 
 		for (String dataset : DataLoader.INSTANCE.allDatasetsSorted())
 		{
-			if (datasets != null && ArrayUtil.indexOf(datasets, dataset) == -1)
+			if (datasets != null && datasets.length > 0
+					&& ArrayUtil.indexOf(datasets, dataset) == -1)
 				continue;
 
 			if (PersistanceAdapter.INSTANCE.modelExists(dataset))
@@ -349,7 +350,6 @@ public class Model extends ModelObj
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public static void trainModel(String dataset) throws Exception
 	{
 		List<String> endpoints = PersistanceAdapter.INSTANCE.readDatasetEndpoints(dataset);
@@ -373,7 +373,6 @@ public class Model extends ModelObj
 		classifier.buildClassifier(inst);
 	}
 
-	@SuppressWarnings("unchecked")
 	public static void buildModel(String dataset) throws Exception
 	{
 		String algorithm = null;

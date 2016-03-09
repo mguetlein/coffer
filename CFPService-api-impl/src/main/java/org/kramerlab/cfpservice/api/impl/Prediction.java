@@ -10,13 +10,16 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.kramerlab.cfpminer.weka.eval2.CFPtoArff;
+import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.PredictionObj;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml.HideFragments;
 import org.kramerlab.cfpservice.api.impl.html.PredictionsHtml;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
+import org.kramerlab.cfpservice.api.impl.util.HTMLProvider;
 import org.mg.cdklib.CDKConverter;
 import org.mg.cdklib.cfp.CFPFragment;
+import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.StringUtil;
 import org.mg.wekalib.attribute_ranking.PredictionAttribute;
@@ -27,13 +30,16 @@ import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
 
-@SuppressWarnings("restriction")
 @XmlRootElement
-public class Prediction extends PredictionObj
+public class Prediction extends PredictionObj implements HTMLProvider
 {
-	private static final long serialVersionUID = 6L;
+	private static final long serialVersionUID = 9L;
 
 	protected List<SubgraphPredictionAttribute> predictionAttributes;
+
+	protected transient HideFragments hideFragments;
+
+	protected transient int maxNumFragments;
 
 	public Prediction()
 	{
@@ -52,6 +58,16 @@ public class Prediction extends PredictionObj
 			PersistanceAdapter.INSTANCE.savePrediction(this);
 		}
 		return predictionAttributes;
+	}
+
+	public HideFragments getHideFragments()
+	{
+		return hideFragments;
+	}
+
+	public int getMaxNumFragments()
+	{
+		return maxNumFragments;
 	}
 
 	public IAtomContainer getMolecule()
@@ -82,7 +98,16 @@ public class Prediction extends PredictionObj
 
 	public static Prediction find(String modelId, String predictionId)
 	{
-		return PersistanceAdapter.INSTANCE.readPrediction(modelId, predictionId);
+		return find(modelId, predictionId, HideFragments.NONE, ModelService.DEFAULT_NUM_ENTRIES);
+	}
+
+	public static Prediction find(String modelId, String predictionId, HideFragments hideFragments,
+			int maxNumFragments)
+	{
+		Prediction p = PersistanceAdapter.INSTANCE.readPrediction(modelId, predictionId);
+		p.hideFragments = hideFragments;
+		p.maxNumFragments = maxNumFragments;
+		return p;
 	}
 
 	public static boolean exists(String modelId, String predictionId)
@@ -128,8 +153,9 @@ public class Prediction extends PredictionObj
 		try
 		{
 			Model m = Model.find(modelId);
+			CFPMiner miner = m.getCFPMiner();
 
-			Instances data = CFPtoArff.getTestDataset(m.getCFPMiner(), "DUD_vegfr2", getMolecule());
+			Instances data = CFPtoArff.getTestDataset(miner, "DUD_vegfr2", getMolecule());
 			Instance inst = data.get(0);
 			data.setClassIndex(data.numAttributes() - 1);
 
@@ -138,7 +164,7 @@ public class Prediction extends PredictionObj
 			int maxIdx = ArrayUtil.getMaxIndex(dist);
 			predictedIdx = maxIdx;
 			predictedDistribution = dist;
-			trainingActivity = m.getCFPMiner().getTrainingActivity(smiles);
+			trainingActivity = miner.getTrainingActivity(smiles);
 
 			if (createPredictionAttributes)
 			{
@@ -148,16 +174,16 @@ public class Prediction extends PredictionObj
 				{
 					if (data.classIndex() == a)
 						continue;
-					CFPFragment f = m.getCFPMiner().getFragmentViaIdx(a);
+					CFPFragment f = miner.getFragmentViaIdx(a);
 					//					System.out.println("\nfragment " + (a + 1) + " " + f);
 					Set<CFPFragment> fs;
-					if (m.getCFPMiner().getFragmentsForTestCompound(smiles).contains(f))
+					if (miner.getFragmentsForTestCompound(smiles).contains(f))
 					{
 						//	System.out.println("fragment is present in test compound\nalso disable super fragments: ");
-						fs = m.getCFPMiner().getSuperFragments(f);
+						fs = miner.getSuperFragments(f);
 
 						//	System.out.println("fragment is present in test compound\nalso disable included sub fragments within test compound: ");
-						Set<CFPFragment> fs2 = m.getCFPMiner().getIncludedFragments(f, smiles);
+						Set<CFPFragment> fs2 = miner.getIncludedFragments(f, smiles);
 						//System.out.println("fs2: " + f + " includes " + fs2);
 						if (fs2 != null)
 						{
@@ -170,14 +196,14 @@ public class Prediction extends PredictionObj
 					else
 					{
 						//	System.out.println("fragment is NOT present in test compound\nalso enable sub fragments: ");
-						fs = m.getCFPMiner().getSubFragments(f);
+						fs = miner.getSubFragments(f);
 					}
 					Set<Integer> fIdx = new HashSet<Integer>();
 					if (fs != null)
 						for (CFPFragment frag : fs)
 						{
-							fIdx.add(m.getCFPMiner().getIdxForFragment(frag));
-							//	System.out.println((m.getCFPMiner().getIdxForFragment(frag) + 1) + " " + frag);
+							fIdx.add(miner.getIdxForFragment(frag));
+							//	System.out.println((miner.getIdxForFragment(frag) + 1) + " " + frag);
 						}
 					//					System.out.println();
 					subAndSuperAtts.put(a, fIdx);
@@ -189,13 +215,13 @@ public class Prediction extends PredictionObj
 				{
 					if (data.classIndex() == a)
 						continue;
-					CFPFragment f = m.getCFPMiner().getFragmentViaIdx(a);
-					Set<CFPFragment> fs = m.getCFPMiner().getSubFragments(f);
+					CFPFragment f = miner.getFragmentViaIdx(a);
+					Set<CFPFragment> fs = miner.getSubFragments(f);
 					if (fs != null)
 					{
 						hasSub.add(a);
 						for (CFPFragment cfpFragment : fs)
-							hasSuper.add(m.getCFPMiner().getIdxForFragment(cfpFragment));
+							hasSuper.add(miner.getIdxForFragment(cfpFragment));
 					}
 				}
 
@@ -219,11 +245,11 @@ public class Prediction extends PredictionObj
 		}
 	}
 
-	public static String getHTML(String predictionId, int wait)
+	public static String getPredictionListHTML(Prediction p[])
 	{
 		try
 		{
-			return new PredictionsHtml(find(predictionId), wait).build();
+			return new PredictionsHtml(p).build();
 		}
 		catch (Exception e)
 		{
@@ -231,11 +257,12 @@ public class Prediction extends PredictionObj
 		}
 	}
 
-	public String getHTML(HideFragments hideSuper, String maxNumFragments)
+	@Override
+	public String getHTML()
 	{
 		try
 		{
-			return new PredictionHtml(this, hideSuper, maxNumFragments).build();
+			return new PredictionHtml(this).build();
 		}
 		catch (Exception e)
 		{

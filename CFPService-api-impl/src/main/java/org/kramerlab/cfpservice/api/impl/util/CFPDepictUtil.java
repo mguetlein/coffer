@@ -22,11 +22,9 @@ import org.openscience.cdk.interfaces.IChemObject;
 
 public class CFPDepictUtil
 {
-	public static void depictMultiMatchToPNG(String pngFile, IAtomContainer mol,
-			String predictionId, String modelId, int maxSize) throws Exception
+	public static void depictMultiMatchToPNG(String pngFile, IAtomContainer mol, Prediction p,
+			Model m, int maxSize) throws Exception
 	{
-		Model m = Model.find(modelId);
-		Prediction p = Prediction.find(modelId, predictionId);
 		depictMultiMatchToPNG(pngFile, mol, m.getCFPMiner(), p.getPredictedDistribution(),
 				p.getPredictionAttributes(), maxSize);
 	}

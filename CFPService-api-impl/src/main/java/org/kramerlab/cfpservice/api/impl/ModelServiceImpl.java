@@ -2,6 +2,7 @@ package org.kramerlab.cfpservice.api.impl;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Locale;
 
 import javax.ws.rs.core.Response;
@@ -25,7 +26,8 @@ public class ModelServiceImpl implements ModelService
 		Locale.setDefault(Locale.US);
 	}
 
-	public String getDocHTML()
+	@Override
+	public String getDocumentation()
 	{
 		try
 		{
@@ -37,26 +39,19 @@ public class ModelServiceImpl implements ModelService
 		}
 	}
 
+	@Override
 	public Model[] getModels()
 	{
 		return Model.listModels();
 	}
 
-	public String getModelsHTML()
-	{
-		return Model.getModelListHTML();
-	}
-
+	@Override
 	public Model getModel(String id)
 	{
 		return Model.find(id);
 	}
 
-	public String getModelHTML(String id)
-	{
-		return Model.find(id).getHTML();
-	}
-
+	@Override
 	public Response predict(final String smiles)
 	{
 		try
@@ -84,6 +79,7 @@ public class ModelServiceImpl implements ModelService
 		}
 	}
 
+	@Override
 	public Response predict(String id, String smiles)
 	{
 		try
@@ -98,53 +94,46 @@ public class ModelServiceImpl implements ModelService
 		}
 	}
 
+	@Override
 	public InputStream getValidationChart(String id)
 	{
 		return Model.find(id).getValidationChart();
 	}
 
-	public PredictionObj getPrediction(String modelId, String predictionId)
-	{
-		return Prediction.find(modelId, predictionId);
-	}
-
-	public String getPredictionHTML(String modelId, String predictionId, String hideFragments,
+	@Override
+	public PredictionObj getPrediction(String modelId, String predictionId, String hideFragments,
 			String maxNumFragments)
 	{
-		return Prediction.find(modelId, predictionId)
-				.getHTML(HideFragments.fromString(hideFragments), maxNumFragments);
+		int num = maxNumFragments == null ? ModelService.DEFAULT_NUM_ENTRIES
+				: Integer.parseInt(maxNumFragments);
+		return Prediction.find(modelId, predictionId, HideFragments.fromString(hideFragments), num);
 	}
 
+	@Override
 	public Prediction[] getPredictions(String predictionId, String wait)
 	{
+		int num = wait == null ? -1 : Integer.parseInt(wait);
 		Prediction[] res = Prediction.find(predictionId);
-		if (wait != null && res.length < Integer.parseInt(wait))
-			return new Prediction[0];
-		else
-			return res;
+		if (res.length < num) // add trailing nulls
+			res = Arrays.copyOf(res, num);
+		return res;
 	}
 
-	public String getPredictionsHTML(String predictionId, String wait)
-	{
-		return Prediction.getHTML(predictionId, wait != null ? Integer.parseInt(wait) : -1);
-	}
-
-	public FragmentObj getFragment(String modelId, String fragmentId)
-	{
-		return Fragment.find(modelId, fragmentId);
-	}
-
-	public String getFragmentHTML(String modelId, String fragmentId, String maxNumCompounds,
+	@Override
+	public FragmentObj getFragment(String modelId, String fragmentId, String maxNumFragments,
 			String smiles)
 	{
-		return Fragment.find(modelId, fragmentId).getHTML(maxNumCompounds, smiles);
+		int num = maxNumFragments == null ? ModelService.DEFAULT_NUM_ENTRIES
+				: Integer.parseInt(maxNumFragments);
+		return Fragment.find(modelId, fragmentId, num, smiles);
 	}
 
+	@Override
 	public String getCompoundInfo(String service, String smiles)
 	{
 		try
 		{
-			return CompoundInfo.get(CompoundInfo.Service.valueOf(service), smiles);
+			return CompoundInfo.getHTML(CompoundInfo.Service.valueOf(service), smiles);
 		}
 		catch (Exception e)
 		{
@@ -152,11 +141,13 @@ public class ModelServiceImpl implements ModelService
 		}
 	}
 
+	@Override
 	public InputStream depict(String smiles, String size)
 	{
 		return DepictService.depict(smiles, size);
 	}
 
+	@Override
 	public InputStream depictMatch(String smiles, String size, String atoms,
 			String highlightOutgoingBonds, String activating, String crop)
 	{
@@ -164,9 +155,10 @@ public class ModelServiceImpl implements ModelService
 				crop);
 	}
 
-	public InputStream depictMultiMatch(String smiles, String size, String prediction, String model)
+	@Override
+	public InputStream depictMultiMatch(String smiles, String size, String model)
 	{
-		return DepictService.depictMultiMatch(smiles, size, prediction, model);
+		return DepictService.depictMultiMatch(smiles, size, model);
 	}
 
 	public static void main(String[] args)

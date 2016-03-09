@@ -6,9 +6,12 @@ import org.mg.javalib.datamining.ResultSet;
 
 public class ModelsHtml extends DefaultHtml
 {
-	public ModelsHtml()
+	Model[] models;
+
+	public ModelsHtml(Model[] models)
 	{
 		super(null, null, null, null);
+		this.models = models;
 	}
 
 	public String build() throws Exception
@@ -22,7 +25,6 @@ public class ModelsHtml extends DefaultHtml
 		addGap();
 		ResultSet set = new ResultSet();
 
-		Model[] models = Model.listModels();
 		for (Model m : models)
 		{
 			int idx = set.addResult();

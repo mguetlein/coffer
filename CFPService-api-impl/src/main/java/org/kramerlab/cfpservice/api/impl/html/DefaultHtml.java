@@ -1,10 +1,10 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
 import java.net.URLEncoder;
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 import org.kramerlab.cfpservice.api.ModelService;
-import org.mg.htmlreporting.HTMLReport;
 import org.mg.javalib.util.ArrayUtil;
 
 public class DefaultHtml extends HTMLReport
@@ -25,8 +25,6 @@ public class DefaultHtml extends HTMLReport
 
 	protected int maxMolPicSize = 300;
 	protected int croppedPicSize = 150;
-	protected int defaultMaxNumElements = 10;
-	protected int maxNumElements = defaultMaxNumElements;
 
 	public DefaultHtml(String id, String name, String subId, String subName)
 	{
@@ -53,16 +51,6 @@ public class DefaultHtml extends HTMLReport
 		setExternalLinkImg("/img/iconExternalLink.gif");
 	}
 
-	protected void parseMaxNumElements(String maxNumElements)
-	{
-		if (maxNumElements == null || maxNumElements.isEmpty())
-			this.maxNumElements = defaultMaxNumElements;
-		else if (maxNumElements.equals("all"))
-			this.maxNumElements = Integer.MAX_VALUE;
-		else
-			this.maxNumElements = Integer.parseInt(maxNumElements);
-	}
-
 	private static ResourceBundle bundle;
 
 	private static ResourceBundle bundle()
@@ -75,6 +63,11 @@ public class DefaultHtml extends HTMLReport
 	public static String text(String key)
 	{
 		return bundle().getString(key);
+	}
+
+	public static String text(String key, Object... params)
+	{
+		return MessageFormat.format(bundle.getString(key), params);
 	}
 
 	public String moreLink(String docSection)
@@ -109,13 +102,12 @@ public class DefaultHtml extends HTMLReport
 				+ highlightOutgoingBondsStr + cropStr + activatingStr;
 	}
 
-	public String depictMultiMatch(String smiles, String predictionId, String modelId, int size)
-			throws Exception
+	public String depictMultiMatch(String smiles, String modelId, int size) throws Exception
 	{
 		String sizeStr = "";
 		if (size != -1)
 			sizeStr = "&size=" + size;
 		return "/depictMultiMatch?smiles=" + URLEncoder.encode(smiles, "UTF8") + "&model=" + modelId
-				+ "&prediction=" + predictionId + sizeStr;
+				+ sizeStr;
 	}
 }

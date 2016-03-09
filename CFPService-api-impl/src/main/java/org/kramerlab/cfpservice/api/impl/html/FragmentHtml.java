@@ -3,6 +3,7 @@ package org.kramerlab.cfpservice.api.impl.html;
 import java.net.URLEncoder;
 import java.util.Set;
 
+import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.impl.Fragment;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.mg.cdklib.cfp.CFPFragment;
@@ -15,9 +16,10 @@ public class FragmentHtml extends DefaultHtml
 	String modelId;
 	String fragment;
 	CFPMiner miner;
+	int maxNumFragments;
 	String smiles;
 
-	public FragmentHtml(Fragment f, String maxNumCompounds, String smiles)
+	public FragmentHtml(Fragment f)
 	{
 		super(f.getModelId(), Model.getName(f.getModelId()), "fragment/" + f.getId(), "Fragment");
 		this.miner = Model.find(f.getModelId()).getCFPMiner();
@@ -25,9 +27,8 @@ public class FragmentHtml extends DefaultHtml
 		fragment = "Fragment " + f.getId() + " / " + miner.getNumFragments();
 		setPageTitle(fragment);
 		this.selectedAttributeIdx = Integer.parseInt(f.getId()) - 1;
-		this.smiles = smiles;
-		//		defaultMaxNumElements = 10;
-		parseMaxNumElements(maxNumCompounds);
+		this.smiles = f.getSmiles();
+		this.maxNumFragments = f.getMaxNumFragments();
 		//		System.out.println(miner.getFragmentViaIdx(selectedAttributeIdx));
 
 	}
@@ -90,7 +91,7 @@ public class FragmentHtml extends DefaultHtml
 						&& miner.getEndpoints().get(i).equals(clazz))
 				{
 					cIdx++;
-					if (cIdx > maxNumElements)
+					if (cIdx > maxNumFragments)
 						continue;
 
 					rIdx = set.addResult();
@@ -114,15 +115,15 @@ public class FragmentHtml extends DefaultHtml
 			else
 				startRightColumn();
 			first = false;
-			if (cIdx > maxNumElements)
+			if (cIdx > maxNumFragments)
 			{
 				rIdx = set.addResult();
 				set.setResultValue(rIdx,
 						"'" + clazz
 								+ "' compounds",
 						encodeLink((selectedAttributeIdx + 1) + "?size="
-								+ Math.min(maxNumElements + defaultMaxNumElements, cIdx) + "#"
-								+ (rIdx + 1), "More compounds"));
+								+ Math.min(maxNumFragments + ModelService.DEFAULT_NUM_ENTRIES, cIdx)
+								+ "#" + (rIdx + 1), "More compounds"));
 			}
 			addTable(set);
 		}
@@ -179,7 +180,7 @@ public class FragmentHtml extends DefaultHtml
 					}
 
 					cIdx++;
-					if (cIdx > maxNumElements)
+					if (cIdx > maxNumFragments)
 						continue;
 
 					String dep = depictMatch(smi, atoms, miner.getCFPType().isECFP(), null, true,
@@ -212,13 +213,20 @@ public class FragmentHtml extends DefaultHtml
 											? "?smiles=" + URLEncoder.encode(smiles, "UTF8") : "")),
 							true));
 				}
-				if (cIdx > maxNumElements)
+				if (cIdx > maxNumFragments)
 				{
 					rIdx = set.addResult();
-					set.setResultValue(rIdx, (sub ? "Sub" : "Super") + " Fragment",
-							encodeLink((selectedAttributeIdx + 1) + "?size="
-									+ Math.min(maxNumElements + defaultMaxNumElements, cIdx) + "#"
-									+ (rIdx + 1), "More compounds"));
+					set.setResultValue(rIdx,
+							(sub ? "Sub" : "Super")
+									+ " Fragment",
+							encodeLink(
+									(selectedAttributeIdx + 1) + "?size="
+											+ Math.min(
+													maxNumFragments
+															+ ModelService.DEFAULT_NUM_ENTRIES,
+													cIdx)
+											+ "#" + (rIdx + 1),
+									"More compounds"));
 				}
 			}
 

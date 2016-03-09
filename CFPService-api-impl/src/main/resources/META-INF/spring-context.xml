@@ -59,6 +59,7 @@
         <property name="dropRootElement" value="true" />
         <property name="supportUnwrapped" value="true" />
     </bean>
+    <bean class="org.kramerlab.cfpservice.api.impl.util.HTMLBodyWriter"></bean> 
 	</jaxrs:providers>
 
    </jaxrs:server>
