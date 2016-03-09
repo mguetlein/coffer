@@ -133,7 +133,7 @@ public interface ModelService
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i>/fragment/<i>fragmentId</i><br>
-	 * <b>content-type:</b> application/json<br>
+	 * <b>content-type:</b> application/json, text/html<br>
 	 * <b>params:</b><br><i>size:</i> integer specifying the number of fragments shown (default: {@value DEFAULT_NUM_ENTRIES})<br>
 	 * <i>smiles:</i> a compound that the fragment is matched on (optional)<br>
 	 * <b>returns:</b> fragment
