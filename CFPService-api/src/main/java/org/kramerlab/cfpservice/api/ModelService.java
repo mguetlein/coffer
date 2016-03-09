@@ -54,7 +54,8 @@ public interface ModelService
 
 	/**
 	 * <b>request:</b> POST {@value SERVICE_HOME}/<br>
-	 * <b>params:</b><br></i>compound</i> SMILES String<br>
+	 * <b>params:</b><br>
+	 * </i>compound:</i> SMILES String<br>
 	 * <b>returns:</b> redirect to prediction with all models
 	 */
 	@Path("")
@@ -83,7 +84,8 @@ public interface ModelService
 
 	/**
 	 * <b>request:</b> POST {@value SERVICE_HOME}/<i>modelId</i><br>
-	 * <b>params:</b><br><i>compound</i> SMILES String<br>
+	 * <b>params:</b><br>
+	 * <i>compound:</i> SMILES String<br>
 	 * <b>returns:</b> redirect to single-model prediction
 	 */
 	@Path("{modelId}")
@@ -103,7 +105,8 @@ public interface ModelService
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/prediction/<i>modelId</i><br>
 	 * <b>content-type:</b> application/json, text/html<br>
-	 * <b>params:</b><br><i>wait</i> integer encoding the number of expected results<br> 
+	 * <b>params:</b><br>
+	 * <i>wait:</i> integer encoding the number of expected results<br> 
 	 * <b>returns:</b> list of single-model predictions, empty predictions trailing if num predictions is < wait
 	 */
 	@Path("prediction/{predictionId}")
@@ -120,7 +123,8 @@ public interface ModelService
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i>/prediction/<i>predictionId</i><br>
 	 * <b>content-type:</b> application/json, text/html<br>
-	 * <b>params:</b><br><i>hideFragments</i> filter options for fragments: {@value HIDE_SUPER_FRAGMENTS}|{@value HIDE_SUB_FRAGMENTS}|{@value HIDE_NO_FRAGMENTS}<br>
+	 * <b>params:</b><br>
+	 * <i>hideFragments:</i> filter options for fragments: {@value HIDE_SUPER_FRAGMENTS}|{@value HIDE_SUB_FRAGMENTS}|{@value HIDE_NO_FRAGMENTS}<br>
 	 * <i>size:</i> integer specifying the number of fragments shown (default: {@value DEFAULT_NUM_ENTRIES})<br>
 	 * <b>returns:</b> single-model prediction
 	 */
@@ -134,7 +138,8 @@ public interface ModelService
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i>/fragment/<i>fragmentId</i><br>
 	 * <b>content-type:</b> application/json, text/html<br>
-	 * <b>params:</b><br><i>size:</i> integer specifying the number of fragments shown (default: {@value DEFAULT_NUM_ENTRIES})<br>
+	 * <b>params:</b><br>
+	 * <i>size:</i> integer specifying the number of fragments shown (default: {@value DEFAULT_NUM_ENTRIES})<br>
 	 * <i>smiles:</i> a compound that the fragment is matched on (optional)<br>
 	 * <b>returns:</b> fragment
 	 */
@@ -159,8 +164,9 @@ public interface ModelService
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/depict<br>
 	 * <b>content-type:</b> image/png<br>
-	 * <b>params:</b><br><i>smiles</i> compound smiles string<br>
-	 * <i>size</i> integer to specify width and height (optional), otherwise depends on compound with default bond size<br>
+	 * <b>params:</b><br>
+	 * <i>smiles:</i> compound smiles string<br>
+	 * <i>size:</i> integer to specify width and height (optional), otherwise depends on compound with default bond size<br>
 	 * <b>returns:</b> image
 	 */
 	@Path("depict")
@@ -171,12 +177,13 @@ public interface ModelService
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/depictMatch<br>
 	 * <b>content-type:</b> image/png<br>
-	 * <b>params:</b><br><i>smiles</i> compound smiles string<br>
-	 * <i>size</i> integer to specify width and height (optional), otherwise depends on compound with default bond size<br>
-	 * <i>atoms</i> comma separated atom indices to be highlighted<br>
-	 * <i>highlightOutgoingBonds</i> true (optional) if outgoing bonds of fragment should be highlighted<br>
-	 * <i>activating</i> true/false (optional) if match should be colored as activating/de-activating instead of neutral<br> 
-	 * <i>crop</i> true (optional) if image should be cropped around matching atoms<br>
+	 * <b>params:</b><br>
+	 * <i>smiles:</i> compound smiles string<br>
+	 * <i>size:</i> integer to specify width and height (optional), otherwise depends on compound with default bond size<br>
+	 * <i>atoms:</i> comma separated atom indices to be highlighted<br>
+	 * <i>highlightOutgoingBonds:</i> true (optional) if outgoing bonds of fragment should be highlighted<br>
+	 * <i>activating:</i> true/false (optional) if match should be colored as activating/de-activating instead of neutral<br> 
+	 * <i>crop:</i> true (optional) if image should be cropped around matching atoms<br>
 	 * <b>returns:</b> image
 	 */
 	@Path("depictMatch")
@@ -190,9 +197,10 @@ public interface ModelService
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/depictMultiMatch<br>
 	 * <b>content-type:</b> image/png<br>
-	 * <b>params:</b><br><i>smiles</i> compound smiles string<br>
-	 * <i>size</i> integer to specify width and height (optional), otherwise depends on compound with default bond size<br>
-	 * <i>model</i> id of the model that is used to predict the compound<br>
+	 * <b>params:</b><br>
+	 * <i>smiles:</i> compound smiles string<br>
+	 * <i>size:</i> integer to specify width and height (optional), otherwise depends on compound with default bond size<br>
+	 * <i>model:</i> id of the model that is used to predict the compound<br>
 	 * <b>returns:</b> image
 	 */
 	@Path("depictMultiMatch")
