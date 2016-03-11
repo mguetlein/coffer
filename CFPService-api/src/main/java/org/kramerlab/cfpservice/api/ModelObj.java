@@ -6,7 +6,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 @XmlRootElement
-public class ModelObj implements Serializable
+public class ModelObj extends ServiceObj implements Serializable
 {
 	private static final long serialVersionUID = 2L;
 
@@ -22,6 +22,12 @@ public class ModelObj implements Serializable
 	public void setId(String id)
 	{
 		this.id = id;
+	}
+
+	@Override
+	public String getPath()
+	{
+		return "/";
 	}
 
 	@XmlTransient

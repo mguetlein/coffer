@@ -40,7 +40,7 @@ public class PredictionsHtml extends DefaultHtml
 			if (endpoint != null)
 			{
 				res.setResultValue(idx, text("model.measured"), encodeLink(url, endpoint));
-				setHeaderHelp(text("model.measured"), text("model.measured.tip"));
+				setHeaderHelp(text("model.measured"), text("model.measured.tip.some"));
 			}
 			res.setResultValue(idx, "Prediction",
 					PredictionHtml.getPrediction(p, m.getClassValues(), true, url));

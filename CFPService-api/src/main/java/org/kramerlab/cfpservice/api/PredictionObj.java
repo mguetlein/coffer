@@ -5,7 +5,7 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class PredictionObj implements Serializable
+public class PredictionObj extends ServiceObj implements Serializable
 {
 	private static final long serialVersionUID = 6L;
 
@@ -24,6 +24,12 @@ public class PredictionObj implements Serializable
 	public void setId(String id)
 	{
 		this.id = id;
+	}
+
+	@Override
+	public String getPath()
+	{
+		return "/" + modelId + "/prediction/";
 	}
 
 	public String getSmiles()

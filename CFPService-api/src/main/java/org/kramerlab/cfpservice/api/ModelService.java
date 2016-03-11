@@ -79,7 +79,7 @@ public interface ModelService
 	 */
 	@Path("{modelId}")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, "text/asdf" })
 	ModelObj getModel(@PathParam("modelId") String modelId);
 
 	/**
@@ -103,7 +103,7 @@ public interface ModelService
 	InputStream getValidationChart(@PathParam("modelId") String modelId);
 
 	/**
-	 * <b>request:</b> GET {@value SERVICE_HOME}/prediction/<i>modelId</i><br>
+	 * <b>request:</b> GET {@value SERVICE_HOME}/prediction/<i>predictionId</i><br>
 	 * <b>content-type:</b> application/json, text/html<br>
 	 * <b>params:</b><br>
 	 * <i>wait:</i> integer encoding the number of expected results<br> 

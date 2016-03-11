@@ -4,9 +4,9 @@ public class DocHtml extends DefaultHtml
 {
 	public static String CLASSIFIERS = "Classifiers";
 
-	public static String PREDICTION_FRAGMENTS = "Prediction Fragments";
+	public static String RANKING_FRAGMENTS = "Ranking of Fragments";
 
-	public static String FRAGMENTS = "CFP Fragments";
+	public static String FILTERED_FRAGMENTS = "Filtering of Circular Fingerprint Fragments";
 
 	public static String VALIDATION = "Validation";
 
@@ -24,34 +24,29 @@ public class DocHtml extends DefaultHtml
 	{
 		setHidePageTitle(true);
 
-		newSection("Background");
+		newSection("How to cite this service");
+		addParagraphExternal(text("doc.cite"));
 
-		addParagraph(text("doc.background"));
+		newSection("About");
+		addParagraphExternal(text("doc.about"));
 
-		newSection(FRAGMENTS);
-
-		addParagraph(text("doc.fragments"));
+		newSection(FILTERED_FRAGMENTS);
+		addParagraphExternal(text("doc.filteredFragments"));
 
 		newSection(CLASSIFIERS);
+		addParagraphExternal(text("doc.classifiers"));
 
-		addParagraph(text("doc.classifiers"));
-
-		newSection(PREDICTION_FRAGMENTS);
-
-		addParagraph(text("doc.predictionFragments"));
+		newSection(RANKING_FRAGMENTS);
+		addParagraphExternal(text("doc.rankingFragments"));
 
 		newSection(VALIDATION);
-
-		addParagraph(text("doc.validation"));
+		addParagraphExternal(text("doc.validation"));
 
 		newSection("Source Code");
 		addParagraphExternal(text("doc.source"));
 
 		newSection("REST API");
 		addParagraphExternal(text("doc.rest"));
-
-		newSection("How to cite this service");
-		addParagraph(text("doc.cite"));
 
 		newSection("License");
 		addParagraphExternal(text("doc.license"));

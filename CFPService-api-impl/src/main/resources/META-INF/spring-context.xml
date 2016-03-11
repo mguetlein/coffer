@@ -54,11 +54,15 @@
       <ref bean="modelService#default"/>
     </jaxrs:serviceBeans>
     
-    <jaxrs:providers>
-    <bean class="org.apache.cxf.jaxrs.provider.json.JSONProvider">
+     <jaxrs:providers>
+<!--     <bean class="org.apache.cxf.jaxrs.provider.json.JSONProvider">
         <property name="dropRootElement" value="true" />
         <property name="supportUnwrapped" value="true" />
-    </bean>
+	</bean> -->
+
+     <bean class="org.eclipse.persistence.jaxb.rs.MOXyJsonProvider"> 
+     	<property name="formattedOutput" value="true" />
+     	</bean>
     <bean class="org.kramerlab.cfpservice.api.impl.util.HTMLBodyWriter"></bean> 
 	</jaxrs:providers>
 

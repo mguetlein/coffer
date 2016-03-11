@@ -211,7 +211,7 @@ public class Model extends ModelObj implements HTMLProvider
 
 	public static void main(String[] args) throws Exception
 	{
-		buildModelFromNestedCV();
+		buildModelFromNestedCV(false);
 
 		//buildModelFromNestedCV("CPDBAS_Mouse");
 		//buildModelFromNestedCV("NCTRER");
@@ -284,7 +284,8 @@ public class Model extends ModelObj implements HTMLProvider
 		System.out.println(p.getPredictedDistribution()[model.getActiveClassIdx()]);
 	}
 
-	public static void buildModelFromNestedCV(String... datasets) throws Exception
+	public static void buildModelFromNestedCV(boolean replaceExisting, String... datasets)
+			throws Exception
 	{
 		InnerValidationResults val = new InnerValidationResults();
 
@@ -294,53 +295,58 @@ public class Model extends ModelObj implements HTMLProvider
 					&& ArrayUtil.indexOf(datasets, dataset) == -1)
 				continue;
 
-			if (PersistanceAdapter.INSTANCE.modelExists(dataset))
+			if (PersistanceAdapter.INSTANCE.modelExists(dataset) && replaceExisting)
 				PersistanceAdapter.INSTANCE.deleteModel(dataset);
 
-			Model model = new Model();
-			model.id = dataset;
+			if (PersistanceAdapter.INSTANCE.modelExists(dataset))
+				System.out.println("model already exists: " + dataset);
+			else
+			{
+				Model model = new Model();
+				model.id = dataset;
 
-			List<String> endpoints = PersistanceAdapter.INSTANCE.readDatasetEndpoints(dataset);
-			List<String> smiles = PersistanceAdapter.INSTANCE.readDatasetSmiles(dataset);
-			ListUtil.scramble(new Random(1), smiles, endpoints);
-			model.miner = new CFPMiner(endpoints);
+				List<String> endpoints = PersistanceAdapter.INSTANCE.readDatasetEndpoints(dataset);
+				List<String> smiles = PersistanceAdapter.INSTANCE.readDatasetSmiles(dataset);
+				ListUtil.scramble(new Random(1), smiles, endpoints);
+				model.miner = new CFPMiner(endpoints);
 
-			FeatureModel featureModel = val.getSelectedModel(dataset);
-			CFPFeatureProvider featureSetting = (CFPFeatureProvider) featureModel
-					.getFeatureProvider();
-			org.mg.wekalib.eval2.model.Model algorithmSetting = featureModel.getModel();
+				FeatureModel featureModel = val.getSelectedModel(dataset);
+				CFPFeatureProvider featureSetting = (CFPFeatureProvider) featureModel
+						.getFeatureProvider();
+				org.mg.wekalib.eval2.model.Model algorithmSetting = featureModel.getModel();
 
-			System.out.println("\nMining selected features: " + featureSetting.getName());
-			model.miner.setHashfoldsize(featureSetting.getHashfoldSize());
-			model.miner.setType(featureSetting.getType());
-			model.miner.setFeatureSelection(featureSetting.getFeatureSelection());
-			model.miner.mine(smiles);
-			model.miner.applyFilter();
-			System.out.println(model.miner);
-			if (model.miner.getNumCompounds() != endpoints.size())
-				throw new IllegalStateException();
+				System.out.println("\nMining selected features: " + featureSetting.getName());
+				model.miner.setHashfoldsize(featureSetting.getHashfoldSize());
+				model.miner.setType(featureSetting.getType());
+				model.miner.setFeatureSelection(featureSetting.getFeatureSelection());
+				model.miner.mine(smiles);
+				model.miner.applyFilter();
+				System.out.println(model.miner);
+				if (model.miner.getNumCompounds() != endpoints.size())
+					throw new IllegalStateException();
 
-			Instances inst = CFPtoArff.getTrainingDataset(model.miner, dataset);
-			inst.setClassIndex(inst.numAttributes() - 1);
-			if (inst.size() != smiles.size())
-				throw new IllegalStateException();
-			if (inst.numAttributes() != model.miner.getNumFragments() + 1)
-				throw new IllegalStateException();
-			if (!model.miner.getClassValues()[0].equals(inst.classAttribute().value(0)))
-				throw new IllegalArgumentException();
-			if (!model.miner.getClassValues()[1].equals(inst.classAttribute().value(1)))
-				throw new IllegalArgumentException();
+				Instances inst = CFPtoArff.getTrainingDataset(model.miner, dataset);
+				inst.setClassIndex(inst.numAttributes() - 1);
+				if (inst.size() != smiles.size())
+					throw new IllegalStateException();
+				if (inst.numAttributes() != model.miner.getNumFragments() + 1)
+					throw new IllegalStateException();
+				if (!model.miner.getClassValues()[0].equals(inst.classAttribute().value(0)))
+					throw new IllegalArgumentException();
+				if (!model.miner.getClassValues()[1].equals(inst.classAttribute().value(1)))
+					throw new IllegalArgumentException();
 
-			System.out.println("Building selected algorithm: " + algorithmSetting.getName());
-			model.classifier = ((AbstractModel) algorithmSetting).getWekaClassifer();
-			//		int seed = 1;
-			//		if (model.classifier instanceof Randomizable)
-			//			((Randomizable) model.classifier).setSeed(seed);
-			((Classifier) model.classifier).buildClassifier(inst);
+				System.out.println("Building selected algorithm: " + algorithmSetting.getName());
+				model.classifier = ((AbstractModel) algorithmSetting).getWekaClassifer();
+				//		int seed = 1;
+				//		if (model.classifier instanceof Randomizable)
+				//			((Randomizable) model.classifier).setSeed(seed);
+				((Classifier) model.classifier).buildClassifier(inst);
 
-			model.setActiveClassIdx(model.miner.getActiveIdx());
-			model.setClassValues(model.miner.getClassValues());
-			model.saveModel();
+				model.setActiveClassIdx(model.miner.getActiveIdx());
+				model.setClassValues(model.miner.getClassValues());
+				model.saveModel();
+			}
 
 			System.out.println("\nStoring validation results");
 			String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(dataset);

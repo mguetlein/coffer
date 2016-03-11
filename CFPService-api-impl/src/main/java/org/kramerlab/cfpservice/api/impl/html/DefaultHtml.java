@@ -57,6 +57,8 @@ public class DefaultHtml extends HTMLReport
 	{
 		if (bundle == null)
 			bundle = ResourceBundle.getBundle("cfpservice");
+//		ResourceBundle.clearCache();
+//		bundle = ResourceBundle.getBundle("cfpservice");
 		return bundle;
 	}
 

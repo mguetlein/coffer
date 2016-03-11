@@ -51,20 +51,22 @@ public class ModelHtml extends DefaultHtml
 		//		ResultSet setM = new ResultSet();
 		//		setM.addResult();
 
-		set.setResultValue(idx, "Classifier", getMouseoverHelp(
-				text("model.tip") + " " + moreLink(DocHtml.CLASSIFIERS), m.getClassifierName()));
+		//		set.setResultValue(idx, "Classifier", getMouseoverHelp(
+		//				text("model.tip") + " " + moreLink(DocHtml.CLASSIFIERS), m.getClassifierName()));
+		set.setResultValue(idx, "Classifier", m.getClassifierName());
 
-		set.setResultValue(idx, "Fragment type",
-				getMouseoverHelp(text("fragment.type.tip") + " " + moreLink(DocHtml.FRAGMENTS),
-						m.getCFPMiner().getFeatureType()));
-		set.setResultValue(idx, "Num fragments", new Renderable()
+		set.setResultValue(idx, "Features",
+				getMouseoverHelp(
+						text("fragment.type.tip") + " " + moreLink(DocHtml.FILTERED_FRAGMENTS),
+						m.getCFPMiner().getNiceFragmentDescription()));
+		set.setResultValue(idx, "Num features", new Renderable()
 		{
 			public void renderOn(HtmlCanvas html) throws IOException
 			{
 				html.write(m.getCFPMiner().getNumFragments() + " ");
 				new TextWithLinks(
-						encodeLink("/" + m.getId() + "/fragment/1", "(inspect fragments)"), true)
-								.renderOn(html);
+						encodeLink("/" + m.getId() + "/fragment/1", "(inspect fragments)"), true,
+						false).renderOn(html);
 				//html.write("bla");
 			}
 		});

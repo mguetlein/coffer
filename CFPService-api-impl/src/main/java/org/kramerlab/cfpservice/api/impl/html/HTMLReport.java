@@ -246,8 +246,9 @@ public class HTMLReport
 		return new JSmolPlugin(url);
 	}
 
-	private static String LINK_WRAP = ".lnk!.";
-	private static String LINK_SEP = "-dsc#-";
+	private static String LINK_START = "[";
+	private static String LINK_END = "]";
+	private static String LINK_SEP = " ";
 
 	public static Image getImage(String src)
 	{
@@ -266,99 +267,94 @@ public class HTMLReport
 
 	public String encodeLink(String url, String text)
 	{
-		return LINK_WRAP + url + LINK_SEP + text + LINK_WRAP;
+		return LINK_START + url + LINK_SEP + text + LINK_END;
 	}
 
-	public static class TextWithLinks implements Renderable
+	public class TextWithLinks implements Renderable
 	{
 		String text;
 		boolean underline = false;
+		boolean external = false;
 
 		public TextWithLinks(String text)
 		{
 			this.text = text;
 		}
 
-		public TextWithLinks(String text, boolean underline)
+		public TextWithLinks(String text, boolean underline, boolean external)
 		{
 			this(text);
 			this.underline = underline;
+			this.external = external;
 		}
 
 		@Override
 		public void renderOn(HtmlCanvas html) throws IOException
 		{
-			boolean first = true;
-			for (String t : text.split("<br>"))
-			{
-				if (first)
-					first = false;
-				else if (!t.isEmpty())
-					html.br();
-				for (String st : t.split(LINK_WRAP))
-				{
-					if (st.contains(LINK_SEP))
-					{
-						String str[] = st.split(LINK_SEP);
-						HtmlAttributes attr = HtmlAttributesFactory.href(str[0]);
-						if (underline)
-							attr.class_("underline");
-						html.a(attr);
-						if (str.length > 1 && str[1].length() > 1)
-							html.write(str[1]);
-						html._a();
-					}
-					else
-					{
-						html.write(st);
-					}
-				}
-			}
-		}
-	}
-
-	public class TextWithLinksExternal implements Renderable
-	{
-		String text;
-
-		public TextWithLinksExternal(String text)
-		{
-			this.text = text;
+			render(html, text);
 		}
 
-		@Override
-		public void renderOn(HtmlCanvas html) throws IOException
+		private void renderLink(HtmlCanvas html, String url, String text) throws IOException
 		{
-			boolean first = true;
-			for (String t : text.split("<br>"))
+			HtmlAttributes attr = HtmlAttributesFactory.href(url);
+			if (underline)
+				attr.class_("underline");
+			html.a(attr);
+			if (text != null && text.length() > 1)
+				html.write(text);
+			if (external)
 			{
-				if (first)
-					first = false;
-				else if (!t.isEmpty())
-					html.br();
-				for (String st : t.split(LINK_WRAP))
+				if (text != null && text.length() > 1)
+					html.write(" ");
+				html.img(HtmlAttributesFactory.src(externalLinkImg));
+			}
+			html._a();
+		}
+
+		private void render(HtmlCanvas html, String text) throws IOException
+		{
+			if (text.contains("<br>"))
+			{
+				boolean first = true;
+				for (String t : text.split("<br>"))
 				{
-					if (st.contains(LINK_SEP))
-					{
-						String str[] = st.split(LINK_SEP);
-						if (str.length > 1 && str[1].length() > 1)
-							html.write(str[1] + " ");
-						html.a(HtmlAttributesFactory.href(str[0]));
-						html.img(HtmlAttributesFactory.src(externalLinkImg));
-						html._a();
-					}
-					else
-					{
-						html.write(st);
-					}
+					if (first)
+						first = false;
+					else if (!t.isEmpty())
+						html.br();
+					render(html, t);
 				}
 			}
+			else if (text.contains(LINK_START) && text.contains(LINK_END))
+			{
+				int s_start = text.indexOf(LINK_START);
+				int s_end = s_start + LINK_START.length();
+
+				int e_start = text.indexOf(LINK_END);
+				int e_end = e_start + LINK_END.length();
+
+				render(html, text.substring(0, s_start));
+
+				String link = text.substring(s_end, e_start);
+				if (link.contains(LINK_SEP))
+				{
+					int se_start = link.indexOf(LINK_SEP);
+					int se_end = se_start + LINK_SEP.length();
+					renderLink(html, link.substring(0, se_start), link.substring(se_end));
+				}
+				else
+					renderLink(html, link, null);
+
+				render(html, text.substring(e_end));
+			}
+			else
+				html.write(text);
 		}
 	}
 
 	public void addParagraphExternal(String text)
 	{
-		addParagraph(new TextWithLinksExternal(text));
+		addParagraph(new TextWithLinks(text, false, true));
 	}
 
 	public void setExternalLinkImg(String externalLinkImg)
@@ -469,7 +465,7 @@ public class HTMLReport
 
 	public Renderable getMouseoverHelp(final String helpText, final String title, final Image image)
 	{
-		return getMouseoverHelp(new TextWithLinks(helpText, true), title, image);
+		return getMouseoverHelp(new TextWithLinks(helpText, true, false), title, image);
 	}
 
 	public Renderable getMouseoverHelp(final Renderable helpText, final String title)
@@ -679,7 +675,7 @@ public class HTMLReport
 
 	public void addParagraph(String text)
 	{
-		addParagraph(new TextWithLinks(text, true));
+		addParagraph(new TextWithLinks(text, true, false));
 	}
 
 	public void addParagraph(Renderable r)

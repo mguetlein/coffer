@@ -5,7 +5,7 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class FragmentObj implements Serializable
+public class FragmentObj extends ServiceObj implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
@@ -18,6 +18,12 @@ public class FragmentObj implements Serializable
 	public String getId()
 	{
 		return id;
+	}
+
+	@Override
+	public String getPath()
+	{
+		return "/" + modelId + "/fragment/";
 	}
 
 	public void setId(String id)

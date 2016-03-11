@@ -114,7 +114,7 @@ public class PredictionHtml extends DefaultHtml
 	public static void setAdditionalInfo(HTMLReport rep, ResultSet tableSet, int rIdx,
 			final String smiles) throws UnsupportedEncodingException
 	{
-		rep.setHeaderHelp("Info", "Looking up the compound smiles in PubChem and ChEMBL.");
+		rep.setHeaderHelp("Info", text("compound.info.tip"));
 		final String smi = URLEncoder.encode(smiles, "UTF-8");
 		//		System.out.println(smi);
 		tableSet.setResultValue(rIdx, "Info", new Renderable()
@@ -168,11 +168,12 @@ public class PredictionHtml extends DefaultHtml
 			set.setResultValue(rIdx, "Dataset", encodeLink(url, m.getName()));
 			set.setResultValue(rIdx, "Target", encodeLink(url, m.getTarget()));
 			set.setResultValue(rIdx, "Classifier", encodeLink(url, m.getClassifierName()));
-			set.setResultValue(rIdx, "Fragments", encodeLink(url, miner.getFeatureType()));
+			set.setResultValue(rIdx, "Features",
+					encodeLink(url, miner.getNiceFragmentDescription()));
 
 			setHeaderHelp("Prediction",
 					text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
-			setHeaderHelp(text("model.measured"), text("model.measured.tip"));
+			setHeaderHelp(text("model.measured"), text("model.measured.tip.single"));
 
 			setTableRowsAlternating(false);
 			setTableColWidthLimited(false);
@@ -198,7 +199,7 @@ public class PredictionHtml extends DefaultHtml
 			hideTxt += h + " ";
 		}
 		getHtml().div();//HtmlAttributesFactory.align("right"));
-		getHtml().render(new TextWithLinks(hideTxt, true));
+		getHtml().render(new TextWithLinks(hideTxt, true, false));
 		getHtml().render(getMouseoverHelp(text("fragment.hide"), null));
 		getHtml()._div();
 		addGap();
@@ -259,13 +260,13 @@ public class PredictionHtml extends DefaultHtml
 									+ (activating ? "an activating" : "a de-activating")
 									+ " effect on the prediction:<br>" + "If absent, the "
 									+ alternativePredStr + " "
-									+ moreLink(DocHtml.PREDICTION_FRAGMENTS);
+									+ moreLink(DocHtml.RANKING_FRAGMENTS);
 						else
 							txt = "The " + fragmentLink
 									+ " is absent in the test compound. If present, it would have "
 									+ (activating ? "an activating" : "a de-activating")
 									+ " effect on the prediction:<br>" + "The " + alternativePredStr
-									+ " " + moreLink(DocHtml.PREDICTION_FRAGMENTS);
+									+ " " + moreLink(DocHtml.RANKING_FRAGMENTS);
 					}
 					else
 					{
