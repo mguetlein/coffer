@@ -102,8 +102,8 @@ public class FragmentHtml extends DefaultHtml
 						rIdx = set.addResult();
 						set.setResultValue(rIdx, "", (rIdx + 1));
 						String smiles = miner.getTrainingDataSmiles().get(i);
-						int atoms[] = null;
-						miner.getAtoms(smiles, miner.getFragmentViaIdx(selectedAttributeIdx));
+						int atoms[] = miner.getAtoms(smiles,
+								miner.getFragmentViaIdx(selectedAttributeIdx));
 						String img = depictMatch(smiles, atoms, miner.getCFPType().isECFP(), null,
 								false, maxMolPicSize);
 						String href = depictMatch(smiles, atoms, miner.getCFPType().isECFP(), null,
