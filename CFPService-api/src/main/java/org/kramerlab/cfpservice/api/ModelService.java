@@ -42,6 +42,9 @@ public interface ModelService
 	public static String SERVICE_HOME = "http://cfp-qsar.informatik.uni-mainz.de";
 	public static String SERVICE_TITLE = "Circular Fingerprint QSARs";
 
+	public static String DC_NAMESPACE = "http://purl.org/dc/elements/1.1/";
+	public static String DC_PREFIX = "dc";
+
 	public static String OPENTOX_API = "http://www.opentox.org/api/1.2";
 	public static String OPENTOX_API_PREFIX = "ot";
 
@@ -219,5 +222,11 @@ public interface ModelService
 	@Produces({ "image/png" })
 	InputStream depictMultiMatch(@FormParam("smiles") String smiles, @FormParam("size") String size,
 			@FormParam("model") String model);
+
+	@Path("compound/{compoundId}")
+	@GET
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML,
+			ModelService.MEDIA_TYPE_CHEMICAL_SMILES })
+	CompoundObj getCompound(@PathParam("compoundId") String compoundId);
 
 }

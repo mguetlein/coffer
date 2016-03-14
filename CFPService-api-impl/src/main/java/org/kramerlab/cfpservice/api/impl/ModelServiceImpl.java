@@ -7,6 +7,7 @@ import java.util.Locale;
 
 import javax.ws.rs.core.Response;
 
+import org.kramerlab.cfpservice.api.CompoundObj;
 import org.kramerlab.cfpservice.api.FragmentObj;
 import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.PredictionObj;
@@ -179,4 +180,11 @@ public class ModelServiceImpl implements ModelService
 		StopWatchUtil.print();
 	}
 
+	@Override
+	public CompoundObj getCompound(String smiles)
+	{
+		Compound c = new Compound();
+		c.setSmiles(smiles);
+		return c;
+	}
 }

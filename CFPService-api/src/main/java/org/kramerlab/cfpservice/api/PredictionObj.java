@@ -2,10 +2,14 @@ package org.kramerlab.cfpservice.api;
 
 import java.io.Serializable;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement
-public class PredictionObj extends ServiceObj implements Serializable
+@XmlType(name = "Dataset", namespace = ModelService.OPENTOX_API)
+public abstract class PredictionObj extends ServiceObj implements Serializable
 {
 	private static final long serialVersionUID = 6L;
 
@@ -81,4 +85,27 @@ public class PredictionObj extends ServiceObj implements Serializable
 	{
 		this.trainingActivity = trainingActivity;
 	}
+
+	@XmlType(name = "FeatureValue", namespace = ModelService.OPENTOX_API)
+	public static abstract class FeatureValue
+	{
+		@XmlAttribute(namespace = ModelService.OPENTOX_API)
+		public abstract String getFeature();
+
+		@XmlAttribute(namespace = ModelService.OPENTOX_API)
+		public abstract Object getValue();
+	}
+
+	@XmlType(name = "DataEntry", namespace = ModelService.OPENTOX_API)
+	public static abstract class DataEntry
+	{
+		@XmlAttribute(namespace = ModelService.OPENTOX_API)
+		public abstract String getCompound();
+
+		@XmlElement(namespace = ModelService.OPENTOX_API)
+		public abstract FeatureValue[] getValues();
+	}
+
+	@XmlElement(namespace = ModelService.OPENTOX_API)
+	public abstract DataEntry getDataEntry();
 }

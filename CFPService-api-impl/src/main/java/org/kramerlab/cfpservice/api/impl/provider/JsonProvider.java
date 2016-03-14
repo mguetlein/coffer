@@ -12,6 +12,7 @@ public class JsonProvider extends MOXyJsonProvider
 		setFormattedOutput(true);
 		HashMap<String, String> map = new HashMap<>();
 		map.put(ModelService.OPENTOX_API, ModelService.OPENTOX_API_PREFIX);
+		map.put(ModelService.DC_NAMESPACE, ModelService.DC_PREFIX);
 		setNamespacePrefixMapper(map);
 	}
 

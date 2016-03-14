@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement
-@XmlType(name = "Model")
+@XmlType(name = "Model", namespace = ModelService.OPENTOX_API)
 public class ModelObj extends ServiceObj implements Serializable
 {
 	private static final long serialVersionUID = 2L;
@@ -59,12 +59,12 @@ public class ModelObj extends ServiceObj implements Serializable
 	@XmlAttribute(namespace = ModelService.OPENTOX_API)
 	public String getDependentVariables()
 	{
-		return getUri() + "/measured";
+		return getURI() + "/measured";
 	}
 
 	@XmlAttribute(namespace = ModelService.OPENTOX_API)
 	public String[] getPredictedVariables()
 	{
-		return new String[] { getUri() + "/predicted", getUri() + "/probability" };
+		return new String[] { getURI() + "/predicted", getURI() + "/probability" };
 	}
 }

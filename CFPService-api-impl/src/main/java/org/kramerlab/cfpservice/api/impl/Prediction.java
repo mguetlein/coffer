@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 import org.kramerlab.cfpminer.weka.eval2.CFPtoArff;
 import org.kramerlab.cfpservice.api.ModelService;
@@ -31,6 +32,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 @XmlRootElement
+@XmlType(name = "Prediction")
 public class Prediction extends PredictionObj implements HTMLOwner
 {
 	private static final long serialVersionUID = 9L;
@@ -269,6 +271,54 @@ public class Prediction extends PredictionObj implements HTMLOwner
 			throw new RuntimeException(e);
 		}
 	}
+
+	// opentox stuff
+
+	public DataEntry getDataEntry()
+	{
+		return new DataEntry()
+		{
+			@Override
+			public FeatureValue[] getValues()
+			{
+				return new FeatureValue[] { new FeatureValue()
+						{
+							@Override
+							public Object getValue()
+							{
+								return Model.find(modelId).getClassValues()[predictedIdx];
+							}
+
+							@Override
+							public String getFeature()
+							{
+								return Model.find(modelId).getPredictedVariables()[0];
+							}
+						}, new FeatureValue()
+						{
+							@Override
+							public Object getValue()
+							{
+								return predictedDistribution[predictedIdx];
+							}
+
+							@Override
+							public String getFeature()
+							{
+								return Model.find(modelId).getPredictedVariables()[1];
+							}
+						} };
+			}
+
+			@Override
+			public String getCompound()
+			{
+				return Compound.getCompoundURI(smiles);
+			}
+		};
+	};
+
+	//
 
 	public static void main(String[] args)
 	{

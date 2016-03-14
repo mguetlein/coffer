@@ -5,8 +5,8 @@ import javax.xml.bind.annotation.XmlTransient;
 
 public abstract class ServiceObj
 {
-	@XmlElement
-	public String getUri()
+	@XmlElement(name = "identifier", namespace = ModelService.DC_NAMESPACE)
+	public String getURI()
 	{
 		return ModelService.SERVICE_HOME + getPath() + getId();
 	}
