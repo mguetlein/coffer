@@ -67,7 +67,7 @@ public interface ModelService
 	/**
 	 * <b>request:</b> POST {@value SERVICE_HOME}/<br>
 	 * <b>params:</b><br>
-	 * </i>{@value PREDICT_PARAM_COMPOUND}:</i> SMILES String<br>
+	 * </i>{@value PREDICT_PARAM_COMPOUND_SMILES}:</i> SMILES String<br>
 	 * <b>returns:</b> redirect to prediction with all models
 	 */
 	@Path("")
@@ -97,7 +97,7 @@ public interface ModelService
 	/**
 	 * <b>request:</b> POST {@value SERVICE_HOME}/<i>modelId</i><br>
 	 * <b>params:</b><br>
-	 * <i>{@value PREDICT_PARAM_COMPOUND}:</i> SMILES String<br>
+	 * <i>{@value PREDICT_PARAM_COMPOUND_SMILES}:</i> SMILES String<br>
 	 * <b>returns:</b> redirect to single-model prediction
 	 */
 	@Path("{modelId}")
@@ -223,6 +223,11 @@ public interface ModelService
 	InputStream depictMultiMatch(@FormParam("smiles") String smiles, @FormParam("size") String size,
 			@FormParam("model") String model);
 
+	/**
+	 * <b>request:</b> GET {@value SERVICE_HOME}/compound/<i>compoundId</id><br>
+	 * <b>content-type:</b> text/html, application/json, chemical/x-daylight-smiles<br>
+	 * <b>returns:</b> compound 
+	 */
 	@Path("compound/{compoundId}")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML,
