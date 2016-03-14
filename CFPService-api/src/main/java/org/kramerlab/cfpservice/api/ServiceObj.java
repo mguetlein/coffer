@@ -5,10 +5,12 @@ import javax.xml.bind.annotation.XmlTransient;
 
 public abstract class ServiceObj
 {
+	public static String HOST;
+
 	@XmlElement(name = "identifier", namespace = ModelService.DC_NAMESPACE)
 	public String getURI()
 	{
-		return ModelService.SERVICE_HOME + getPath() + getId();
+		return HOST + getPath() + getId();
 	}
 
 	@XmlTransient
