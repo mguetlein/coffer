@@ -72,7 +72,11 @@ public class ModelServiceImpl implements ModelService
 							"/prediction/" + StringUtil.getMD5(smiles) + "?wait=" + models.length))
 					.build();
 		}
-		catch (InvalidSmilesException | URISyntaxException e)
+		catch (InvalidSmilesException e)
+		{
+			throw new IllegalArgumentException(e.getMessage(), e);
+		}
+		catch (URISyntaxException e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -93,7 +97,11 @@ public class ModelServiceImpl implements ModelService
 			Prediction p = Prediction.createPrediction(Model.find(id), compoundSmiles, true);
 			return Response.seeOther(new URI(id + "/prediction/" + p.getId())).build();
 		}
-		catch (InvalidSmilesException | URISyntaxException | IOException e)
+		catch (InvalidSmilesException e)
+		{
+			throw new IllegalArgumentException(e.getMessage(), e);
+		}
+		catch (URISyntaxException | IOException e)
 		{
 			throw new RuntimeException(e);
 		}

@@ -50,7 +50,8 @@
         <property name="supportUnwrapped" value="true" />
 	</bean> -->
 
-   	<bean class="org.kramerlab.cfpservice.api.impl.provider.JsonProvider"></bean>
+	<bean class="org.kramerlab.cfpservice.api.impl.provider.ErrorHandler"></bean>
+	<bean class="org.kramerlab.cfpservice.api.impl.provider.JsonProvider"></bean>
     <bean class="org.kramerlab.cfpservice.api.impl.provider.HTMLProvider"></bean>
     <bean class="org.kramerlab.cfpservice.api.impl.provider.SMILESProvider"></bean>
     <bean class="org.kramerlab.cfpservice.api.impl.provider.URIListProvider"></bean> 
