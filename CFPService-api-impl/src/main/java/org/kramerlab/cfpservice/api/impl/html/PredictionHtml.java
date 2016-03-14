@@ -1,8 +1,6 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 
 import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.impl.Model;
@@ -13,6 +11,7 @@ import org.mg.cdklib.cfp.CFPFragment;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.util.StringUtil;
+import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.rendersnake.HtmlAttributesFactory;
 import org.rendersnake.HtmlCanvas;
@@ -112,10 +111,10 @@ public class PredictionHtml extends DefaultHtml
 	}
 
 	public static void setAdditionalInfo(HTMLReport rep, ResultSet tableSet, int rIdx,
-			final String smiles) throws UnsupportedEncodingException
+			final String smiles)
 	{
 		rep.setHeaderHelp("Info", text("compound.info.tip"));
-		final String smi = URLEncoder.encode(smiles, "UTF-8");
+		final String smi = StringUtil.urlEncodeUTF8(smiles);
 		//		System.out.println(smi);
 		tableSet.setResultValue(rIdx, "Info", new Renderable()
 		{
@@ -132,7 +131,7 @@ public class PredictionHtml extends DefaultHtml
 		});
 	}
 
-	public String build() throws Exception
+	public String build()
 	{
 		newSection("Predicted compound");
 		{
@@ -198,10 +197,17 @@ public class PredictionHtml extends DefaultHtml
 				h = encodeLink(p.getId() + "?hideFragments=" + hide.stringKey(), h);
 			hideTxt += h + " ";
 		}
-		getHtml().div();//HtmlAttributesFactory.align("right"));
-		getHtml().render(new TextWithLinks(hideTxt, true, false));
-		getHtml().render(getMouseoverHelp(text("fragment.hide"), null));
-		getHtml()._div();
+		try
+		{
+			getHtml().div();//HtmlAttributesFactory.align("right"));
+			getHtml().render(new TextWithLinks(hideTxt, true, false));
+			getHtml().render(getMouseoverHelp(text("fragment.hide"), null));
+			getHtml()._div();
+		}
+		catch (IOException e1)
+		{
+			throw new RuntimeException(e1);
+		}
 		addGap();
 
 		for (final boolean match : new Boolean[] { true, false })
@@ -295,7 +301,7 @@ public class PredictionHtml extends DefaultHtml
 					set.setResultValue(rIdx, fragmentCol,
 							getImage(depictMatch(attIdx, true, activating, true),
 									"/" + p.getModelId() + "/fragment/" + (attIdx + 1) + "?smiles="
-											+ URLEncoder.encode(p.getSmiles(), "UTF8"),
+											+ StringUtil.urlEncodeUTF8(p.getSmiles()),
 									true));
 									//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
 
@@ -365,30 +371,44 @@ public class PredictionHtml extends DefaultHtml
 		return close();
 	}
 
-	private boolean testInstanceContains(int attIdx) throws Exception
+	private boolean testInstanceContains(int attIdx)
 	{
-		return miner.getFragmentsForTestCompound(p.getSmiles())
-				.contains(miner.getFragmentViaIdx(attIdx));
+		try
+		{
+			return miner.getFragmentsForTestCompound(p.getSmiles())
+					.contains(miner.getFragmentViaIdx(attIdx));
+		}
+		catch (CDKException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	private String depictMatch(int attIdx, boolean fallbackToTraining, Boolean activating,
-			boolean crop) throws Exception
+			boolean crop)
 	{
-		String m = p.getSmiles();
-		if (!testInstanceContains(attIdx))
-			//		if (testInstance.stringValue(attr).equals("0"))
-			if (fallbackToTraining)
-				m = miner.getTrainingDataSmiles()
-						.get(miner.getCompoundsForFragment(miner.getFragmentViaIdx(attIdx))
-								.iterator().next());
-			else
-				crop = false;
-		if (miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)) == null)
-			throw new IllegalStateException("no atoms in " + m + " for att-idx " + attIdx
-					+ ", hashcode: " + miner.getFragmentViaIdx(attIdx));
-		return depictMatch(m, miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)),
-				miner.getCFPType().isECFP(), activating, crop,
-				crop ? croppedPicSize : maxMolPicSize);
+		try
+		{
+			String m = p.getSmiles();
+			if (!testInstanceContains(attIdx))
+				//		if (testInstance.stringValue(attr).equals("0"))
+				if (fallbackToTraining)
+					m = miner.getTrainingDataSmiles()
+							.get(miner.getCompoundsForFragment(miner.getFragmentViaIdx(attIdx))
+									.iterator().next());
+				else
+					crop = false;
+			if (miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)) == null)
+				throw new IllegalStateException("no atoms in " + m + " for att-idx " + attIdx
+						+ ", hashcode: " + miner.getFragmentViaIdx(attIdx));
+			return depictMatch(m, miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)),
+					miner.getCFPType().isECFP(), activating, crop,
+					crop ? croppedPicSize : maxMolPicSize);
+		}
+		catch (CDKException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 }

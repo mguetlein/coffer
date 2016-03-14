@@ -1,11 +1,11 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
-import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 import org.kramerlab.cfpservice.api.ModelService;
 import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.StringUtil;
 
 public class DefaultHtml extends HTMLReport
 {
@@ -57,8 +57,8 @@ public class DefaultHtml extends HTMLReport
 	{
 		if (bundle == null)
 			bundle = ResourceBundle.getBundle("cfpservice");
-//		ResourceBundle.clearCache();
-//		bundle = ResourceBundle.getBundle("cfpservice");
+		//		ResourceBundle.clearCache();
+		//		bundle = ResourceBundle.getBundle("cfpservice");
 		return bundle;
 	}
 
@@ -77,16 +77,16 @@ public class DefaultHtml extends HTMLReport
 		return encodeLink("/doc#" + DocHtml.getAnker(docSection), "more..");
 	}
 
-	public String depict(String smiles, int size) throws Exception
+	public String depict(String smiles, int size)
 	{
 		String sizeStr = "";
 		if (size != -1)
 			sizeStr = "&size=" + size;
-		return "/depict?smiles=" + URLEncoder.encode(smiles, "UTF8") + sizeStr;
+		return "/depict?smiles=" + StringUtil.urlEncodeUTF8(smiles) + sizeStr;
 	}
 
 	public String depictMatch(String smiles, int[] atoms, boolean highlightOutgoingBonds,
-			Boolean activating, boolean crop, int size) throws Exception
+			Boolean activating, boolean crop, int size)
 	{
 		String sizeStr = "";
 		if (size != -1)
@@ -100,16 +100,16 @@ public class DefaultHtml extends HTMLReport
 		String activatingStr = "";
 		if (activating != null)
 			activatingStr = "&activating=" + activating;
-		return "/depictMatch?smiles=" + URLEncoder.encode(smiles, "UTF8") + sizeStr + atomsStr
+		return "/depictMatch?smiles=" + StringUtil.urlEncodeUTF8(smiles) + sizeStr + atomsStr
 				+ highlightOutgoingBondsStr + cropStr + activatingStr;
 	}
 
-	public String depictMultiMatch(String smiles, String modelId, int size) throws Exception
+	public String depictMultiMatch(String smiles, String modelId, int size)
 	{
 		String sizeStr = "";
 		if (size != -1)
 			sizeStr = "&size=" + size;
-		return "/depictMultiMatch?smiles=" + URLEncoder.encode(smiles, "UTF8") + "&model=" + modelId
+		return "/depictMultiMatch?smiles=" + StringUtil.urlEncodeUTF8(smiles) + "&model=" + modelId
 				+ sizeStr;
 	}
 }

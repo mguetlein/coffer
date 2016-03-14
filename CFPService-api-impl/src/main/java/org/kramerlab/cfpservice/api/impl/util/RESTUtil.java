@@ -13,7 +13,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 public class RESTUtil
 {
-	public static String get(String uri, String accept) throws ClientProtocolException, IOException
+	public static String get(String uri, String accept) throws IOException
 	{
 		CloseableHttpClient client = null;
 		BufferedReader rd = null;

@@ -17,7 +17,7 @@ public class PredictionsHtml extends DefaultHtml
 		this.predictions = predictions;
 	}
 
-	public String build() throws Exception
+	public String build()
 	{
 		String smiles = predictions[0].getSmiles();
 

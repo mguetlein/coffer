@@ -249,27 +249,13 @@ public class Prediction extends PredictionObj implements HTMLOwner
 
 	public static String getPredictionListHTML(Prediction p[])
 	{
-		try
-		{
-			return new PredictionsHtml(p).build();
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
+		return new PredictionsHtml(p).build();
 	}
 
 	@Override
 	public String getHTML()
 	{
-		try
-		{
-			return new PredictionHtml(this).build();
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
+		return new PredictionHtml(this).build();
 	}
 
 	// opentox stuff

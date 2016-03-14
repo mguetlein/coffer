@@ -28,7 +28,7 @@ public class Compound extends CompoundObj implements HTMLOwner
 			setPageTitle("Compound " + smiles);
 		}
 
-		public String build() throws Exception
+		public String build()
 		{
 			addImage(getImage(depict(smiles, maxMolPicSize)));
 			return close();
@@ -38,15 +38,7 @@ public class Compound extends CompoundObj implements HTMLOwner
 	@Override
 	public String getHTML()
 	{
-		try
-		{
-			return new CompoundHTML().build();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
+		return new CompoundHTML().build();
 	}
 
 }

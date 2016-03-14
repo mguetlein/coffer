@@ -21,7 +21,7 @@ public class ModelHtml extends DefaultHtml
 		this.m = m;
 	}
 
-	public String build() throws Exception
+	public String build()
 	{
 		ResultSet set = new ResultSet();
 

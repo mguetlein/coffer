@@ -70,26 +70,12 @@ public class Model extends ModelObj implements HTMLOwner
 	@Override
 	public String getHTML()
 	{
-		try
-		{
-			return new ModelHtml(this).build();
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
+		return new ModelHtml(this).build();
 	}
 
 	public static String getModelListHTML(Model models[])
 	{
-		try
-		{
-			return new ModelsHtml(models).build();
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
+		return new ModelsHtml(models).build();
 	}
 
 	public String getClassifierName()

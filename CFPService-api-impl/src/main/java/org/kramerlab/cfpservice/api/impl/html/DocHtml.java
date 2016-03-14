@@ -20,7 +20,7 @@ public class DocHtml extends DefaultHtml
 		super("Documentation", "doc", "Documentation", null, null);
 	}
 
-	public String build() throws Exception
+	public String build()
 	{
 		setHidePageTitle(true);
 

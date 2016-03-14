@@ -1,12 +1,15 @@
 package org.kramerlab.cfpservice.api.impl;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Locale;
 
 import javax.ws.rs.core.Response;
 
+import org.codehaus.jettison.json.JSONException;
 import org.kramerlab.cfpservice.api.CompoundObj;
 import org.kramerlab.cfpservice.api.FragmentObj;
 import org.kramerlab.cfpservice.api.ModelService;
@@ -18,6 +21,7 @@ import org.kramerlab.cfpservice.api.impl.util.RESTUtil;
 import org.mg.cdklib.CDKConverter;
 import org.mg.javalib.util.StopWatchUtil;
 import org.mg.javalib.util.StringUtil;
+import org.openscience.cdk.exception.InvalidSmilesException;
 import org.springframework.stereotype.Service;
 
 @Service("modelService#default")
@@ -31,14 +35,7 @@ public class ModelServiceImpl implements ModelService
 	@Override
 	public String getDocumentation()
 	{
-		try
-		{
-			return new DocHtml().build();
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
+		return new DocHtml().build();
 	}
 
 	@Override
@@ -75,7 +72,7 @@ public class ModelServiceImpl implements ModelService
 							"/prediction/" + StringUtil.getMD5(smiles) + "?wait=" + models.length))
 					.build();
 		}
-		catch (Exception e)
+		catch (InvalidSmilesException | URISyntaxException e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -96,7 +93,7 @@ public class ModelServiceImpl implements ModelService
 			Prediction p = Prediction.createPrediction(Model.find(id), compoundSmiles, true);
 			return Response.seeOther(new URI(id + "/prediction/" + p.getId())).build();
 		}
-		catch (Exception e)
+		catch (InvalidSmilesException | URISyntaxException | IOException e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -148,7 +145,7 @@ public class ModelServiceImpl implements ModelService
 		{
 			return CompoundInfo.getHTML(CompoundInfo.Service.valueOf(service), smiles);
 		}
-		catch (Exception e)
+		catch (JSONException | IOException e)
 		{
 			throw new RuntimeException(e);
 		}

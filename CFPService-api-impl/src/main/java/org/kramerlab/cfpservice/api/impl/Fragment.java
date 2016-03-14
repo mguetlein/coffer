@@ -49,13 +49,6 @@ public class Fragment extends FragmentObj implements HTMLOwner
 	@Override
 	public String getHTML()
 	{
-		try
-		{
-			return new FragmentHtml(this).build();
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
+		return new FragmentHtml(this).build();
 	}
 }
