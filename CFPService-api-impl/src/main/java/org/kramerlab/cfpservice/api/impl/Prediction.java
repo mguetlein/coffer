@@ -16,7 +16,7 @@ import org.kramerlab.cfpservice.api.impl.html.PredictionHtml;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml.HideFragments;
 import org.kramerlab.cfpservice.api.impl.html.PredictionsHtml;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
-import org.kramerlab.cfpservice.api.impl.util.HTMLProvider;
+import org.kramerlab.cfpservice.api.impl.provider.HTMLOwner;
 import org.mg.cdklib.CDKConverter;
 import org.mg.cdklib.cfp.CFPFragment;
 import org.mg.cdklib.cfp.CFPMiner;
@@ -31,7 +31,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 @XmlRootElement
-public class Prediction extends PredictionObj implements HTMLProvider
+public class Prediction extends PredictionObj implements HTMLOwner
 {
 	private static final long serialVersionUID = 9L;
 

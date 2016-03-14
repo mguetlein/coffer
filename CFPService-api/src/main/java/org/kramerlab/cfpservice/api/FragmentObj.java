@@ -3,8 +3,10 @@ package org.kramerlab.cfpservice.api;
 import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement
+@XmlType(name = "Fragment")
 public class FragmentObj extends ServiceObj implements Serializable
 {
 	private static final long serialVersionUID = 1L;

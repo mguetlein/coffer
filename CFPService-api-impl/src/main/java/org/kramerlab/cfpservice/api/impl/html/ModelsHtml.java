@@ -1,5 +1,6 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
+import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
 import org.mg.javalib.datamining.ResultSet;
@@ -21,7 +22,7 @@ public class ModelsHtml extends DefaultHtml
 		addGap();
 
 		newSection("Make prediction");
-		addForm("/", "compound", "Predict", "Please insert SMILES string");
+		addForm("/", ModelService.PREDICT_PARAM_COMPOUND_SMILES, "Predict", "Please insert SMILES string");
 		addGap();
 		ResultSet set = new ResultSet();
 

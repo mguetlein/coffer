@@ -13,6 +13,7 @@ import org.kramerlab.cfpservice.api.PredictionObj;
 import org.kramerlab.cfpservice.api.impl.html.DocHtml;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml.HideFragments;
 import org.kramerlab.cfpservice.api.impl.util.CompoundInfo;
+import org.kramerlab.cfpservice.api.impl.util.RESTUtil;
 import org.mg.cdklib.CDKConverter;
 import org.mg.javalib.util.StopWatchUtil;
 import org.mg.javalib.util.StringUtil;
@@ -80,12 +81,18 @@ public class ModelServiceImpl implements ModelService
 	}
 
 	@Override
-	public Response predict(String id, String smiles)
+	public Response predict(String id, String compoundSmiles, String compoundURI)
 	{
 		try
 		{
-			CDKConverter.validateSmiles(smiles);
-			Prediction p = Prediction.createPrediction(Model.find(id), smiles, true);
+			if ((compoundSmiles == null && compoundURI == null)
+					|| (compoundSmiles != null && compoundURI != null))
+				throw new IllegalArgumentException(
+						"pls provide either 'compoundSmiles' or 'compoundURI'");
+			if (compoundSmiles == null)
+				compoundSmiles = RESTUtil.get(compoundURI, ModelService.MEDIA_TYPE_CHEMICAL_SMILES);
+			CDKConverter.validateSmiles(compoundSmiles);
+			Prediction p = Prediction.createPrediction(Model.find(id), compoundSmiles, true);
 			return Response.seeOther(new URI(id + "/prediction/" + p.getId())).build();
 		}
 		catch (Exception e)

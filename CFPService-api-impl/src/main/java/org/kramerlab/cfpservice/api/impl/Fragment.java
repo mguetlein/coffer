@@ -5,10 +5,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.kramerlab.cfpservice.api.FragmentObj;
 import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.impl.html.FragmentHtml;
-import org.kramerlab.cfpservice.api.impl.util.HTMLProvider;
+import org.kramerlab.cfpservice.api.impl.provider.HTMLOwner;
 
 @XmlRootElement
-public class Fragment extends FragmentObj implements HTMLProvider
+public class Fragment extends FragmentObj implements HTMLOwner
 {
 	private static final long serialVersionUID = 1L;
 

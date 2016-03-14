@@ -38,16 +38,6 @@
   <context:annotation-config />
   <context:component-scan base-package="org.kramerlab.cfpservice"/>
 
-  <!--  <jaxrs:server id="testServices" address="/testServices">
-
-    <jaxrs:serviceBeans>
-      <ref bean="helloService#default"/>
-    </jaxrs:serviceBeans>
-
-   </jaxrs:server> -->
-
-
-   
    <jaxrs:server id="defaultServices" address="/">
    
     <jaxrs:serviceBeans>
@@ -60,10 +50,9 @@
         <property name="supportUnwrapped" value="true" />
 	</bean> -->
 
-     <bean class="org.eclipse.persistence.jaxb.rs.MOXyJsonProvider"> 
-     	<property name="formattedOutput" value="true" />
-     	</bean>
-    <bean class="org.kramerlab.cfpservice.api.impl.util.HTMLBodyWriter"></bean> 
+   	<bean class="org.kramerlab.cfpservice.api.impl.provider.JsonProvider"></bean>
+    <bean class="org.kramerlab.cfpservice.api.impl.provider.HTMLProvider"></bean>
+    <bean class="org.kramerlab.cfpservice.api.impl.provider.URIListProvider"></bean> 
 	</jaxrs:providers>
 
    </jaxrs:server>

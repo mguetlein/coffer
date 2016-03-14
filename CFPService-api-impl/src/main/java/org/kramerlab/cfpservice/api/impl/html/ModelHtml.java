@@ -3,6 +3,7 @@ package org.kramerlab.cfpservice.api.impl.html;
 import java.io.IOException;
 import java.util.List;
 
+import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.impl.Model;
 import org.kramerlab.cfpservice.api.impl.Prediction;
 import org.mg.javalib.datamining.ResultSet;
@@ -92,7 +93,8 @@ public class ModelHtml extends DefaultHtml
 
 		addGap();
 		newSection("Make prediction");
-		addForm("/" + m.getId(), "compound", "Predict", "Please insert SMILES string");
+		addForm("/" + m.getId(), ModelService.PREDICT_PARAM_COMPOUND_SMILES, "Predict",
+				"Please insert SMILES string");
 
 		//			ValidationResultsProvider val = new ValidationResultsProvider(
 		//					PersistanceAdapter.INSTANCE.getModelValidationResultsFile(id));

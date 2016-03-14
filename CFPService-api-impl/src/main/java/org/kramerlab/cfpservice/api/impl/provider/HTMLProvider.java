@@ -1,4 +1,4 @@
-package org.kramerlab.cfpservice.api.impl.util;
+package org.kramerlab.cfpservice.api.impl.provider;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,7 +17,7 @@ import org.kramerlab.cfpservice.api.impl.Prediction;
 
 @Provider
 @Produces(MediaType.TEXT_HTML)
-public class HTMLBodyWriter<T> implements MessageBodyWriter<T>
+public class HTMLProvider<T> implements MessageBodyWriter<T>
 {
 	public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
 			MediaType mediaType)
@@ -38,8 +38,8 @@ public class HTMLBodyWriter<T> implements MessageBodyWriter<T>
 		StringBuilder sb = new StringBuilder();
 		if (t instanceof String)
 			sb.append(t);
-		else if (t instanceof HTMLProvider)
-			sb.append(((HTMLProvider) t).getHTML());
+		else if (t instanceof HTMLOwner)
+			sb.append(((HTMLOwner) t).getHTML());
 		else if (t.getClass().isArray())
 		{
 			if (t instanceof Model[])
@@ -47,10 +47,10 @@ public class HTMLBodyWriter<T> implements MessageBodyWriter<T>
 			else if (t instanceof Prediction[])
 				sb.append(Prediction.getPredictionListHTML((Prediction[]) t));
 			else
-				sb.append("configure html provider for array of class: " + t.getClass());
+				sb.append("configure html provider for array of " + t + " class: " + t.getClass());
 		}
 		else
-			sb.append("configure html provider for class: " + t.getClass());
+			sb.append("configure html provider for " + t + " class: " + t.getClass());
 		entityStream.write(sb.toString().getBytes("UTF8"));
 	}
 }

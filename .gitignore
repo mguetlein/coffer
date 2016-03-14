@@ -17,3 +17,4 @@ persistance/model/*.classifier
 */.project
 */.classpath
 persistance/model/*.res
+target

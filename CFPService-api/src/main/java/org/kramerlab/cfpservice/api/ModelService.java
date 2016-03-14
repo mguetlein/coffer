@@ -42,25 +42,34 @@ public interface ModelService
 	public static String SERVICE_HOME = "http://cfp-qsar.informatik.uni-mainz.de";
 	public static String SERVICE_TITLE = "Circular Fingerprint QSARs";
 
+	public static String OPENTOX_API = "http://www.opentox.org/api/1.2";
+	public static String OPENTOX_API_PREFIX = "ot";
+
+	public static final String MEDIA_TYPE_CHEMICAL_SMILES = "chemical/x-daylight-smiles";
+	public static final String MEDIA_TYPE_TEXT_URI_LIST = "text/uri-list";
+
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<br>
-	 * <b>content-type:</b> application/json, text/html<br>
+	 * <b>content-type:</b> application/json, text/html, {@value MEDIA_TYPE_TEXT_URI_LIST}<br>
 	 * <b>returns:</b> list of models
 	 */
 	@Path("")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MEDIA_TYPE_TEXT_URI_LIST })
 	ModelObj[] getModels();
+
+	public static final String PREDICT_PARAM_COMPOUND_SMILES = "compoundSmiles";
+	public static final String PREDICT_PARAM_COMPOUND_URI = "compound_uri";
 
 	/**
 	 * <b>request:</b> POST {@value SERVICE_HOME}/<br>
 	 * <b>params:</b><br>
-	 * </i>compound:</i> SMILES String<br>
+	 * </i>{@value PREDICT_PARAM_COMPOUND}:</i> SMILES String<br>
 	 * <b>returns:</b> redirect to prediction with all models
 	 */
 	@Path("")
 	@POST
-	Response predict(@FormParam("compound") String compound);
+	Response predict(@FormParam(PREDICT_PARAM_COMPOUND_SMILES) String compound);
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/doc<br>
@@ -79,18 +88,20 @@ public interface ModelService
 	 */
 	@Path("{modelId}")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, "text/asdf" })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
 	ModelObj getModel(@PathParam("modelId") String modelId);
 
 	/**
 	 * <b>request:</b> POST {@value SERVICE_HOME}/<i>modelId</i><br>
 	 * <b>params:</b><br>
-	 * <i>compound:</i> SMILES String<br>
+	 * <i>{@value PREDICT_PARAM_COMPOUND}:</i> SMILES String<br>
 	 * <b>returns:</b> redirect to single-model prediction
 	 */
 	@Path("{modelId}")
 	@POST
-	Response predict(@PathParam("modelId") String modelId, @FormParam("compound") String compound);
+	Response predict(@PathParam("modelId") String modelId,
+			@FormParam(PREDICT_PARAM_COMPOUND_SMILES) String compound,
+			@FormParam(PREDICT_PARAM_COMPOUND_URI) String compoundURI);
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<i>modelId</i>/validation<br>
@@ -104,14 +115,14 @@ public interface ModelService
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/prediction/<i>predictionId</i><br>
-	 * <b>content-type:</b> application/json, text/html<br>
+	 * <b>content-type:</b> application/json, text/html, {@value MEDIA_TYPE_TEXT_URI_LIST}<br>
 	 * <b>params:</b><br>
 	 * <i>wait:</i> integer encoding the number of expected results<br> 
 	 * <b>returns:</b> list of single-model predictions, empty predictions trailing if num predictions is < wait
 	 */
 	@Path("prediction/{predictionId}")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MEDIA_TYPE_TEXT_URI_LIST })
 	PredictionObj[] getPredictions(@PathParam("predictionId") String predictionId,
 			@FormParam("wait") String wait);
 
@@ -145,7 +156,7 @@ public interface ModelService
 	 */
 	@Path("{modelId}/fragment/{fragmentId}")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
+	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_XML })
 	FragmentObj getFragment(@PathParam("modelId") String modelId,
 			@PathParam("fragmentId") String fragmentId, @FormParam("size") String size,
 			@FormParam("smiles") String smiles);

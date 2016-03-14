@@ -18,7 +18,7 @@ import org.kramerlab.cfpservice.api.ModelObj;
 import org.kramerlab.cfpservice.api.impl.html.ModelHtml;
 import org.kramerlab.cfpservice.api.impl.html.ModelsHtml;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
-import org.kramerlab.cfpservice.api.impl.util.HTMLProvider;
+import org.kramerlab.cfpservice.api.impl.provider.HTMLOwner;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.cdklib.cfp.CFPType;
 import org.mg.cdklib.cfp.FeatureSelection;
@@ -41,7 +41,7 @@ import weka.core.Instances;
 import weka.core.Randomizable;
 
 @XmlRootElement
-public class Model extends ModelObj implements HTMLProvider
+public class Model extends ModelObj implements HTMLOwner
 {
 	private static final long serialVersionUID = 8L;
 

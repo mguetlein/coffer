@@ -2,10 +2,13 @@ package org.kramerlab.cfpservice.api;
 
 import java.io.Serializable;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement
+@XmlType(name = "Model")
 public class ModelObj extends ServiceObj implements Serializable
 {
 	private static final long serialVersionUID = 2L;
@@ -49,5 +52,19 @@ public class ModelObj extends ServiceObj implements Serializable
 	public void setClassValues(String[] classValues)
 	{
 		this.classValues = classValues;
+	}
+
+	// ot-api fields 
+
+	@XmlAttribute(namespace = ModelService.OPENTOX_API)
+	public String getDependentVariables()
+	{
+		return getUri() + "/measured";
+	}
+
+	@XmlAttribute(namespace = ModelService.OPENTOX_API)
+	public String[] getPredictedVariables()
+	{
+		return new String[] { getUri() + "/predicted", getUri() + "/probability" };
 	}
 }
