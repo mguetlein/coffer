@@ -6,15 +6,17 @@ import java.util.List;
 import java.util.Set;
 
 import org.kramerlab.cfpservice.api.impl.DepictService;
-import org.kramerlab.cfpservice.api.impl.Model;
-import org.kramerlab.cfpservice.api.impl.Prediction;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractModel;
+import org.kramerlab.cfpservice.api.objects.Model;
+import org.kramerlab.cfpservice.api.objects.Prediction;
+import org.kramerlab.cfpservice.api.objects.SubgraphPredictionAttribute;
 import org.mg.cdklib.AtomContainerUtil;
 import org.mg.cdklib.cfp.CFPFragment;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.cdklib.depict.CDKDepict;
 import org.mg.javalib.gui.property.ColorGradient;
 import org.mg.javalib.util.ArrayUtil;
-import org.mg.wekalib.attribute_ranking.PredictionAttribute;
+import org.mg.wekalib.attribute_ranking.PredictionAttributeInterface;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
@@ -25,12 +27,13 @@ public class CFPDepictUtil
 	public static void depictMultiMatchToPNG(String pngFile, IAtomContainer mol, Prediction p,
 			Model m, int maxSize) throws Exception
 	{
-		depictMultiMatchToPNG(pngFile, mol, m.getCFPMiner(), p.getPredictedDistribution(),
-				p.getPredictionAttributes(), maxSize);
+		depictMultiMatchToPNG(pngFile, mol, ((AbstractModel) m).getCFPMiner(),
+				p.getPredictedDistribution(), p.getPredictionAttributes(), maxSize);
 	}
 
 	static void depictMultiMatchToPNG(String pngFile, IAtomContainer mol, CFPMiner miner,
-			double dist[], List<? extends PredictionAttribute> pAtt, int maxSize) throws Exception
+			double dist[], List<? extends SubgraphPredictionAttribute> pAtt, int maxSize)
+					throws Exception
 	{
 		setAtomBondWeights(mol, miner, pAtt, dist);
 		Color cols[] = weightsToColorGradient(mol, new ColorGradient(DepictService.ACTIVE_BRIGHT,
@@ -72,7 +75,7 @@ public class CFPDepictUtil
 	 * @param dist
 	 */
 	private static void setAtomBondWeights(IAtomContainer mol, CFPMiner cfp,
-			List<? extends PredictionAttribute> att, double dist[])
+			List<? extends PredictionAttributeInterface> att, double dist[])
 	{
 		try
 		{
@@ -81,7 +84,7 @@ public class CFPDepictUtil
 				c.setProperty(WEIGHT_PROP, 0.0);
 			double propActive = dist[cfp.getActiveIdx()];
 			// iterate over all attributes
-			for (PredictionAttribute a : att)
+			for (PredictionAttributeInterface a : att)
 			{
 				CFPFragment f = cfp.getFragmentViaIdx(a.getAttribute());
 				Set<Integer> atoms = cfp.getAtomsMultiple(mol, f);

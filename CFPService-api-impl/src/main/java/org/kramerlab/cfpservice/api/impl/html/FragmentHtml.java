@@ -3,8 +3,8 @@ package org.kramerlab.cfpservice.api.impl.html;
 import java.util.Set;
 
 import org.kramerlab.cfpservice.api.ModelService;
-import org.kramerlab.cfpservice.api.impl.Fragment;
-import org.kramerlab.cfpservice.api.impl.Model;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractModel;
+import org.kramerlab.cfpservice.api.objects.Fragment;
 import org.mg.cdklib.cfp.CFPFragment;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.javalib.datamining.ResultSet;
@@ -20,16 +20,17 @@ public class FragmentHtml extends DefaultHtml
 	int maxNumFragments;
 	String smiles;
 
-	public FragmentHtml(Fragment f)
+	public FragmentHtml(Fragment f, String smiles, int maxNumFragments)
 	{
-		super(f.getModelId(), Model.getName(f.getModelId()), "fragment/" + f.getId(), "Fragment");
-		this.miner = Model.find(f.getModelId()).getCFPMiner();
+		super(f.getModelId(), AbstractModel.getName(f.getModelId()), "fragment/" + f.getId(),
+				"Fragment");
+		this.miner = ((AbstractModel) AbstractModel.find(f.getModelId())).getCFPMiner();
 		this.modelId = f.getModelId();
 		fragment = "Fragment " + f.getId() + " / " + miner.getNumFragments();
 		setPageTitle(fragment);
 		this.selectedAttributeIdx = Integer.parseInt(f.getId()) - 1;
-		this.smiles = f.getSmiles();
-		this.maxNumFragments = f.getMaxNumFragments();
+		this.smiles = smiles;
+		this.maxNumFragments = maxNumFragments;
 		//		System.out.println(miner.getFragmentViaIdx(selectedAttributeIdx));
 
 	}
@@ -52,7 +53,7 @@ public class FragmentHtml extends DefaultHtml
 							+ encodeLink("/" + modelId + "/fragment/" + (selectedAttributeIdx + 2),
 									"next"));
 
-			newSection("Occurence in dataset " + Model.getName(modelId));
+			newSection("Occurence in dataset " + AbstractModel.getName(modelId));
 
 			ResultSet set = new ResultSet();
 			int rIdx = set.addResult();

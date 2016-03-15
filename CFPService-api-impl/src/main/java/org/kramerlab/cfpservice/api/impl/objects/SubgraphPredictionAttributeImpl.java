@@ -1,8 +1,10 @@
-package org.kramerlab.cfpservice.api.impl;
+package org.kramerlab.cfpservice.api.impl.objects;
 
+import org.kramerlab.cfpservice.api.objects.SubgraphPredictionAttribute;
 import org.mg.wekalib.attribute_ranking.PredictionAttribute;
 
-public class SubgraphPredictionAttribute extends PredictionAttribute
+public class SubgraphPredictionAttributeImpl extends PredictionAttribute
+		implements SubgraphPredictionAttribute
 {
 	private static final long serialVersionUID = 2L;
 
@@ -10,11 +12,11 @@ public class SubgraphPredictionAttribute extends PredictionAttribute
 
 	public boolean hasSubGraph = false;
 
-	public SubgraphPredictionAttribute()
+	public SubgraphPredictionAttributeImpl()
 	{
 	}
 
-	public SubgraphPredictionAttribute(int attribute, double[] alternativeDistributionForInstance,
+	public SubgraphPredictionAttributeImpl(int attribute, double[] alternativeDistributionForInstance,
 			double diffToOrigProp, boolean hasSuperGraph, boolean hasSubGraph)
 	{
 		super(attribute, alternativeDistributionForInstance, diffToOrigProp);
@@ -27,6 +29,7 @@ public class SubgraphPredictionAttribute extends PredictionAttribute
 		this.hasSuperGraph = hasSuperGraph;
 	}
 
+	@Override
 	public boolean hasSuperGraph()
 	{
 		return hasSuperGraph;
@@ -37,6 +40,7 @@ public class SubgraphPredictionAttribute extends PredictionAttribute
 		this.hasSubGraph = hasSubGraph;
 	}
 
+	@Override
 	public boolean hasSubGraph()
 	{
 		return hasSubGraph;

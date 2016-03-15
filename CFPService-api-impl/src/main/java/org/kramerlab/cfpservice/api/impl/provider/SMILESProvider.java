@@ -13,8 +13,8 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
 import org.kramerlab.cfpservice.api.ModelService;
-import org.kramerlab.cfpservice.api.impl.Compound;
-import org.kramerlab.cfpservice.api.impl.Prediction;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractCompound;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractPrediction;
 
 @Provider
 @Produces(ModelService.MEDIA_TYPE_CHEMICAL_SMILES)
@@ -37,10 +37,10 @@ public class SMILESProvider<T> implements MessageBodyWriter<T>
 			OutputStream entityStream) throws IOException, WebApplicationException
 	{
 		StringBuilder sb = new StringBuilder();
-		if (t instanceof Prediction)
-			sb.append(((Prediction) t).getSmiles());
-		if (t instanceof Compound)
-			sb.append(((Compound) t).getSmiles());
+		if (t instanceof AbstractPrediction)
+			sb.append(((AbstractPrediction) t).getSmiles());
+		if (t instanceof AbstractCompound)
+			sb.append(((AbstractCompound) t).getSmiles());
 		else
 			sb.append("configure SMILES provider for " + t + " class: " + t.getClass());
 		entityStream.write(sb.toString().getBytes("UTF8"));

@@ -1,8 +1,9 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
 import org.kramerlab.cfpservice.api.ModelService;
-import org.kramerlab.cfpservice.api.impl.Model;
-import org.kramerlab.cfpservice.api.impl.Prediction;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractPrediction;
+import org.kramerlab.cfpservice.api.objects.Model;
+import org.kramerlab.cfpservice.api.objects.Prediction;
 import org.mg.javalib.datamining.ResultSet;
 
 public class ModelsHtml extends DefaultHtml
@@ -37,7 +38,7 @@ public class ModelsHtml extends DefaultHtml
 		String[] modelIds = new String[models.length];
 		for (int i = 0; i < modelIds.length; i++)
 			modelIds[i] = models[i].getId();
-		String predIds[] = Prediction.findAllPredictions(modelIds);
+		String predIds[] = AbstractPrediction.findAllPredictions(modelIds);
 		if (predIds.length > 0)
 			startLeftColumn();
 
@@ -51,7 +52,7 @@ public class ModelsHtml extends DefaultHtml
 			ResultSet res = new ResultSet();
 			for (int i = 0; i < Math.min(predIds.length, 10); i++)
 			{
-				Prediction p = Prediction.find(modelIds[0], predIds[i]);
+				Prediction p = AbstractPrediction.find(modelIds[0], predIds[i]);
 				int rIdx = res.addResult();
 				String url = "/prediction/" + predIds[i];
 				res.setResultValue(rIdx, "Compounds", encodeLink(url, p.getSmiles()));

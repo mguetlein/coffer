@@ -6,7 +6,11 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.InputStream;
 
+import org.kramerlab.cfpservice.api.impl.objects.AbstractModel;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractPrediction;
 import org.kramerlab.cfpservice.api.impl.util.CFPDepictUtil;
+import org.kramerlab.cfpservice.api.objects.Model;
+import org.kramerlab.cfpservice.api.objects.Prediction;
 import org.mg.cdklib.CDKConverter;
 import org.mg.cdklib.depict.CDKDepict;
 import org.mg.javalib.util.ArrayUtil;
@@ -52,9 +56,9 @@ public class DepictService
 	{
 		try
 		{
-			String pngFile = FOLDER + StringUtil.getMD5(smiles) + "_"
-					+ atoms.replaceAll(",", "-") + "_" + highlightOutgoingBonds + "_" + activating
-					+ "_" + crop + "_" + size + ".png";
+			String pngFile = FOLDER + StringUtil.getMD5(smiles) + "_" + atoms.replaceAll(",", "-")
+					+ "_" + highlightOutgoingBonds + "_" + activating + "_" + crop + "_" + size
+					+ ".png";
 			if (!new File(pngFile).exists())
 			{
 				int a[] = ArrayUtil.toPrimitiveIntArray(ArrayUtil.parseIntegers(atoms.split(",")));
@@ -84,16 +88,15 @@ public class DepictService
 	{
 		try
 		{
-			String pngFile = FOLDER + StringUtil.getMD5(smiles) + "_" + model + "_" + size
-					+ ".png";
+			String pngFile = FOLDER + StringUtil.getMD5(smiles) + "_" + model + "_" + size + ".png";
 			//			if (!new File(pngFile).exists())
 			//			{
 
 			int s = -1;
 			if (size != null)
 				s = Integer.parseInt(size);
-			Model m = Model.find(model);
-			Prediction p = Prediction.createPrediction(m, smiles, true);
+			Model m = AbstractModel.find(model);
+			Prediction p = AbstractPrediction.createPrediction(m, smiles, true);
 			CFPDepictUtil.depictMultiMatchToPNG(pngFile, CDKConverter.parseSmiles(smiles), p, m, s);
 			//			}
 			return new FileInputStream(pngFile);

@@ -10,14 +10,20 @@ import java.util.Locale;
 import javax.ws.rs.core.Response;
 
 import org.codehaus.jettison.json.JSONException;
-import org.kramerlab.cfpservice.api.CompoundObj;
-import org.kramerlab.cfpservice.api.FragmentObj;
 import org.kramerlab.cfpservice.api.ModelService;
-import org.kramerlab.cfpservice.api.PredictionObj;
 import org.kramerlab.cfpservice.api.impl.html.DocHtml;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml.HideFragments;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractFragment;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractModel;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractPrediction;
+import org.kramerlab.cfpservice.api.impl.ot.CompoundImpl;
+import org.kramerlab.cfpservice.api.impl.ot.PredictionImpl;
 import org.kramerlab.cfpservice.api.impl.util.CompoundInfo;
 import org.kramerlab.cfpservice.api.impl.util.RESTUtil;
+import org.kramerlab.cfpservice.api.objects.Compound;
+import org.kramerlab.cfpservice.api.objects.Fragment;
+import org.kramerlab.cfpservice.api.objects.Model;
+import org.kramerlab.cfpservice.api.objects.Prediction;
 import org.mg.cdklib.CDKConverter;
 import org.mg.javalib.util.StopWatchUtil;
 import org.mg.javalib.util.StringUtil;
@@ -27,6 +33,8 @@ import org.springframework.stereotype.Service;
 @Service("modelService#default")
 public class ModelServiceImpl implements ModelService
 {
+	public static String HOST;
+
 	static
 	{
 		Locale.setDefault(Locale.US);
@@ -41,13 +49,13 @@ public class ModelServiceImpl implements ModelService
 	@Override
 	public Model[] getModels()
 	{
-		return Model.listModels();
+		return AbstractModel.listModels();
 	}
 
 	@Override
 	public Model getModel(String id)
 	{
-		return Model.find(id);
+		return AbstractModel.find(id);
 	}
 
 	@Override
@@ -56,14 +64,14 @@ public class ModelServiceImpl implements ModelService
 		try
 		{
 			CDKConverter.validateSmiles(smiles);
-			final Model models[] = Model.listModels();
-			Prediction.createPrediction(models[0], smiles, false);
+			final Model models[] = AbstractModel.listModels();
+			AbstractPrediction.createPrediction(models[0], smiles, false);
 			Thread th = new Thread(new Runnable()
 			{
 				public void run()
 				{
 					for (int i = 1; i < models.length; i++)
-						Prediction.createPrediction(models[i], smiles, false);
+						AbstractPrediction.createPrediction(models[i], smiles, false);
 				}
 			});
 			th.start();
@@ -94,8 +102,9 @@ public class ModelServiceImpl implements ModelService
 			if (compoundSmiles == null)
 				compoundSmiles = RESTUtil.get(compoundURI, ModelService.MEDIA_TYPE_CHEMICAL_SMILES);
 			CDKConverter.validateSmiles(compoundSmiles);
-			Prediction p = Prediction.createPrediction(Model.find(id), compoundSmiles, true);
-			return Response.seeOther(new URI(id + "/prediction/" + p.getId())).build();
+			Prediction p = AbstractPrediction.createPrediction(AbstractModel.find(id),
+					compoundSmiles, true);
+			return Response.seeOther(new URI(p.getLocalURI())).build();
 		}
 		catch (InvalidSmilesException e)
 		{
@@ -110,40 +119,41 @@ public class ModelServiceImpl implements ModelService
 	@Override
 	public InputStream getValidationChart(String id)
 	{
-		return Model.find(id).getValidationChart();
+		return ((AbstractModel) AbstractModel.find(id)).getValidationChart();
 	}
 
 	@Override
-	public PredictionObj getPrediction(String modelId, String predictionId, String hideFragments,
+	public Prediction getPrediction(String modelId, String predictionId, String hideFragments,
 			String maxNumFragments)
 	{
 		int num = maxNumFragments == null ? ModelService.DEFAULT_NUM_ENTRIES
 				: Integer.parseInt(maxNumFragments);
-		return Prediction.find(modelId, predictionId, HideFragments.fromString(hideFragments), num);
+		return AbstractPrediction.find(modelId, predictionId,
+				HideFragments.fromString(hideFragments), num);
 	}
 
 	@Override
 	public Prediction[] getPredictions(String predictionId, String wait)
 	{
 		int num = wait == null ? -1 : Integer.parseInt(wait);
-		Prediction[] res = Prediction.find(predictionId);
+		Prediction[] res = AbstractPrediction.find(predictionId);
 		if (res.length < num) // add trailing empty predictions
 		{
 			res = Arrays.copyOf(res, num);
 			for (int i = 0; i < res.length; i++)
 				if (res[i] == null)
-					res[i] = new Prediction();
+					res[i] = new PredictionImpl();
 		}
 		return res;
 	}
 
 	@Override
-	public FragmentObj getFragment(String modelId, String fragmentId, String maxNumFragments,
+	public Fragment getFragment(String modelId, String fragmentId, String maxNumFragments,
 			String smiles)
 	{
 		int num = maxNumFragments == null ? ModelService.DEFAULT_NUM_ENTRIES
 				: Integer.parseInt(maxNumFragments);
-		return Fragment.find(modelId, fragmentId, num, smiles);
+		return AbstractFragment.find(modelId, fragmentId, num, smiles);
 	}
 
 	@Override
@@ -186,9 +196,9 @@ public class ModelServiceImpl implements ModelService
 	}
 
 	@Override
-	public CompoundObj getCompound(String smiles)
+	public Compound getCompound(String smiles)
 	{
-		Compound c = new Compound();
+		CompoundImpl c = new CompoundImpl();
 		c.setSmiles(smiles);
 		return c;
 	}

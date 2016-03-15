@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.kramerlab.cfpservice.api.impl.Model;
-import org.kramerlab.cfpservice.api.impl.Prediction;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractModel;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractPrediction;
+import org.kramerlab.cfpservice.api.objects.Model;
+import org.kramerlab.cfpservice.api.objects.Prediction;
 import org.mg.cdklib.cfp.CFPMiner;
 
 import weka.classifiers.Classifier;
@@ -29,9 +31,9 @@ public interface PersistanceAdapter
 
 	public List<String> readDatasetEndpoints(String modelId);
 
-	public void saveModel(Model model);
+	public void saveModel(AbstractModel model);
 
-	public void savePrediction(Prediction prediction);
+	public void savePrediction(AbstractPrediction prediction);
 
 	public Prediction readPrediction(String modelId, String predictionId);
 

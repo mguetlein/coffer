@@ -1,5 +1,6 @@
-package org.kramerlab.cfpservice.api.impl;
+package org.kramerlab.cfpservice.api.impl.objects;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -7,17 +8,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-
 import org.kramerlab.cfpminer.weka.eval2.CFPtoArff;
 import org.kramerlab.cfpservice.api.ModelService;
-import org.kramerlab.cfpservice.api.PredictionObj;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml.HideFragments;
 import org.kramerlab.cfpservice.api.impl.html.PredictionsHtml;
+import org.kramerlab.cfpservice.api.impl.ot.PredictionImpl;
 import org.kramerlab.cfpservice.api.impl.persistance.PersistanceAdapter;
 import org.kramerlab.cfpservice.api.impl.provider.HTMLOwner;
+import org.kramerlab.cfpservice.api.objects.Model;
+import org.kramerlab.cfpservice.api.objects.Prediction;
+import org.kramerlab.cfpservice.api.objects.SubgraphPredictionAttribute;
 import org.mg.cdklib.CDKConverter;
 import org.mg.cdklib.cfp.CFPFragment;
 import org.mg.cdklib.cfp.CFPMiner;
@@ -27,30 +28,71 @@ import org.mg.wekalib.attribute_ranking.PredictionAttribute;
 import org.mg.wekalib.attribute_ranking.PredictionAttributeComputation;
 import org.openscience.cdk.interfaces.IAtomContainer;
 
-import weka.classifiers.Classifier;
 import weka.core.Instance;
 import weka.core.Instances;
 
-@XmlRootElement
-@XmlType(name = "Prediction")
-public class Prediction extends PredictionObj implements HTMLOwner
+public abstract class AbstractPrediction extends AbstractServiceObject
+		implements Prediction, HTMLOwner, Serializable
 {
-	private static final long serialVersionUID = 9L;
+	private static final long serialVersionUID = 10L;
 
+	protected String id;
+	protected String smiles;
+	protected String modelId;
+	protected int predictedIdx;
+	protected double predictedDistribution[];
+	protected String trainingActivity;
 	protected List<SubgraphPredictionAttribute> predictionAttributes;
 
 	protected transient HideFragments hideFragments;
-
 	protected transient int maxNumFragments;
 
-	public Prediction()
+	@Override
+	public String getLocalURI()
 	{
+		return modelId + "/prediction/" + id;
 	}
 
-	public void setPredictionAttributes(List<SubgraphPredictionAttribute> predictionAttributes)
+	@Override
+	public String getId()
 	{
-		this.predictionAttributes = predictionAttributes;
+		return id;
 	}
+
+	@Override
+	public String getModelId()
+	{
+		return modelId;
+	}
+
+	@Override
+	public String getSmiles()
+	{
+		return smiles;
+	}
+
+	@Override
+	public double[] getPredictedDistribution()
+	{
+		return predictedDistribution;
+	}
+
+	@Override
+	public int getPredictedIdx()
+	{
+		return predictedIdx;
+	}
+
+	@Override
+	public String getTrainingActivity()
+	{
+		return trainingActivity;
+	}
+
+	//	public void setPredictionAttributes(List<SubgraphPredictionAttribute> predictionAttributes)
+	//	{
+	//		this.predictionAttributes = predictionAttributes;
+	//	}
 
 	public List<SubgraphPredictionAttribute> getPredictionAttributes()
 	{
@@ -60,16 +102,6 @@ public class Prediction extends PredictionObj implements HTMLOwner
 			PersistanceAdapter.INSTANCE.savePrediction(this);
 		}
 		return predictionAttributes;
-	}
-
-	public HideFragments getHideFragments()
-	{
-		return hideFragments;
-	}
-
-	public int getMaxNumFragments()
-	{
-		return maxNumFragments;
 	}
 
 	public IAtomContainer getMolecule()
@@ -92,9 +124,9 @@ public class Prediction extends PredictionObj implements HTMLOwner
 	public static Prediction[] find(String predictionId)
 	{
 		List<Prediction> p = new ArrayList<Prediction>();
-		for (Model m : Model.listModels())
-			if (Prediction.exists(m.getId(), predictionId))
-				p.add(Prediction.find(m.getId(), predictionId));
+		for (Model m : AbstractModel.listModels())
+			if (AbstractPrediction.exists(m.getId(), predictionId))
+				p.add(AbstractPrediction.find(m.getId(), predictionId));
 		return ArrayUtil.toArray(p);
 	}
 
@@ -106,7 +138,8 @@ public class Prediction extends PredictionObj implements HTMLOwner
 	public static Prediction find(String modelId, String predictionId, HideFragments hideFragments,
 			int maxNumFragments)
 	{
-		Prediction p = PersistanceAdapter.INSTANCE.readPrediction(modelId, predictionId);
+		AbstractPrediction p = (AbstractPrediction) PersistanceAdapter.INSTANCE
+				.readPrediction(modelId, predictionId);
 		p.hideFragments = hideFragments;
 		p.maxNumFragments = maxNumFragments;
 		return p;
@@ -131,10 +164,10 @@ public class Prediction extends PredictionObj implements HTMLOwner
 			if (exists(m.getId(), predictionId))
 			{
 				PersistanceAdapter.INSTANCE.updateDate(m.getId(), predictionId);
-				return Prediction.find(m.getId(), predictionId);
+				return AbstractPrediction.find(m.getId(), predictionId);
 			}
 
-			Prediction p = new Prediction();
+			AbstractPrediction p = new PredictionImpl();
 			p.smiles = smiles;
 			p.id = predictionId;
 			p.modelId = m.getId();
@@ -154,14 +187,14 @@ public class Prediction extends PredictionObj implements HTMLOwner
 	{
 		try
 		{
-			Model m = Model.find(modelId);
-			CFPMiner miner = m.getCFPMiner();
+			Model m = AbstractModel.find(modelId);
+			CFPMiner miner = ((AbstractModel) m).getCFPMiner();
 
 			Instances data = CFPtoArff.getTestDataset(miner, "DUD_vegfr2", getMolecule());
 			Instance inst = data.get(0);
 			data.setClassIndex(data.numAttributes() - 1);
 
-			double dist[] = ((Classifier) m.getClassifier()).distributionForInstance(inst);
+			double dist[] = ((AbstractModel) m).getClassifier().distributionForInstance(inst);
 
 			int maxIdx = ArrayUtil.getMaxIndex(dist);
 			predictedIdx = maxIdx;
@@ -228,13 +261,13 @@ public class Prediction extends PredictionObj implements HTMLOwner
 				}
 
 				List<PredictionAttribute> pAtts = PredictionAttributeComputation
-						.compute((Classifier) m.getClassifier(), inst, dist, subAndSuperAtts);
+						.compute(((AbstractModel) m).getClassifier(), inst, dist, subAndSuperAtts);
 
 				List<SubgraphPredictionAttribute> l = new ArrayList<SubgraphPredictionAttribute>();
 				for (PredictionAttribute pa : pAtts)
 				{
 					int a = pa.getAttribute();
-					l.add(new SubgraphPredictionAttribute(pa.getAttribute(),
+					l.add(new SubgraphPredictionAttributeImpl(pa.getAttribute(),
 							pa.getAlternativeDistributionForInstance(), pa.getDiffToOrigProp(),
 							hasSuper.contains(a), hasSub.contains(a)));
 				}
@@ -247,7 +280,7 @@ public class Prediction extends PredictionObj implements HTMLOwner
 		}
 	}
 
-	public static String getPredictionListHTML(Prediction p[])
+	public static String getPredictionListHTML(AbstractPrediction p[])
 	{
 		return new PredictionsHtml(p).build();
 	}
@@ -255,56 +288,8 @@ public class Prediction extends PredictionObj implements HTMLOwner
 	@Override
 	public String getHTML()
 	{
-		return new PredictionHtml(this).build();
+		return new PredictionHtml(this, hideFragments, maxNumFragments).build();
 	}
-
-	// opentox stuff
-
-	public DataEntry getDataEntry()
-	{
-		return new DataEntry()
-		{
-			@Override
-			public FeatureValue[] getValues()
-			{
-				return new FeatureValue[] { new FeatureValue()
-						{
-							@Override
-							public Object getValue()
-							{
-								return Model.find(modelId).getClassValues()[predictedIdx];
-							}
-
-							@Override
-							public String getFeature()
-							{
-								return Model.find(modelId).getPredictedVariables()[0];
-							}
-						}, new FeatureValue()
-						{
-							@Override
-							public Object getValue()
-							{
-								return predictedDistribution[predictedIdx];
-							}
-
-							@Override
-							public String getFeature()
-							{
-								return Model.find(modelId).getPredictedVariables()[1];
-							}
-						} };
-			}
-
-			@Override
-			public String getCompound()
-			{
-				return Compound.getCompoundURI(smiles);
-			}
-		};
-	};
-
-	//
 
 	public static void main(String[] args)
 	{
@@ -324,14 +309,14 @@ public class Prediction extends PredictionObj implements HTMLOwner
 
 		for (String modelId : modelIds)
 		{
-			Model m = Model.find(modelId);
+			Model m = AbstractModel.find(modelId);
 			for (String smi : smiles)
 			{
 				String predictionId = StringUtil.getMD5(smi);
 				if (exists(m.getId(), predictionId))
 					PersistanceAdapter.INSTANCE.deletePrediction(m.getId(), predictionId);
 
-				Prediction p = Prediction.createPrediction(m, smi, true);
+				Prediction p = AbstractPrediction.createPrediction(m, smi, true);
 				System.out.println(
 						p.getSmiles() + " " + ArrayUtil.toString(p.getPredictedDistribution()));
 			}

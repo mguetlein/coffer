@@ -18,8 +18,9 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.kramerlab.cfpservice.api.impl.DepictService;
-import org.kramerlab.cfpservice.api.impl.Model;
-import org.kramerlab.cfpservice.api.impl.Prediction;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractModel;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractPrediction;
+import org.kramerlab.cfpservice.api.objects.Model;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.cdklib.data.DataLoader;
 import org.mg.javalib.util.ArrayUtil;
@@ -109,13 +110,13 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		}
 	}
 
-	public Model readModel(String modelId)
+	public AbstractModel readModel(String modelId)
 	{
 		try
 		{
 			ObjectInputStream ois = new ObjectInputStream(
 					new FileInputStream(getModelFile(modelId)));
-			Model m = (Model) ois.readObject();
+			AbstractModel m = (AbstractModel) ois.readObject();
 			ois.close();
 			return m;
 		}
@@ -166,9 +167,9 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 				return name.endsWith(".model");
 			}
 		});
-		Model res[] = new Model[models.length];
+		Model res[] = new AbstractModel[models.length];
 		for (int i = 0; i < res.length; i++)
-			res[i] = Model.find(FileUtil.getFilename(models[i], false));
+			res[i] = AbstractModel.find(FileUtil.getFilename(models[i], false));
 		Arrays.sort(res, new Comparator<Model>()
 		{
 			public int compare(Model o1, Model o2)
@@ -189,13 +190,13 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		new File(getPredictionFile(modelId, predictionId)).setLastModified(new Date().getTime());
 	}
 
-	public Prediction readPrediction(String modelId, String predictionId)
+	public AbstractPrediction readPrediction(String modelId, String predictionId)
 	{
 		try
 		{
 			ObjectInputStream ois = new ObjectInputStream(
 					new FileInputStream(getPredictionFile(modelId, predictionId)));
-			Prediction pred = (Prediction) ois.readObject();
+			AbstractPrediction pred = (AbstractPrediction) ois.readObject();
 			ois.close();
 			return pred;
 		}
@@ -237,7 +238,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		return last;
 	}
 
-	public void savePrediction(Prediction prediction)
+	public void savePrediction(AbstractPrediction prediction)
 	{
 		try
 		{
@@ -274,7 +275,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		new File(getPredictionFile(modelId, predictionId)).delete();
 	}
 
-	public void saveModel(Model model)
+	public void saveModel(AbstractModel model)
 	{
 		try
 		{

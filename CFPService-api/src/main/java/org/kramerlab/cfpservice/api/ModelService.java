@@ -30,6 +30,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.kramerlab.cfpservice.api.objects.Compound;
+import org.kramerlab.cfpservice.api.objects.Fragment;
+import org.kramerlab.cfpservice.api.objects.Model;
+import org.kramerlab.cfpservice.api.objects.Prediction;
+
 /**
  * Java API and REST API Interface for {@value SERVICE_TITLE} ({@value SERVICE_HOME})<br>
  * REST methods are documented below.
@@ -39,14 +44,17 @@ import javax.ws.rs.core.Response;
 @Path("")
 public interface ModelService
 {
-	public static String SERVICE_HOME = "http://cfp-qsar.informatik.uni-mainz.de";
-	public static String SERVICE_TITLE = "Circular Fingerprint QSARs";
+	public static final String SERVICE_HOME = "http://cfp-qsar.informatik.uni-mainz.de";
+	public static final String SERVICE_TITLE = "Circular Fingerprint QSARs";
 
-	public static String DC_NAMESPACE = "http://purl.org/dc/elements/1.1/";
-	public static String DC_PREFIX = "dc";
+	public static final String DC_NAMESPACE = "http://purl.org/dc/elements/1.1";
+	public static final String DC_PREFIX = "dc";
 
-	public static String OPENTOX_API = "http://www.opentox.org/api/1.2";
-	public static String OPENTOX_API_PREFIX = "ot";
+	public static final String OPENTOX_API = "http://www.opentox.org/api/1.2";
+	public static final String OPENTOX_API_PREFIX = "ot";
+
+	public static final String RDF_NAMESPACE = "https://www.w3.org/1999/02/22-rdf-syntax-ns";
+	public static final String RDF_PREFIX = "rdf";
 
 	public static final String MEDIA_TYPE_CHEMICAL_SMILES = "chemical/x-daylight-smiles";
 	public static final String MEDIA_TYPE_TEXT_URI_LIST = "text/uri-list";
@@ -59,7 +67,7 @@ public interface ModelService
 	@Path("")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MEDIA_TYPE_TEXT_URI_LIST })
-	ModelObj[] getModels();
+	Model[] getModels();
 
 	public static final String PREDICT_PARAM_COMPOUND_SMILES = "compoundSmiles";
 	public static final String PREDICT_PARAM_COMPOUND_URI = "compound_uri";
@@ -92,7 +100,7 @@ public interface ModelService
 	@Path("{modelId}")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-	ModelObj getModel(@PathParam("modelId") String modelId);
+	Model getModel(@PathParam("modelId") String modelId);
 
 	/**
 	 * <b>request:</b> POST {@value SERVICE_HOME}/<i>modelId</i><br>
@@ -126,7 +134,7 @@ public interface ModelService
 	@Path("prediction/{predictionId}")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MEDIA_TYPE_TEXT_URI_LIST })
-	PredictionObj[] getPredictions(@PathParam("predictionId") String predictionId,
+	Prediction[] getPredictions(@PathParam("predictionId") String predictionId,
 			@FormParam("wait") String wait);
 
 	public static final int DEFAULT_NUM_ENTRIES = 10;
@@ -145,7 +153,7 @@ public interface ModelService
 	@Path("{modelId}/prediction/{predictionId}")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-	PredictionObj getPrediction(@PathParam("modelId") String modelId,
+	Prediction getPrediction(@PathParam("modelId") String modelId,
 			@PathParam("predictionId") String predictionId,
 			@FormParam("hideFragments") String hideFragments, @FormParam("size") String size);
 
@@ -160,7 +168,7 @@ public interface ModelService
 	@Path("{modelId}/fragment/{fragmentId}")
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_XML })
-	FragmentObj getFragment(@PathParam("modelId") String modelId,
+	Fragment getFragment(@PathParam("modelId") String modelId,
 			@PathParam("fragmentId") String fragmentId, @FormParam("size") String size,
 			@FormParam("smiles") String smiles);
 
@@ -232,6 +240,6 @@ public interface ModelService
 	@GET
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML,
 			ModelService.MEDIA_TYPE_CHEMICAL_SMILES })
-	CompoundObj getCompound(@PathParam("compoundId") String compoundId);
+	Compound getCompound(@PathParam("compoundId") String compoundId);
 
 }

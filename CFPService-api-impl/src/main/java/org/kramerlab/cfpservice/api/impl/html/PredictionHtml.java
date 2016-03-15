@@ -3,9 +3,10 @@ package org.kramerlab.cfpservice.api.impl.html;
 import java.io.IOException;
 
 import org.kramerlab.cfpservice.api.ModelService;
-import org.kramerlab.cfpservice.api.impl.Model;
-import org.kramerlab.cfpservice.api.impl.Prediction;
-import org.kramerlab.cfpservice.api.impl.SubgraphPredictionAttribute;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractModel;
+import org.kramerlab.cfpservice.api.objects.Model;
+import org.kramerlab.cfpservice.api.objects.Prediction;
+import org.kramerlab.cfpservice.api.objects.SubgraphPredictionAttribute;
 import org.mg.cdklib.CDKConverter;
 import org.mg.cdklib.cfp.CFPFragment;
 import org.mg.cdklib.cfp.CFPMiner;
@@ -21,6 +22,8 @@ public class PredictionHtml extends DefaultHtml
 {
 	Prediction p;
 	CFPMiner miner;
+	HideFragments hideFragments;
+	int maxNumFragments;
 
 	public static enum HideFragments
 	{
@@ -56,13 +59,15 @@ public class PredictionHtml extends DefaultHtml
 
 	public static HideFragments HIDE_FRAGMENTS_DEFAULT = HideFragments.NONE;
 
-	public PredictionHtml(Prediction p)
+	public PredictionHtml(Prediction p, HideFragments hideFragments, int maxNumFragments)
 	{
 		super("Prediction of compound " + p.getSmiles(), p.getModelId(),
-				Model.getName(p.getModelId()), "prediction/" + p.getId(), "Prediction");
+				AbstractModel.getName(p.getModelId()), "prediction/" + p.getId(), "Prediction");
 		setHidePageTitle(true);
 		this.p = p;
-		miner = Model.find(p.getModelId()).getCFPMiner();
+		this.hideFragments = hideFragments;
+		this.maxNumFragments = maxNumFragments;
+		miner = ((AbstractModel) AbstractModel.find(p.getModelId())).getCFPMiner();
 	}
 
 	private Renderable getPrediction(boolean hideNonMax)
@@ -163,7 +168,7 @@ public class PredictionHtml extends DefaultHtml
 			set.setResultValue(rIdx, " ", " ");
 
 			String url = "/" + p.getModelId();
-			Model m = Model.find(p.getModelId());
+			Model m = AbstractModel.find(p.getModelId());
 			set.setResultValue(rIdx, "Dataset", encodeLink(url, m.getName()));
 			set.setResultValue(rIdx, "Target", encodeLink(url, m.getTarget()));
 			set.setResultValue(rIdx, "Classifier", encodeLink(url, m.getClassifierName()));
@@ -193,7 +198,7 @@ public class PredictionHtml extends DefaultHtml
 		for (HideFragments hide : HideFragments.values())
 		{
 			String h = text("fragment.hide." + hide + ".link");
-			if (p.getHideFragments() != hide)
+			if (hideFragments != hide)
 				h = encodeLink(p.getId() + "?hideFragments=" + hide.stringKey(), h);
 			hideTxt += h + " ";
 		}
@@ -218,16 +223,16 @@ public class PredictionHtml extends DefaultHtml
 			int fIdx = 0;
 			for (final SubgraphPredictionAttribute pa : p.getPredictionAttributes())
 			{
-				if (p.getHideFragments() == HideFragments.SUPER && pa.hasSubGraph)
+				if (hideFragments == HideFragments.SUPER && pa.hasSubGraph())
 					continue;
-				if (p.getHideFragments() == HideFragments.SUB && pa.hasSuperGraph)
+				if (hideFragments == HideFragments.SUB && pa.hasSuperGraph())
 					continue;
 
 				int attIdx = pa.getAttribute();
 				if (match == testInstanceContains(attIdx))
 				{
 					fIdx++;
-					if (fIdx > p.getMaxNumFragments())
+					if (fIdx > maxNumFragments)
 						continue;
 
 					int rIdx = set.addResult();
@@ -351,19 +356,16 @@ public class PredictionHtml extends DefaultHtml
 				startRightColumn();
 			//getHtml().br();//hr(HtmlAttributesFactory.style("height:1pt; visibility:hidden;"));
 
-			if (fIdx > p.getMaxNumFragments())
+			if (fIdx > maxNumFragments)
 			{
 				int rIdx = set.addResult();
 				String hideSup = "";
-				if (p.getHideFragments() != HIDE_FRAGMENTS_DEFAULT)
-					hideSup = "hideFragments=" + p.getHideFragments().stringKey() + "&";
+				if (hideFragments != HIDE_FRAGMENTS_DEFAULT)
+					hideSup = "hideFragments=" + hideFragments.stringKey() + "&";
 				set.setResultValue(rIdx, fragmentCol,
-						encodeLink(
-								p.getId() + "?" + hideSup + "size="
-										+ Math.min(p.getMaxNumFragments()
-												+ ModelService.DEFAULT_NUM_ENTRIES, fIdx)
-										+ "#" + (rIdx + 1),
-								"More fragments"));
+						encodeLink(p.getId() + "?" + hideSup + "size="
+								+ Math.min(maxNumFragments + ModelService.DEFAULT_NUM_ENTRIES, fIdx)
+								+ "#" + (rIdx + 1), "More fragments"));
 			}
 			addTable(set);
 		}

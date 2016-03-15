@@ -2,8 +2,9 @@ package org.kramerlab.cfpservice.api.impl.html;
 
 import java.util.Comparator;
 
-import org.kramerlab.cfpservice.api.impl.Model;
-import org.kramerlab.cfpservice.api.impl.Prediction;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractModel;
+import org.kramerlab.cfpservice.api.objects.Model;
+import org.kramerlab.cfpservice.api.objects.Prediction;
 import org.mg.javalib.datamining.ResultSet;
 
 public class PredictionsHtml extends DefaultHtml
@@ -33,7 +34,7 @@ public class PredictionsHtml extends DefaultHtml
 			String url = "/" + p.getModelId() + "/prediction/" + p.getId();
 			//				res.setResultValue(idx, "Model", HTMLReport.encodeLink(url /*"/" + m.getId()*/, m.getId()));
 			smiles = p.getSmiles();
-			Model m = Model.find(p.getModelId());
+			Model m = AbstractModel.find(p.getModelId());
 			res.setResultValue(idx, "Dataset", encodeLink(url, m.getName()));
 			res.setResultValue(idx, "Target", encodeLink(url, m.getTarget()));
 			String endpoint = p.getTrainingActivity();

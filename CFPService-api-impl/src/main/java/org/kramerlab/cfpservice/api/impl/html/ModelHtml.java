@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.util.List;
 
 import org.kramerlab.cfpservice.api.ModelService;
-import org.kramerlab.cfpservice.api.impl.Model;
-import org.kramerlab.cfpservice.api.impl.Prediction;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractFragment;
+import org.kramerlab.cfpservice.api.impl.objects.AbstractPrediction;
+import org.kramerlab.cfpservice.api.objects.Fragment;
+import org.kramerlab.cfpservice.api.objects.Model;
+import org.kramerlab.cfpservice.api.objects.Prediction;
 import org.mg.javalib.datamining.ResultSet;
-import org.mg.javalib.util.CountedSet;
 import org.rendersnake.HtmlCanvas;
 import org.rendersnake.Renderable;
 
@@ -47,7 +49,7 @@ public class ModelHtml extends DefaultHtml
 					getMouseoverHelp(getList(w), w.size() + " warnings"));
 
 		//set.setResultValue(idx, "Num compounds", m.getCFPMiner().getNumCompounds());
-		set.setResultValue(idx, "Compounds", CountedSet.create(m.getCFPMiner().getEndpoints()));
+		set.setResultValue(idx, "Compounds", m.getEndpointsSummary());
 
 		//		ResultSet setM = new ResultSet();
 		//		setM.addResult();
@@ -59,15 +61,15 @@ public class ModelHtml extends DefaultHtml
 		set.setResultValue(idx, "Features",
 				getMouseoverHelp(
 						text("fragment.type.tip") + " " + moreLink(DocHtml.FILTERED_FRAGMENTS),
-						m.getCFPMiner().getNiceFragmentDescription()));
+						m.getNiceFragmentDescription()));
 		set.setResultValue(idx, "Num features", new Renderable()
 		{
 			public void renderOn(HtmlCanvas html) throws IOException
 			{
-				html.write(m.getCFPMiner().getNumFragments() + " ");
-				new TextWithLinks(
-						encodeLink("/" + m.getId() + "/fragment/1", "(inspect fragments)"), true,
-						false).renderOn(html);
+				html.write(m.getNumFragments() + " ");
+				Fragment f = AbstractFragment.find(m.getId(), "1");
+				new TextWithLinks(encodeLink(f.getLocalURI(), "(inspect fragments)"), true, false)
+						.renderOn(html);
 				//html.write("bla");
 			}
 		});
@@ -100,14 +102,14 @@ public class ModelHtml extends DefaultHtml
 		//					PersistanceAdapter.INSTANCE.getModelValidationResultsFile(id));
 		//			addTable(val.getJoinedResults());
 
-		String predIds[] = Prediction.findAllPredictions(m.getId());
+		String predIds[] = AbstractPrediction.findAllPredictions(m.getId());
 		if (predIds.length > 0)
 		{
 			ResultSet res = new ResultSet();
 			for (int i = 0; i < Math.min(predIds.length, 10); i++)
 			{
-				Prediction p = Prediction.find(m.getId(), predIds[i]);
-				String url = "/" + m.getId() + "/prediction/" + predIds[i];
+				Prediction p = AbstractPrediction.find(m.getId(), predIds[i]);
+				String url = p.getLocalURI();
 				int rIdx = res.addResult();
 				res.setResultValue(rIdx, "Compound", encodeLink(url, p.getSmiles()));
 				res.setResultValue(rIdx, "Prediction",

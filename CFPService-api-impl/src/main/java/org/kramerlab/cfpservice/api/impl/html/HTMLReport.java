@@ -1161,7 +1161,7 @@ public class HTMLReport
 	{
 		try
 		{
-			getHtml().h3(getAnker(string)).content(string);
+			getHtml().h4(getAnker(string)).content(string);
 		}
 		catch (IOException e)
 		{
