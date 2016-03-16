@@ -1,6 +1,9 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
+import java.io.IOException;
+
 import org.kramerlab.cfpservice.api.impl.ModelServiceImpl;
+import org.rendersnake.HtmlAttributesFactory;
 
 public class DocHtml extends DefaultHtml
 {
@@ -67,10 +70,34 @@ public class DocHtml extends DefaultHtml
 
 		for (int i = 0; i < Integer.parseInt(text("rest.num")); i++)
 		{
-			newSubsection(text("rest." + i + ".title", ModelServiceImpl.HOST));
-			addParagraph(text("rest." + i + ".curl", ModelServiceImpl.HOST));
-			addGap();
-			addParagraph(text("rest." + i + ".res", ModelServiceImpl.HOST));
+			newSubsection((i + 1) + ". " + text("rest." + i + ".title", ModelServiceImpl.HOST));
+			try
+			{
+
+				html.h5().write("REST call")._h5();
+				html.div(HtmlAttributesFactory.class_("small"));
+				addParagraph(text("rest." + i + ".curl", ModelServiceImpl.HOST));
+				html._div();
+
+				html.h5().write("Result")._h5();
+				html.div(HtmlAttributesFactory.class_("small"));
+				addParagraph(text("rest." + i + ".res", ModelServiceImpl.HOST));
+				html._div();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+
+			//			ResultSet rs = new ResultSet();
+			//			rs.addResult();
+			//			rs.setResultValue(0, "REST call", text("rest." + i + ".curl", ModelServiceImpl.HOST));
+			//			rs.setResultValue(0, "Result", text("rest." + i + ".res", ModelServiceImpl.HOST));
+			//			addTable(rs, true);
+
+			//			addParagraph(text("rest." + i + ".curl", ModelServiceImpl.HOST));
+			//			addGap();
+			//			addParagraph(text("rest." + i + ".res", ModelServiceImpl.HOST));
 		}
 
 		return close();
