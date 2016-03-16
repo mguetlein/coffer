@@ -24,7 +24,7 @@ import org.mg.cdklib.cfp.CFPFragment;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.StringUtil;
-import org.mg.wekalib.attribute_ranking.PredictionAttribute;
+import org.mg.wekalib.attribute_ranking.PredictionAttributeImpl;
 import org.mg.wekalib.attribute_ranking.PredictionAttributeComputation;
 import org.openscience.cdk.interfaces.IAtomContainer;
 
@@ -260,11 +260,11 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 					}
 				}
 
-				List<PredictionAttribute> pAtts = PredictionAttributeComputation
+				List<PredictionAttributeImpl> pAtts = PredictionAttributeComputation
 						.compute(((AbstractModel) m).getClassifier(), inst, dist, subAndSuperAtts);
 
 				List<SubgraphPredictionAttribute> l = new ArrayList<SubgraphPredictionAttribute>();
-				for (PredictionAttribute pa : pAtts)
+				for (PredictionAttributeImpl pa : pAtts)
 				{
 					int a = pa.getAttribute();
 					l.add(new SubgraphPredictionAttributeImpl(pa.getAttribute(),

@@ -1,8 +1,8 @@
 package org.kramerlab.cfpservice.api.objects;
 
-import org.mg.wekalib.attribute_ranking.PredictionAttributeInterface;
+import org.mg.wekalib.attribute_ranking.PredictionAttribute;
 
-public interface SubgraphPredictionAttribute extends PredictionAttributeInterface
+public interface SubgraphPredictionAttribute extends PredictionAttribute
 {
 	public boolean hasSuperGraph();
 

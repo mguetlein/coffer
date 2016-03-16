@@ -1,9 +1,9 @@
 package org.kramerlab.cfpservice.api.impl.objects;
 
 import org.kramerlab.cfpservice.api.objects.SubgraphPredictionAttribute;
-import org.mg.wekalib.attribute_ranking.PredictionAttribute;
+import org.mg.wekalib.attribute_ranking.PredictionAttributeImpl;
 
-public class SubgraphPredictionAttributeImpl extends PredictionAttribute
+public class SubgraphPredictionAttributeImpl extends PredictionAttributeImpl
 		implements SubgraphPredictionAttribute
 {
 	private static final long serialVersionUID = 2L;

@@ -23,8 +23,8 @@ public class BuildModels
 
 	public static void main(String[] args) throws Exception
 	{
-		buildModelFromNestedCV(true, "NCTRER");
-		buildModelFromNestedCV(true, "CPDBAS_Mouse");
+		buildModelFromNestedCV(true);
+		//buildModelFromNestedCV(true, "CPDBAS_Mouse");
 
 		//buildModelFromNestedCV("NCTRER");
 		//		buildModel("REID-3", false);

@@ -16,7 +16,7 @@ import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.cdklib.depict.CDKDepict;
 import org.mg.javalib.gui.property.ColorGradient;
 import org.mg.javalib.util.ArrayUtil;
-import org.mg.wekalib.attribute_ranking.PredictionAttributeInterface;
+import org.mg.wekalib.attribute_ranking.PredictionAttribute;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
@@ -75,7 +75,7 @@ public class CFPDepictUtil
 	 * @param dist
 	 */
 	private static void setAtomBondWeights(IAtomContainer mol, CFPMiner cfp,
-			List<? extends PredictionAttributeInterface> att, double dist[])
+			List<? extends PredictionAttribute> att, double dist[])
 	{
 		try
 		{
@@ -84,7 +84,7 @@ public class CFPDepictUtil
 				c.setProperty(WEIGHT_PROP, 0.0);
 			double propActive = dist[cfp.getActiveIdx()];
 			// iterate over all attributes
-			for (PredictionAttributeInterface a : att)
+			for (PredictionAttribute a : att)
 			{
 				CFPFragment f = cfp.getFragmentViaIdx(a.getAttribute());
 				Set<Integer> atoms = cfp.getAtomsMultiple(mol, f);
