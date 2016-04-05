@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
+import org.kramerlab.cfpminer.appdomain.CFPAppDomain;
 import org.kramerlab.cfpservice.api.impl.DepictService;
 import org.kramerlab.cfpservice.api.impl.objects.AbstractModel;
 import org.kramerlab.cfpservice.api.impl.objects.AbstractPrediction;
@@ -47,6 +48,11 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 	private static String getModelCFPFile(String id)
 	{
 		return FOLDER + "/model/" + id + ".cfp";
+	}
+
+	private static String getModelAppDomainFile(String id)
+	{
+		return FOLDER + "/model/" + id + ".appdomain";
 	}
 
 	public String getModelValidationResultsFile(String id)
@@ -151,6 +157,23 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 			CFPMiner miner = (CFPMiner) ois.readObject();
 			ois.close();
 			return miner;
+		}
+		catch (Exception e)
+		{
+			throw new PersistanceException(e);
+		}
+	}
+
+	@Override
+	public CFPAppDomain readAppDomain(String modelId)
+	{
+		try
+		{
+			ObjectInputStream ois = new ObjectInputStream(
+					new FileInputStream(getModelAppDomainFile(modelId)));
+			CFPAppDomain ad = (CFPAppDomain) ois.readObject();
+			ois.close();
+			return ad;
 		}
 		catch (Exception e)
 		{
@@ -263,6 +286,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		new File(getModelCFPFile(id)).delete();
 		new File(getModelClassifierFile(id)).delete();
 		new File(getModelFile(id)).delete();
+		new File(getModelAppDomainFile(id)).delete();
 		DepictService.deleteAllImagesForModel(id);
 		if (new File(getModelValidationResultsFile(id)).exists())
 			new File(getModelValidationResultsFile(id)).delete();
@@ -299,6 +323,13 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 			oos.flush();
 			oos.close();
 			System.out.println("cfps written to " + file);
+
+			file = getModelAppDomainFile(model.getId());
+			oos = new ObjectOutputStream(new FileOutputStream(file));
+			oos.writeObject(model.getAppDomain());
+			oos.flush();
+			oos.close();
+			System.out.println("appDomain written to " + file);
 
 			readModelDatasetWarnings(model.getId());
 		}

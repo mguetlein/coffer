@@ -14,12 +14,13 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
+import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.impl.ModelServiceImpl;
 import org.kramerlab.cfpservice.api.impl.objects.AbstractModel;
 import org.kramerlab.cfpservice.api.impl.objects.AbstractPrediction;
 
 @Provider
-@Produces(MediaType.TEXT_HTML)
+@Produces(ModelService.MEDIA_TYPE_HTML_UTF8)
 public class HTMLProvider<T> implements MessageBodyWriter<T>
 {
 	public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,

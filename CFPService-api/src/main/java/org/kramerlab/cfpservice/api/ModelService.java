@@ -58,6 +58,7 @@ public interface ModelService
 
 	public static final String MEDIA_TYPE_CHEMICAL_SMILES = "chemical/x-daylight-smiles";
 	public static final String MEDIA_TYPE_TEXT_URI_LIST = "text/uri-list";
+	public static final String MEDIA_TYPE_HTML_UTF8 = "text/html; charset=UTF-8";
 
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<br>
@@ -66,7 +67,7 @@ public interface ModelService
 	 */
 	@Path("")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MEDIA_TYPE_TEXT_URI_LIST })
+	@Produces({ MediaType.APPLICATION_JSON, MEDIA_TYPE_HTML_UTF8, MEDIA_TYPE_TEXT_URI_LIST })
 	Model[] getModels();
 
 	public static final String PREDICT_PARAM_COMPOUND_SMILES = "compoundSmiles";
@@ -89,7 +90,7 @@ public interface ModelService
 	 */
 	@Path("doc")
 	@GET
-	@Produces({ MediaType.TEXT_HTML })
+	@Produces({ MEDIA_TYPE_HTML_UTF8 })
 	String getDocumentation();
 
 	/**
@@ -99,7 +100,7 @@ public interface ModelService
 	 */
 	@Path("{modelId}")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
+	@Produces({ MediaType.APPLICATION_JSON, MEDIA_TYPE_HTML_UTF8 })
 	Model getModel(@PathParam("modelId") String modelId);
 
 	/**
@@ -133,7 +134,7 @@ public interface ModelService
 	 */
 	@Path("prediction/{predictionId}")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MEDIA_TYPE_TEXT_URI_LIST })
+	@Produces({ MediaType.APPLICATION_JSON, MEDIA_TYPE_HTML_UTF8, MEDIA_TYPE_TEXT_URI_LIST })
 	Prediction[] getPredictions(@PathParam("predictionId") String predictionId,
 			@FormParam("wait") String wait);
 
@@ -152,7 +153,7 @@ public interface ModelService
 	 */
 	@Path("{modelId}/prediction/{predictionId}")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
+	@Produces({ MediaType.APPLICATION_JSON, MEDIA_TYPE_HTML_UTF8 })
 	Prediction getPrediction(@PathParam("modelId") String modelId,
 			@PathParam("predictionId") String predictionId,
 			@FormParam("hideFragments") String hideFragments, @FormParam("size") String size);
@@ -167,7 +168,7 @@ public interface ModelService
 	 */
 	@Path("{modelId}/fragment/{fragmentId}")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_XML })
+	@Produces({ MediaType.APPLICATION_JSON, MEDIA_TYPE_HTML_UTF8, MediaType.APPLICATION_XML })
 	Fragment getFragment(@PathParam("modelId") String modelId,
 			@PathParam("fragmentId") String fragmentId, @FormParam("size") String size,
 			@FormParam("smiles") String smiles);
@@ -179,7 +180,7 @@ public interface ModelService
 	 */
 	@Path("info/{service}/{smiles}")
 	@GET
-	@Produces({ MediaType.TEXT_HTML })
+	@Produces({ MEDIA_TYPE_HTML_UTF8 })
 	String getCompoundInfo(@PathParam("service") String service,
 			@PathParam("smiles") String smiles);
 
@@ -238,8 +239,25 @@ public interface ModelService
 	 */
 	@Path("compound/{compoundId}")
 	@GET
-	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML,
+	@Produces({ MediaType.APPLICATION_JSON, MEDIA_TYPE_HTML_UTF8,
 			ModelService.MEDIA_TYPE_CHEMICAL_SMILES })
 	Compound getCompound(@PathParam("compoundId") String compoundId);
+
+	@Path("{modelId}/appdomain")
+	@GET
+	@Produces({ MEDIA_TYPE_HTML_UTF8 })
+	String getAppDomain(@PathParam("modelId") String modelId, @FormParam("smiles") String smiles,
+			@FormParam("size") String size);
+
+	@Path("{modelId}/appdomain")
+	@POST
+	Response predictAppDomain(@PathParam("modelId") String modelId,
+			@FormParam(PREDICT_PARAM_COMPOUND_SMILES) String compound);
+
+	@Path("{modelId}/depictAppdomain")
+	@GET
+	@Produces({ "image/png" })
+	InputStream depictAppDomain(@PathParam("modelId") String modelId,
+			@FormParam("smiles") String smiles);
 
 }

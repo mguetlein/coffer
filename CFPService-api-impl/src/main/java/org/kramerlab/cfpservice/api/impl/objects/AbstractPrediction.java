@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.kramerlab.cfpminer.appdomain.CFPAppDomain;
 import org.kramerlab.cfpminer.weka.eval2.CFPtoArff;
 import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml;
@@ -24,8 +25,8 @@ import org.mg.cdklib.cfp.CFPFragment;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.StringUtil;
-import org.mg.wekalib.attribute_ranking.PredictionAttributeImpl;
 import org.mg.wekalib.attribute_ranking.PredictionAttributeComputation;
+import org.mg.wekalib.attribute_ranking.PredictionAttributeImpl;
 import org.openscience.cdk.interfaces.IAtomContainer;
 
 import weka.core.Instance;
@@ -34,7 +35,7 @@ import weka.core.Instances;
 public abstract class AbstractPrediction extends AbstractServiceObject
 		implements Prediction, HTMLOwner, Serializable
 {
-	private static final long serialVersionUID = 10L;
+	private static final long serialVersionUID = 11L;
 
 	protected String id;
 	protected String smiles;
@@ -43,6 +44,8 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 	protected double predictedDistribution[];
 	protected String trainingActivity;
 	protected List<SubgraphPredictionAttribute> predictionAttributes;
+	protected boolean insideAppDomain;
+	protected double appDomainPValue;
 
 	protected transient HideFragments hideFragments;
 	protected transient int maxNumFragments;
@@ -87,6 +90,18 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 	public String getTrainingActivity()
 	{
 		return trainingActivity;
+	}
+
+	@Override
+	public boolean isInsideAppDomain()
+	{
+		return insideAppDomain;
+	}
+
+	@Override
+	public double getAppDomainPValue()
+	{
+		return appDomainPValue;
 	}
 
 	//	public void setPredictionAttributes(List<SubgraphPredictionAttribute> predictionAttributes)
@@ -200,6 +215,11 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 			predictedIdx = maxIdx;
 			predictedDistribution = dist;
 			trainingActivity = miner.getTrainingActivity(smiles);
+
+			CFPAppDomain ad = ((AbstractModel) m).getAppDomain();
+			ad.setCFPMiner(miner);
+			insideAppDomain = ad.isInsideAppdomain(smiles);
+			appDomainPValue = ad.pValue(smiles);
 
 			if (createPredictionAttributes)
 			{

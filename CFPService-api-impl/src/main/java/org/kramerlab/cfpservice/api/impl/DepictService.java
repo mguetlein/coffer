@@ -1,9 +1,11 @@
 package org.kramerlab.cfpservice.api.impl;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.kramerlab.cfpservice.api.impl.objects.AbstractModel;
@@ -13,6 +15,7 @@ import org.kramerlab.cfpservice.api.objects.Model;
 import org.kramerlab.cfpservice.api.objects.Prediction;
 import org.mg.cdklib.CDKConverter;
 import org.mg.cdklib.depict.CDKDepict;
+import org.mg.javalib.freechart.FreeChartUtil;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.ColorUtil;
 import org.mg.javalib.util.StringUtil;
@@ -122,15 +125,34 @@ public class DepictService
 
 	public static void main(String[] args) throws InvalidSmilesException, Exception
 	{
-		System.out.println(DepictService.depictMatch("Cl.c1ccc(CCCCCC(=O)O)cc1", null, "1,2",
-				"true", "true", "false"));
-				//        DepictService.depict("c1ccc(CCCCCC(=O)O)cc1", null, "1,2", "false");
-				//        DepictService.depict("c1ccc(CCCCCC(=O)O)cc1", null, null, null);
+		//		System.out.println(DepictService.depictMatch("Cl.c1ccc(CCCCCC(=O)O)cc1", null, "1,2",
+		//				"true", "true", "false"));
+		//        DepictService.depict("c1ccc(CCCCCC(=O)O)cc1", null, "1,2", "false");
+		//        DepictService.depict("c1ccc(CCCCCC(=O)O)cc1", null, null, null);
 
 		//		DefaultImageProvider.drawFP("/tmp/delme.png",
 		//				new SmilesParser(SilentChemObjectBuilder.getInstance()).parseSmiles("c1c(CCCCCCCCCCCCCCCC)cccc1"),
 		//				new int[] { 1, 2 }, true, 100);
 
+		depictAppDomain(AbstractModel.find("CPDBAS_Mouse"), "CCC");
+	}
+
+	public static InputStream depictAppDomain(Model model, String smiles)
+	{
+		try
+		{
+			String pngFile = FOLDER + "appDomain" + "_" + model.getId() + ".png";
+			if (smiles != null)
+				((AbstractModel) model).getAppDomain()
+						.setCFPMiner(((AbstractModel) model).getCFPMiner());
+			FreeChartUtil.toPNGFile(pngFile, ((AbstractModel) model).getAppDomain().getPlot(smiles),
+					new Dimension(400, 300));
+			return new FileInputStream(pngFile);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 }

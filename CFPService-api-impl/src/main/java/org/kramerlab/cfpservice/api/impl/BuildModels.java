@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Random;
 
+import org.kramerlab.cfpminer.appdomain.KNNTanimotoCFPAppDomainModel;
 import org.kramerlab.cfpminer.experiments.validation.InnerValidationResults;
 import org.kramerlab.cfpminer.weka.eval2.CFPFeatureProvider;
 import org.kramerlab.cfpminer.weka.eval2.CFPtoArff;
@@ -23,8 +24,14 @@ public class BuildModels
 
 	public static void main(String[] args) throws Exception
 	{
-		buildModelFromNestedCV(true);
-		//buildModelFromNestedCV(true, "CPDBAS_Mouse");
+		//buildModelFromNestedCV(true);
+
+		for (String dataset : DataLoader.INSTANCE.allDatasetsSorted())
+			if (new Random().nextDouble() < 0.1)
+				buildModelFromNestedCV(false, dataset);
+
+		//		buildModelFromNestedCV(true, "CPDBAS_Mouse");
+		//		buildModelFromNestedCV(true, "NCTRER");
 
 		//buildModelFromNestedCV("NCTRER");
 		//		buildModel("REID-3", false);
@@ -143,6 +150,13 @@ public class BuildModels
 
 				model.setActiveClassIdx(model.getCFPMiner().getActiveIdx());
 				model.setClassValues(model.getCFPMiner().getClassValues());
+
+				KNNTanimotoCFPAppDomainModel appDomain = new KNNTanimotoCFPAppDomainModel(3, 0.001,
+						true);
+				appDomain.setCFPMiner(model.getCFPMiner());
+				appDomain.build();
+				model.setAppDomain(appDomain);
+
 				model.saveModel();
 			}
 

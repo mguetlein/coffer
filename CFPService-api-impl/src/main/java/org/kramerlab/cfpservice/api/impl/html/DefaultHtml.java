@@ -1,11 +1,16 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 import org.kramerlab.cfpservice.api.ModelService;
+import org.kramerlab.cfpservice.api.objects.Prediction;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.StringUtil;
+import org.rendersnake.HtmlAttributesFactory;
+import org.rendersnake.HtmlCanvas;
+import org.rendersnake.Renderable;
 
 public class DefaultHtml extends HTMLReport
 {
@@ -111,5 +116,32 @@ public class DefaultHtml extends HTMLReport
 			sizeStr = "&size=" + size;
 		return "/depictMultiMatch?smiles=" + StringUtil.urlEncodeUTF8(smiles) + "&model=" + modelId
 				+ sizeStr;
+	}
+
+	protected static Renderable getInsideAppDomain(Prediction p)
+	{
+		return getInsideAppDomain(p.isInsideAppDomain(), p.getAppDomainPValue(), "/"
+				+ p.getModelId() + "/appdomain?smiles=" + StringUtil.urlEncodeUTF8(p.getSmiles()));
+	}
+
+	protected static Renderable getInsideAppDomain(final boolean inside, final double pValue,
+			final String url)
+	{
+		return new Renderable()
+		{
+			public void renderOn(HtmlCanvas html) throws IOException
+			{
+				if (url != null)
+					html.a(HtmlAttributesFactory.href(url));
+
+				html.write(inside ? "inside" : "outside");
+				html.br();
+				html.div(HtmlAttributesFactory.class_("smallGrey"));
+				html.write("p-Value: " + StringUtil.formatSmallDoubles(pValue));
+				html._div();
+				if (url != null)
+					html._a();
+			}
+		};
 	}
 }

@@ -39,12 +39,10 @@ public class PredictionsHtml extends DefaultHtml
 			res.setResultValue(idx, "Target", encodeLink(url, m.getTarget()));
 			String endpoint = p.getTrainingActivity();
 			if (endpoint != null)
-			{
 				res.setResultValue(idx, text("model.measured"), encodeLink(url, endpoint));
-				setHeaderHelp(text("model.measured"), text("model.measured.tip.some"));
-			}
 			res.setResultValue(idx, "Prediction",
 					PredictionHtml.getPrediction(p, m.getClassValues(), true, url));
+			res.setResultValue(idx, "App-Domain", getInsideAppDomain(p));
 			res.setResultValue(idx, "p", p.getPredictedDistribution()[m.getActiveClassIdx()]);
 			//							HTMLReport.encodeLink("/" + m.getId() + "/prediction/" + predictionId,
 			//									p.getPredictedClass())
@@ -52,6 +50,12 @@ public class PredictionsHtml extends DefaultHtml
 		}
 		if (count < predictions.length)
 			setRefresh(10);
+
+		setHeaderHelp("Prediction",
+				text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
+		setHeaderHelp("App-Domain",
+				text("appdomain.help.general") + " " + moreLink(DocHtml.APP_DOMAIN));
+		setHeaderHelp(text("model.measured"), text("model.measured.tip.single"));
 
 		res.sortResults("p", new Comparator<Object>()
 		{

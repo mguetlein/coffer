@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import org.kramerlab.cfpservice.api.ModelService;
 import org.kramerlab.cfpservice.api.impl.html.DefaultHtml;
 
 @Provider
@@ -46,7 +47,7 @@ public class ErrorHandler implements ExceptionMapper<Throwable>
 			html.setPageTitle(errorTitle);
 			html.addParagraph(errorMsg.replaceAll("\n", "<br>"));
 			errorMsg = html.close();
-			type = MediaType.TEXT_HTML;
+			type = ModelService.MEDIA_TYPE_HTML_UTF8;
 		}
 		else
 			errorMsg = errorTitle + "\n" + errorMsg;

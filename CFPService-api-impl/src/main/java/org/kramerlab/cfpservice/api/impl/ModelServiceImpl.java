@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response;
 
 import org.codehaus.jettison.json.JSONException;
 import org.kramerlab.cfpservice.api.ModelService;
+import org.kramerlab.cfpservice.api.impl.html.AppDomainHtml;
 import org.kramerlab.cfpservice.api.impl.html.DocHtml;
 import org.kramerlab.cfpservice.api.impl.html.PredictionHtml.HideFragments;
 import org.kramerlab.cfpservice.api.impl.objects.AbstractFragment;
@@ -202,4 +203,39 @@ public class ModelServiceImpl implements ModelService
 		c.setSmiles(smiles);
 		return c;
 	}
+
+	@Override
+	public String getAppDomain(String modelId, String smiles, String maxNumNeighbors)
+	{
+		int num = maxNumNeighbors == null ? ModelService.DEFAULT_NUM_ENTRIES
+				: Integer.parseInt(maxNumNeighbors);
+		return new AppDomainHtml(AbstractModel.find(modelId), smiles, num).build();
+	}
+
+	@Override
+	public Response predictAppDomain(String modelId, String smiles)
+	{
+		try
+		{
+			CDKConverter.validateSmiles(smiles);
+			return Response.seeOther(new URI(
+					"/" + modelId + "/appdomain?smiles=" + StringUtil.urlEncodeUTF8(smiles)))
+					.build();
+		}
+		catch (InvalidSmilesException e)
+		{
+			throw new IllegalArgumentException(e.getMessage(), e);
+		}
+		catch (URISyntaxException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public InputStream depictAppDomain(String modelId, String smiles)
+	{
+		return DepictService.depictAppDomain(AbstractModel.find(modelId), smiles);
+	}
+
 }

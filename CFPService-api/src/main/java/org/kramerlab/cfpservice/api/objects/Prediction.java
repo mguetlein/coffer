@@ -18,4 +18,7 @@ public interface Prediction extends ServiceResource
 
 	public List<SubgraphPredictionAttribute> getPredictionAttributes();
 
+	public boolean isInsideAppDomain();
+
+	public double getAppDomainPValue();
 }

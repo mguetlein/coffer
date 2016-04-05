@@ -15,6 +15,8 @@ public class DocHtml extends DefaultHtml
 
 	public static String VALIDATION = "Validation";
 
+	public static String APP_DOMAIN = "Applicability Domain";
+
 	public static String getAnker(String section)
 	{
 		return section.toLowerCase().replaceAll(" ", "-");
@@ -51,6 +53,10 @@ public class DocHtml extends DefaultHtml
 
 		newSection(VALIDATION);
 		addParagraphExternal(text("doc.validation"));
+		addGap();
+
+		newSection(APP_DOMAIN);
+		addParagraphExternal(text("doc.appdomain"));
 		addGap();
 
 		newSection("Source Code");

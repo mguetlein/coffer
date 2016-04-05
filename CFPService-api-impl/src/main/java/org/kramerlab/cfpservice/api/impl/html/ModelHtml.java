@@ -112,14 +112,24 @@ public class ModelHtml extends DefaultHtml
 				String url = p.getLocalURI();
 				int rIdx = res.addResult();
 				res.setResultValue(rIdx, "Compound", encodeLink(url, p.getSmiles()));
+				String endpoint = p.getTrainingActivity();
+				if (endpoint != null)
+					res.setResultValue(idx, text("model.measured"), encodeLink(url, endpoint));
 				res.setResultValue(rIdx, "Prediction",
 						PredictionHtml.getPrediction(p, m.getClassValues(), true, url));
+				res.setResultValue(rIdx, "App-Domain", getInsideAppDomain(p));
 				//				res.setResultValue(rIdx, "Date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(p.getDate()));
 			}
 			if (res.getNumResults() > 0)
 			{
 				addGap();
 				newSection("Recent predictions");
+
+				setHeaderHelp("Prediction",
+						text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
+				setHeaderHelp("App-Domain",
+						text("appdomain.help.general") + " " + moreLink(DocHtml.APP_DOMAIN));
+				setHeaderHelp(text("model.measured"), text("model.measured.tip.single"));
 				addTable(res);
 			}
 		}

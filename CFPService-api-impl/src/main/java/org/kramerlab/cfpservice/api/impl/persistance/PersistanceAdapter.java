@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.kramerlab.cfpminer.appdomain.CFPAppDomain;
 import org.kramerlab.cfpservice.api.impl.objects.AbstractModel;
 import org.kramerlab.cfpservice.api.impl.objects.AbstractPrediction;
 import org.kramerlab.cfpservice.api.objects.Model;
@@ -61,4 +62,5 @@ public interface PersistanceAdapter
 
 	public void deletePrediction(String modelId, String predictionId);
 
+	public CFPAppDomain readAppDomain(String modelId);
 }

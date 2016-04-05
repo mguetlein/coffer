@@ -107,8 +107,10 @@ public class FragmentHtml extends DefaultHtml
 								miner.getFragmentViaIdx(selectedAttributeIdx));
 						String img = depictMatch(smiles, atoms, miner.getCFPType().isECFP(), null,
 								false, maxMolPicSize);
-						String href = depictMatch(smiles, atoms, miner.getCFPType().isECFP(), null,
-								false, -1);
+						//						String href = depictMatch(smiles, atoms, miner.getCFPType().isECFP(), null,
+						//								false, -1);
+						String href = "/compound/" + StringUtil.urlEncodeUTF8(smiles);
+
 						//set.setResultValue(rIdx, "idx", i + "");
 						set.setResultValue(rIdx, "'" + clazz + "' compounds",
 								getImage(img, href, false));

@@ -165,6 +165,7 @@ public class PredictionHtml extends DefaultHtml
 				set.setResultValue(rIdx, text("model.measured"), endpoint);
 
 			set.setResultValue(rIdx, "Prediction", getPrediction(true));
+			set.setResultValue(rIdx, "App-Domain", getInsideAppDomain(p));
 			set.setResultValue(rIdx, " ", " ");
 
 			String url = "/" + p.getModelId();
@@ -172,11 +173,13 @@ public class PredictionHtml extends DefaultHtml
 			set.setResultValue(rIdx, "Dataset", encodeLink(url, m.getName()));
 			set.setResultValue(rIdx, "Target", encodeLink(url, m.getTarget()));
 			set.setResultValue(rIdx, "Classifier", encodeLink(url, m.getClassifierName()));
-			set.setResultValue(rIdx, "Features",
-					encodeLink(url, miner.getNiceFragmentDescription()));
+			//			set.setResultValue(rIdx, "Features",
+			//					encodeLink(url, miner.getNiceFragmentDescription()));
 
 			setHeaderHelp("Prediction",
 					text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
+			setHeaderHelp("App-Domain",
+					text("appdomain.help.general") + " " + moreLink(DocHtml.APP_DOMAIN));
 			setHeaderHelp(text("model.measured"), text("model.measured.tip.single"));
 
 			setTableRowsAlternating(false);
