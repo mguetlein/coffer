@@ -26,7 +26,10 @@ public class DefaultHtml extends HTMLReport
 
 	private String serviceHeader()
 	{
-		return "<a class='a_header' href=\"/\"><h1>" + ModelService.SERVICE_TITLE + "</h1></a>";
+		//return "<a class='a_header' href=\"/\"><h1>" + ModelService.SERVICE_TITLE + "</h1></a>";
+		return "<a class='a_header' href=\"/\"><h1><h1large>COFFER</h1large><br>CO<h1small>LLISION-FREE</h1small>"
+				+ " F<h1small>ILTERED CIRCULAR</h1small>"
+				+ " F<h1small>ING</h1small>ER<h1small>PRINT-BASED</h1small> QSARS</h1></a>";
 	}
 
 	public static String css = "/css/styles.css";

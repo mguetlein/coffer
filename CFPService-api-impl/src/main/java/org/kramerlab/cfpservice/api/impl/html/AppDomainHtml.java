@@ -43,6 +43,7 @@ public class AppDomainHtml extends DefaultHtml
 
 		addMouseoverHelp(helpTextGeneral, text("appdomain.intro.general"));
 		addGap();
+		addGap();
 		addMouseoverHelp(helpTextDistance, text("appdomain.intro.distance"));
 		addGap();
 
@@ -51,10 +52,13 @@ public class AppDomainHtml extends DefaultHtml
 			addGap();
 			addParagraph(text("appdomain.dist.training",
 					StringUtil.formatDouble(a.getMeanTrainingDistance())));
+			addGap();
+
 			//, "/doc#" + DocHtml.getAnker(DocHtml.APP_DOMAIN),
 			//	StringUtil.formatDouble(a.getMeanTrainingDistance())));
 			addImage(getImage("/" + m.getId() + "/depictAppdomain"));
 
+			addGap();
 			addGap();
 			addForm("/" + m.getId() + "/appdomain", ModelService.PREDICT_PARAM_COMPOUND_SMILES,
 					"Check applicability domain", "Please insert SMILES string");
@@ -91,11 +95,13 @@ public class AppDomainHtml extends DefaultHtml
 			msg += text("appdomain.dist.query", StringUtil.formatDouble(dist));
 			addMouseoverHelp(helpTextDistance, msg);
 			addGap();
+			addGap();
 
 			msg = "The query compound is " + adPrediction.toNiceString()
 					+ " the applicability domain, ";
 			msg += text("appdomain.reason." + adPrediction);
 			addMouseoverHelp(helpTextStats, msg);
+			addGap();
 			addGap();
 
 			addImage(getImage("/" + m.getId() + "/depictAppdomain?smiles="

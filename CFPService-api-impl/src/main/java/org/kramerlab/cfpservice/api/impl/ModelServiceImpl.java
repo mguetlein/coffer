@@ -104,7 +104,7 @@ public class ModelServiceImpl implements ModelService
 				compoundSmiles = RESTUtil.get(compoundURI, ModelService.MEDIA_TYPE_CHEMICAL_SMILES);
 			CDKConverter.validateSmiles(compoundSmiles);
 			Prediction p = AbstractPrediction.createPrediction(AbstractModel.find(id),
-					compoundSmiles, true);
+					compoundSmiles, false);
 			return Response.seeOther(new URI(p.getLocalURI())).build();
 		}
 		catch (InvalidSmilesException e)

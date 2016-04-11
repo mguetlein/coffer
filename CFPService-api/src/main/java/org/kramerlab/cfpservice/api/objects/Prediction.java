@@ -14,13 +14,13 @@ public interface Prediction extends ServiceResource
 
 	public int getPredictedIdx();
 
-	//	public boolean arePredictionAttributesComputed();
-
 	public double[] getPredictedDistribution();
 
 	public String getTrainingActivity();
 
 	public List<SubgraphPredictionAttribute> getPredictionAttributes();
+
+	public void computePredictionAttributesComputed();
 
 	public ADPrediction getADPrediction();
 

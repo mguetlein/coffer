@@ -44,8 +44,8 @@ import org.kramerlab.cfpservice.api.objects.Prediction;
 @Path("")
 public interface ModelService
 {
-	public static final String SERVICE_HOME = "http://cfp-qsar.informatik.uni-mainz.de";
-	public static final String SERVICE_TITLE = "Circular Fingerprint QSARs";
+	public static final String SERVICE_HOME = "http://coffer.informatik.uni-mainz.de";
+	public static final String SERVICE_TITLE = "COFFER - Collision-free Filtered Circular Fingerprint-based QSARs";
 
 	public static final String DC_NAMESPACE = "http://purl.org/dc/elements/1.1";
 	public static final String DC_PREFIX = "dc";

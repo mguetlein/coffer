@@ -68,6 +68,9 @@ public class PredictionHtml extends DefaultHtml
 		this.hideFragments = hideFragments;
 		this.maxNumFragments = maxNumFragments;
 		miner = ((AbstractModel) AbstractModel.find(p.getModelId())).getCFPMiner();
+
+		if (p.getPredictionAttributes() == null)
+			setRefresh(5);
 	}
 
 	//	private Renderable getPrediction(boolean hideNonMax, int activeClassIdx)
@@ -106,9 +109,13 @@ public class PredictionHtml extends DefaultHtml
 			int rIdx = set.addResult();
 			//			set.setResultValue(rIdx, "Smiles", p.getSmiles());
 
-			set.setResultValue(rIdx, "Structure",
-					getImage(depictMultiMatch(p.getSmiles(), p.getModelId(), maxMolPicSize),
-							depictMultiMatch(p.getSmiles(), p.getModelId(), -1), false));
+			if (p.getPredictionAttributes() != null)
+				set.setResultValue(rIdx, "Structure",
+						getImage(depictMultiMatch(p.getSmiles(), p.getModelId(), maxMolPicSize),
+								depictMultiMatch(p.getSmiles(), p.getModelId(), -1), false));
+			else
+				set.setResultValue(rIdx, "Structure", getImage(depict(p.getSmiles(), maxMolPicSize),
+						depict(p.getSmiles(), -1), false));
 			setAdditionalInfo(this, set, rIdx, p.getSmiles());
 
 			setTableRowsAlternating(false);
@@ -161,191 +168,216 @@ public class PredictionHtml extends DefaultHtml
 
 		newSection("Fragments", true);
 
-		String hideTxt = "";
-		for (HideFragments hide : HideFragments.values())
+		if (p.getPredictionAttributes() == null)
 		{
-			String h = text("fragment.hide." + hide + ".link");
-			if (hideFragments != hide)
-				h = encodeLink(p.getId() + "?hideFragments=" + hide.stringKey(), h);
-			hideTxt += h + " ";
-		}
-		try
-		{
-			getHtml().div();//HtmlAttributesFactory.align("right"));
-			getHtml().render(new TextWithLinks(hideTxt, true, false));
-			getHtml().render(getMouseoverHelp(text("fragment.hide"), null));
-			getHtml()._div();
-		}
-		catch (IOException e1)
-		{
-			throw new RuntimeException(e1);
-		}
-		addGap();
-
-		for (final boolean match : new Boolean[] { true, false })
-		{
-			String fragmentCol = (match ? "PRESENT" : "ABSENT") + " Fragment";
-
-			ResultSet set = new ResultSet();
-			int fIdx = 0;
-			for (final SubgraphPredictionAttribute pa : p.getPredictionAttributes())
+			Thread th = new Thread(new Runnable()
 			{
-				if (hideFragments == HideFragments.SUPER && pa.hasSubGraph())
-					continue;
-				if (hideFragments == HideFragments.SUB && pa.hasSuperGraph())
-					continue;
-
-				int attIdx = pa.getAttribute();
-				if (match == testInstanceContains(attIdx))
+				@Override
+				public void run()
 				{
-					fIdx++;
-					if (fIdx > maxNumFragments)
+					p.computePredictionAttributesComputed();
+				}
+			});
+			th.start();
+
+			startLeftColumn();
+			addImage("/img/wait.gif");
+			startRightColumn();
+			addGap();
+			addParagraph("Computing fragments, this page reloads every 5 seconds.");
+			stopColumns();
+		}
+		else
+		{
+			String hideTxt = "";
+			for (HideFragments hide : HideFragments.values())
+			{
+				String h = text("fragment.hide." + hide + ".link");
+				if (hideFragments != hide)
+					h = encodeLink(p.getId() + "?hideFragments=" + hide.stringKey(), h);
+				hideTxt += h + " ";
+			}
+			try
+			{
+				getHtml().div();//HtmlAttributesFactory.align("right"));
+				getHtml().render(new TextWithLinks(hideTxt, true, false));
+				getHtml().render(getMouseoverHelp(text("fragment.hide"), null));
+				getHtml()._div();
+			}
+			catch (IOException e1)
+			{
+				throw new RuntimeException(e1);
+			}
+			addGap();
+
+			for (final boolean match : new Boolean[] { true, false })
+			{
+				String fragmentCol = (match ? "PRESENT" : "ABSENT") + " Fragment";
+
+				ResultSet set = new ResultSet();
+				int fIdx = 0;
+				for (final SubgraphPredictionAttribute pa : p.getPredictionAttributes())
+				{
+					if (hideFragments == HideFragments.SUPER && pa.hasSubGraph())
+						continue;
+					if (hideFragments == HideFragments.SUB && pa.hasSuperGraph())
 						continue;
 
-					int rIdx = set.addResult();
-					set.setResultValue(rIdx, "", fIdx + "");
-
-					Boolean moreActive = null;
-					final String txt;
-					final Boolean activating;
-
-					if (pa.getAlternativeDistributionForInstance()[miner.getActiveIdx()] != p
-							.getPredictedDistribution()[miner.getActiveIdx()])
+					int attIdx = pa.getAttribute();
+					if (match == testInstanceContains(attIdx))
 					{
-						moreActive = pa.getAlternativeDistributionForInstance()[miner
-								.getActiveIdx()] > p.getPredictedDistribution()[miner
-										.getActiveIdx()];
-						if (match)
-							activating = !moreActive;
-						else
-							activating = moreActive;
+						fIdx++;
+						if (fIdx > maxNumFragments)
+							continue;
 
-						String fragmentLink = "fragment";
-						// HTMLReport.encodeLink(imageProvider.hrefFragment(p.getModelId(), attIdx),"fragment");
-						String alternativePredStr = "compound would be predicted as active with "
-								+ (moreActive ? "increased" : "decreased") + " probability (" + //
-								StringUtil.formatDouble(
-										pa.getAlternativeDistributionForInstance()[miner
-												.getActiveIdx()] * 100)
-								+ "% instead of "
-								+ StringUtil.formatDouble(
-										p.getPredictedDistribution()[miner.getActiveIdx()] * 100)
-								+ "%).";
+						int rIdx = set.addResult();
+						set.setResultValue(rIdx, "", fIdx + "");
 
-						if (match)
-							txt = "The " + fragmentLink
-									+ " is present in the test compound, it has "
-									+ (activating ? "an activating" : "a de-activating")
-									+ " effect on the prediction:<br>" + "If absent, the "
-									+ alternativePredStr + " "
-									+ moreLink(DocHtml.RANKING_FRAGMENTS);
-						else
-							txt = "The " + fragmentLink
-									+ " is absent in the test compound. If present, it would have "
-									+ (activating ? "an activating" : "a de-activating")
-									+ " effect on the prediction:<br>" + "The " + alternativePredStr
-									+ " " + moreLink(DocHtml.RANKING_FRAGMENTS);
-					}
-					else
-					{
-						txt = null;
-						activating = null;
-					}
+						Boolean moreActive = null;
+						final String txt;
+						final Boolean activating;
 
-					if (match)
-					{
-						try
+						if (pa.getAlternativeDistributionForInstance()[miner.getActiveIdx()] != p
+								.getPredictedDistribution()[miner.getActiveIdx()])
 						{
-							IAtomContainer mol = CDKConverter.parseSmiles(p.getSmiles());
-							CFPFragment frag = miner.getFragmentViaIdx(pa.getAttribute());
-							int numMatches = miner.getAtomsMultipleDistinct(mol, frag).size();
-							if (numMatches == 0)
-								throw new IllegalStateException();
-							set.setResultValue(rIdx, "#",
-									(numMatches > 1) ? (numMatches + "x") : "");
-						}
-						catch (Exception e)
-						{
-							e.printStackTrace();
-						}
-					}
-
-					set.setResultValue(rIdx, fragmentCol,
-							getImage(depictMatch(attIdx, true, activating, true),
-									"/" + p.getModelId() + "/fragment/" + (attIdx + 1) + "?smiles="
-											+ StringUtil.urlEncodeUTF8(p.getSmiles()),
-									true));
-									//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
-
-					//					String hideTxt = "";
-					//					hideTxt = text("fragment.hide." + hideFragments);
-					//					for (HideFragments hide : HideFragments.values())
-					//						if (hideFragments != hide)
-					//							hideTxt += " "
-					//									+ encodeLink(p.getId() + "?hideFragments=" + hide.stringKey(),
-					//											text("fragment.hide." + hide + ".link"));
-					//					setHeaderHelp("Fragment", hideTxt);
-
-					set.setResultValue(rIdx, "Effect", new Renderable()
-					{
-						public void renderOn(HtmlCanvas html) throws IOException
-						{
-							String effectStr = "none";
-							double iconValue = 0.5;
-							if (activating != null)
-							{
-								if (activating)
-									effectStr = "activating";
-								else
-									effectStr = "de-activating";
-
-								if (activating)
-									iconValue += pa.getDiffToOrigProp() * 0.5;
-								else
-									iconValue -= pa.getDiffToOrigProp() * 0.5;
-							}
-							html.write(effectStr);
-							html.write(" ");
-							//.renderOn(html);
-							if (activating != null)
-								html.render(getMouseoverHelp(txt, " ",
-										getImage("/depictActiveIcon?drawHelp=true&probability="
-												+ iconValue)));
-							html.div(HtmlAttributesFactory.class_("smallGrey"));
+							moreActive = pa.getAlternativeDistributionForInstance()[miner
+									.getActiveIdx()] > p.getPredictedDistribution()[miner
+											.getActiveIdx()];
 							if (match)
-								html.write("Prediction if absent:");
+								activating = !moreActive;
 							else
-								html.write("Prediction if present:");
-							html.br();
-							html.render(getPrediction(pa, m));
-							html._div();
+								activating = moreActive;
+
+							String fragmentLink = "fragment";
+							// HTMLReport.encodeLink(imageProvider.hrefFragment(p.getModelId(), attIdx),"fragment");
+							String alternativePredStr = "compound would be predicted as active with "
+									+ (moreActive ? "increased" : "decreased") + " probability (" + //
+									StringUtil.formatDouble(
+											pa.getAlternativeDistributionForInstance()[miner
+													.getActiveIdx()] * 100)
+									+ "% instead of "
+									+ StringUtil.formatDouble(
+											p.getPredictedDistribution()[miner.getActiveIdx()]
+													* 100)
+									+ "%).";
+
+							if (match)
+								txt = "The " + fragmentLink
+										+ " is present in the test compound, it has "
+										+ (activating ? "an activating" : "a de-activating")
+										+ " effect on the prediction:<br>" + "If absent, the "
+										+ alternativePredStr + " "
+										+ moreLink(DocHtml.RANKING_FRAGMENTS);
+							else
+								txt = "The " + fragmentLink
+										+ " is absent in the test compound. If present, it would have "
+										+ (activating ? "an activating" : "a de-activating")
+										+ " effect on the prediction:<br>" + "The "
+										+ alternativePredStr + " "
+										+ moreLink(DocHtml.RANKING_FRAGMENTS);
 						}
-					});
+						else
+						{
+							txt = null;
+							activating = null;
+						}
+
+						if (match)
+						{
+							try
+							{
+								IAtomContainer mol = CDKConverter.parseSmiles(p.getSmiles());
+								CFPFragment frag = miner.getFragmentViaIdx(pa.getAttribute());
+								int numMatches = miner.getAtomsMultipleDistinct(mol, frag).size();
+								if (numMatches == 0)
+									throw new IllegalStateException();
+								set.setResultValue(rIdx, "#",
+										(numMatches > 1) ? (numMatches + "x") : "");
+							}
+							catch (Exception e)
+							{
+								e.printStackTrace();
+							}
+						}
+
+						set.setResultValue(rIdx, fragmentCol,
+								getImage(depictMatch(attIdx, true, activating, true),
+										"/" + p.getModelId() + "/fragment/" + (attIdx + 1)
+												+ "?smiles="
+												+ StringUtil.urlEncodeUTF8(p.getSmiles()),
+										true));
+										//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
+
+						//					String hideTxt = "";
+						//					hideTxt = text("fragment.hide." + hideFragments);
+						//					for (HideFragments hide : HideFragments.values())
+						//						if (hideFragments != hide)
+						//							hideTxt += " "
+						//									+ encodeLink(p.getId() + "?hideFragments=" + hide.stringKey(),
+						//											text("fragment.hide." + hide + ".link"));
+						//					setHeaderHelp("Fragment", hideTxt);
+
+						set.setResultValue(rIdx, "Effect", new Renderable()
+						{
+							public void renderOn(HtmlCanvas html) throws IOException
+							{
+								String effectStr = "none";
+								double iconValue = 0.5;
+								if (activating != null)
+								{
+									if (activating)
+										effectStr = "activating";
+									else
+										effectStr = "de-activating";
+
+									if (activating)
+										iconValue += pa.getDiffToOrigProp() * 0.5;
+									else
+										iconValue -= pa.getDiffToOrigProp() * 0.5;
+								}
+								html.write(effectStr);
+								html.write(" ");
+								//.renderOn(html);
+								if (activating != null)
+									html.render(getMouseoverHelp(txt, " ",
+											getImage("/depictActiveIcon?drawHelp=true&probability="
+													+ iconValue)));
+								html.div(HtmlAttributesFactory.class_("smallGrey"));
+								if (match)
+									html.write("Prediction if absent:");
+								else
+									html.write("Prediction if present:");
+								html.br();
+								html.render(getPrediction(pa, m));
+								html._div();
+							}
+						});
+					}
 				}
-			}
-			//			addParagraph((match ? "Matching" : "Not matching") + " attributes");
-			setTableColWidthLimited(true);
+				//			addParagraph((match ? "Matching" : "Not matching") + " attributes");
+				setTableColWidthLimited(true);
 
-			if (match)
-				startLeftColumn();
-			else
-				startRightColumn();
-			//getHtml().br();//hr(HtmlAttributesFactory.style("height:1pt; visibility:hidden;"));
+				if (match)
+					startLeftColumn();
+				else
+					startRightColumn();
+				//getHtml().br();//hr(HtmlAttributesFactory.style("height:1pt; visibility:hidden;"));
 
-			if (fIdx > maxNumFragments)
-			{
-				int rIdx = set.addResult();
-				String hideSup = "";
-				if (hideFragments != HIDE_FRAGMENTS_DEFAULT)
-					hideSup = "hideFragments=" + hideFragments.stringKey() + "&";
-				set.setResultValue(rIdx, fragmentCol,
-						encodeLink(p.getId() + "?" + hideSup + "size="
-								+ Math.min(maxNumFragments + ModelService.DEFAULT_NUM_ENTRIES, fIdx)
-								+ "#" + (rIdx + 1), "More fragments"));
+				if (fIdx > maxNumFragments)
+				{
+					int rIdx = set.addResult();
+					String hideSup = "";
+					if (hideFragments != HIDE_FRAGMENTS_DEFAULT)
+						hideSup = "hideFragments=" + hideFragments.stringKey() + "&";
+					set.setResultValue(rIdx, fragmentCol, encodeLink(p.getId() + "?" + hideSup
+							+ "size="
+							+ Math.min(maxNumFragments + ModelService.DEFAULT_NUM_ENTRIES, fIdx)
+							+ "#" + (rIdx + 1), "More fragments"));
+				}
+				addTable(set);
 			}
-			addTable(set);
+			stopColumns();
 		}
-		stopColumns();
 		return close();
 	}
 

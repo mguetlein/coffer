@@ -103,18 +103,17 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 	//		this.predictionAttributes = predictionAttributes;
 	//	}
 
-	//	public boolean arePredictionAttributesComputed()
-	//	{
-	//		return predictionAttributes != null;
-	//	}
-
-	public List<SubgraphPredictionAttribute> getPredictionAttributes()
+	public void computePredictionAttributesComputed()
 	{
 		if (predictionAttributes == null)
 		{
 			initPrediction(true);
 			PersistanceAdapter.INSTANCE.savePrediction(this);
 		}
+	}
+
+	public List<SubgraphPredictionAttribute> getPredictionAttributes()
+	{
 		return predictionAttributes;
 	}
 

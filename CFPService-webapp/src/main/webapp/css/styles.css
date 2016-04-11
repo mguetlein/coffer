@@ -1,5 +1,6 @@
+
 body{
-	font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+	font-family: Verdana, Geneva, sans-serif;
 	font-size: .9rem;
 	background-color: white;
 	margin:10px 0px; padding:0px;
@@ -73,6 +74,15 @@ h1{
 	font-size: 1.6rem;
 }
 
+h1large {
+	font-size: 2.2rem;
+}
+
+h1small {
+	font-size: 0.8rem;
+}
+
+
 h2{
 	font-size: 1.3rem;
 }
@@ -111,7 +121,7 @@ em {
 }
 
 a:hover {
-	color: #0000A0;
+	color: #15317E;
     text-decoration: underline;
 }
 
@@ -122,7 +132,7 @@ a.a_header {
 
 a.a_header:hover {
 	text-decoration:underline;
-	color: #0000A0;
+	color: #15317E;
 }
 
 footer {
@@ -140,7 +150,7 @@ footer {
 }
 
 h1, h2, h3, h4, th {
-	color:#0000A0;	
+ 	color:#15317E;		
 }
 
 th {
@@ -153,7 +163,7 @@ th.transpose {
 
 
 iframe {
-	border: 2px #0000A0 solid;
+	border: 2px #15317E solid;
 } 
 
 table, th, td{
