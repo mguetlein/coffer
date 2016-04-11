@@ -37,20 +37,36 @@ public abstract class CompoundInfo implements Renderable
 
 	protected abstract String getIdName();
 
+	private static HashMap<String, CompoundInfo> cache = new HashMap<>();
+
+	private static CompoundInfo getService(Service service, String smiles)
+			throws MalformedURLException, JSONException, IOException
+	{
+		String key = service + " " + smiles;
+		if (!cache.containsKey(key))
+		{
+			if (service == Service.pubchem)
+				cache.put(key, new PubChemCompoundInfo(smiles));
+			else if (service == Service.chembl)
+				cache.put(key, new ChEMBLCompoundInfo(smiles));
+			else
+				throw new IllegalStateException();
+		}
+		return cache.get(key);
+	}
+
 	public static String getHTML(Service service, String smiles)
 			throws MalformedURLException, JSONException, IOException
 	{
-		if (service == Service.pubchem)
-			return new PubChemCompoundInfo(smiles).getHTML();
-		else if (service == Service.chembl)
-			return new ChEMBLCompoundInfo(smiles).getHTML();
+		if (service == Service.pubchem || service == Service.chembl)
+			return getService(service, smiles).getHTML();
 		else if (service == Service.all)
 		{
 			HtmlCanvas html = new HtmlCanvas();
 			html.macros().stylesheet(DefaultHtml.css);
 			html.body(HtmlAttributesFactory.class_("pubchem"));
-			CompoundInfo p = new PubChemCompoundInfo(smiles);
-			CompoundInfo c = new ChEMBLCompoundInfo(smiles);
+			CompoundInfo p = getService(Service.pubchem, smiles);
+			CompoundInfo c = getService(Service.chembl, smiles);
 			if (p.id != null)
 				p.renderOn(html);
 			if (p.id != null && c.id != null)

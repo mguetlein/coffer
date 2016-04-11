@@ -54,7 +54,7 @@ public class PredictionsHtml extends DefaultHtml
 			count++;
 		}
 		if (count < predictions.length)
-			setRefresh(10);
+			setRefresh(5);
 
 		res.sortProperties(
 				ListUtil.createList("Dataset", "Target", "Measured", "Prediction", "App-Domain"));
@@ -87,7 +87,7 @@ public class PredictionsHtml extends DefaultHtml
 			startRightColumn();
 			addGap();
 			addParagraph(count + "/" + predictions.length
-					+ " model predictions done, this page reloads every 10 seconds.");
+					+ " model predictions done, this page reloads every 5 seconds.");
 			stopColumns();
 		}
 
