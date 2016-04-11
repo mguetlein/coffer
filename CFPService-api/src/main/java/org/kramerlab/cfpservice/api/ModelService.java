@@ -260,4 +260,10 @@ public interface ModelService
 	InputStream depictAppDomain(@PathParam("modelId") String modelId,
 			@FormParam("smiles") String smiles);
 
+	@Path("depictActiveIcon")
+	@GET
+	@Produces({ "image/png" })
+	InputStream depictActiveIcon(@FormParam("probability") String probability,
+			@FormParam("drawHelp") String drawHelp);
+
 }

@@ -70,50 +70,10 @@ public class PredictionHtml extends DefaultHtml
 		miner = ((AbstractModel) AbstractModel.find(p.getModelId())).getCFPMiner();
 	}
 
-	private Renderable getPrediction(boolean hideNonMax)
-	{
-		return getPrediction(p, miner.getClassValues(), hideNonMax, null);
-	}
-
-	private Renderable getPrediction(double dist[], int predIdx, boolean hideNonMax)
-	{
-		return getPrediction(dist, miner.getClassValues(), predIdx, hideNonMax, null);
-	}
-
-	public static Renderable getPrediction(Prediction p, String classValues[], boolean hideNonMax,
-			String url)
-	{
-		return getPrediction(p.getPredictedDistribution(), classValues, p.getPredictedIdx(),
-				hideNonMax, url);
-	}
-
-	private static Renderable getPrediction(final double dist[], final String classValues[],
-			final int predIdx, final boolean hideNonMax, final String url)
-	{
-		return new Renderable()
-		{
-			public void renderOn(HtmlCanvas html) throws IOException
-			{
-				if (url != null)
-					html.a(HtmlAttributesFactory.href(url));
-
-				boolean hide = hideNonMax && dist[predIdx] > (1 / (double) dist.length);
-				for (int i = 0; i < dist.length; i++)
-				{
-					if (i != predIdx && hide)
-						html.div(HtmlAttributesFactory.class_("smallGrey"));
-					html.write(
-							classValues[i] + " (" + StringUtil.formatDouble(dist[i] * 100) + "%)");
-					if (i != predIdx && hide)
-						html._div();
-					else if (i < dist.length - 1)
-						html.br();
-				}
-				if (url != null)
-					html._a();
-			}
-		};
-	}
+	//	private Renderable getPrediction(boolean hideNonMax, int activeClassIdx)
+	//	{
+	//		return getPrediction(p, miner.getClassValues(), activeClassIdx, hideNonMax, null);
+	//	}
 
 	public static void setAdditionalInfo(HTMLReport rep, ResultSet tableSet, int rIdx,
 			final String smiles)
@@ -138,11 +98,14 @@ public class PredictionHtml extends DefaultHtml
 
 	public String build()
 	{
+		final Model m = AbstractModel.find(p.getModelId());
+
 		newSection("Predicted compound");
 		{
 			ResultSet set = new ResultSet();
 			int rIdx = set.addResult();
 			//			set.setResultValue(rIdx, "Smiles", p.getSmiles());
+
 			set.setResultValue(rIdx, "Structure",
 					getImage(depictMultiMatch(p.getSmiles(), p.getModelId(), maxMolPicSize),
 							depictMultiMatch(p.getSmiles(), p.getModelId(), -1), false));
@@ -164,15 +127,16 @@ public class PredictionHtml extends DefaultHtml
 			if (endpoint != null)
 				set.setResultValue(rIdx, text("model.measured"), endpoint);
 
-			set.setResultValue(rIdx, "Prediction", getPrediction(true));
-			set.setResultValue(rIdx, "App-Domain", getInsideAppDomain(p));
+			set.setResultValue(rIdx, "Prediction", getPrediction(p, m, null));
+			set.setResultValue(rIdx, "App-Domain", getInsideAppDomain(p, null));
 			set.setResultValue(rIdx, " ", " ");
 
 			String url = "/" + p.getModelId();
-			Model m = AbstractModel.find(p.getModelId());
 			set.setResultValue(rIdx, "Dataset", encodeLink(url, m.getName()));
 			set.setResultValue(rIdx, "Target", encodeLink(url, m.getTarget()));
-			set.setResultValue(rIdx, "Classifier", encodeLink(url, m.getClassifierName()));
+
+			//			String name = m.getClassifierName().replaceAll(" \\(.*", "");
+			//			set.setResultValue(rIdx, "Classifier", encodeLink(url, name));
 			//			set.setResultValue(rIdx, "Features",
 			//					encodeLink(url, miner.getNiceFragmentDescription()));
 
@@ -327,24 +291,33 @@ public class PredictionHtml extends DefaultHtml
 						public void renderOn(HtmlCanvas html) throws IOException
 						{
 							String effectStr = "none";
+							double iconValue = 0.5;
 							if (activating != null)
 							{
 								if (activating)
 									effectStr = "activating";
 								else
 									effectStr = "de-activating";
+
+								if (activating)
+									iconValue += pa.getDiffToOrigProp() * 0.5;
+								else
+									iconValue -= pa.getDiffToOrigProp() * 0.5;
 							}
 							html.write(effectStr);
+							html.write(" ");
+							//.renderOn(html);
 							if (activating != null)
-								html.render(getMouseoverHelp(txt, " "));
+								html.render(getMouseoverHelp(txt, " ",
+										getImage("/depictActiveIcon?drawHelp=true&probability="
+												+ iconValue)));
 							html.div(HtmlAttributesFactory.class_("smallGrey"));
 							if (match)
 								html.write("Prediction if absent:");
 							else
 								html.write("Prediction if present:");
 							html.br();
-							html.render(getPrediction(pa.getAlternativeDistributionForInstance(),
-									pa.getAlternativePredictionIdx(), false));
+							html.render(getPrediction(pa, m));
 							html._div();
 						}
 					});

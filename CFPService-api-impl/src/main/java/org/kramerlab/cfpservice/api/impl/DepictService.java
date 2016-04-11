@@ -2,14 +2,20 @@ package org.kramerlab.cfpservice.api.impl;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.image.RenderedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.imageio.ImageIO;
+
 import org.kramerlab.cfpservice.api.impl.objects.AbstractModel;
 import org.kramerlab.cfpservice.api.impl.objects.AbstractPrediction;
+import org.kramerlab.cfpservice.api.impl.util.ActiveImageIcon;
 import org.kramerlab.cfpservice.api.impl.util.CFPDepictUtil;
 import org.kramerlab.cfpservice.api.objects.Model;
 import org.kramerlab.cfpservice.api.objects.Prediction;
@@ -146,8 +152,25 @@ public class DepictService
 				((AbstractModel) model).getAppDomain()
 						.setCFPMiner(((AbstractModel) model).getCFPMiner());
 			FreeChartUtil.toPNGFile(pngFile, ((AbstractModel) model).getAppDomain().getPlot(smiles),
-					new Dimension(400, 300));
+					new Dimension(400 * 16 / 9, 400));
 			return new FileInputStream(pngFile);
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static InputStream depictActiveIcon(double probability, boolean drawHelp)
+	{
+		try
+		{
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			ImageIO.write(
+					(RenderedImage) new ActiveImageIcon(drawHelp ? 14 : 12, probability, drawHelp)
+							.getImage(),
+					"png", os);
+			return new ByteArrayInputStream(os.toByteArray());
 		}
 		catch (IOException e)
 		{

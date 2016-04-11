@@ -2,6 +2,7 @@ package org.kramerlab.cfpservice.api.impl.html;
 
 import java.util.List;
 
+import org.kramerlab.cfpminer.appdomain.ADPrediction;
 import org.kramerlab.cfpminer.appdomain.CFPAppDomain;
 import org.kramerlab.cfpminer.appdomain.CFPAppDomain.Neighbor;
 import org.kramerlab.cfpservice.api.ModelService;
@@ -39,9 +40,6 @@ public class AppDomainHtml extends DefaultHtml
 				+ moreLink(DocHtml.APP_DOMAIN);
 		String helpTextDistance = text("appdomain.help.distance", avgMeasure, k) + " "
 				+ moreLink(DocHtml.APP_DOMAIN);
-		String helpTextStats = text("appdomain.help.statistics",
-				StringUtil.formatSmallDoubles(a.getPValueThreshold())) + " "
-				+ moreLink(DocHtml.APP_DOMAIN);
 
 		addMouseoverHelp(helpTextGeneral, text("appdomain.intro.general"));
 		addGap();
@@ -66,45 +64,39 @@ public class AppDomainHtml extends DefaultHtml
 			CFPMiner miner = ((AbstractModel) m).getCFPMiner();
 			a.setCFPMiner(miner);
 
-			boolean inside = a.isInsideAppdomain(smiles);
+			ADPrediction adPrediction = a.isInsideAppdomain(smiles);
 			double dist = a.getDistance(smiles);
-			double pValue = a.pValue(smiles);
-			String outcome = inside ? "inside" : "outside";
+			double prob = a.getCumulativeProbability(smiles);
+
+			String helpTextStats = text("appdomain.help.statistics",
+					StringUtil.formatSmallDoubles(dist), StringUtil.formatSmallDoubles(prob),
+					a.getPThreshold(ADPrediction.PossiblyOutside),
+					ADPrediction.PossiblyOutside.toNiceString(),
+					a.getPThreshold(ADPrediction.Outside), ADPrediction.Outside.toNiceString())
+					+ " " + moreLink(DocHtml.APP_DOMAIN);
+			//			newSubsection("Query compound is " + (inside ? "INSIDE" : "OUTSIDE"));
 
 			addGap();
-			newSubsection("Query compound is " + (inside ? "accepted" : "rejected"));
-
 			ResultSet rs = new ResultSet();
 			rs.addResult();
 			rs.setResultValue(0, "Query compound", getImage(depict(smiles, maxMolPicSize)));
+			rs.setResultValue(0, "Applicability Domain", adPrediction.toNiceString().toUpperCase());
 			//						rs.setResultValue(0, "App-Domain",
 			//								getInsideAppDomain(a.isInsideAppdomain(smiles), a.pValue(smiles), null));
 			addTable(rs);
 
 			addGap();
-			String msg = text("appdomain." + outcome) + ", ";
-			if (dist <= a.getMeanTrainingDistance())
-			{
-				msg += text("appdomain.reason.belowMean");
-				addParagraph(msg);
-			}
-			else if (dist > a.getMaxTrainingDistance())
-			{
-				msg += text("appdomain.reason.aboveMax");
-				addParagraph(msg);
-			}
-			else
-			{
-				msg += text("appdomain.reason." + outcome, StringUtil.formatSmallDoubles(pValue));
-				addMouseoverHelp(helpTextStats, msg);
-				addGap();
-			}
-
-			addGap();
-			msg = text("appdomain.dist.training",
+			String msg = text("appdomain.dist.training",
 					StringUtil.formatDouble(a.getMeanTrainingDistance())) + " ";
 			msg += text("appdomain.dist.query", StringUtil.formatDouble(dist));
 			addMouseoverHelp(helpTextDistance, msg);
+			addGap();
+
+			msg = "The query compound is " + adPrediction.toNiceString()
+					+ " the applicability domain, ";
+			msg += text("appdomain.reason." + adPrediction);
+			addMouseoverHelp(helpTextStats, msg);
+			addGap();
 
 			addImage(getImage("/" + m.getId() + "/depictAppdomain?smiles="
 					+ StringUtil.urlEncodeUTF8(smiles)));

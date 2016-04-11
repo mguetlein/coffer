@@ -49,9 +49,9 @@
     </dependency>
     
         	<dependency>
-	  <groupId>org.mg.wekalib</groupId>
-	  <artifactId>WEKALib</artifactId>
-  	<version>0.1.0-SNAPSHOT</version>
+	  <groupId>org.kramerlab.cfpminer</groupId>
+	  <artifactId>CFPMiner</artifactId>
+  	<version>0.0.1-SNAPSHOT</version>
 	  </dependency>
     
   </dependencies>

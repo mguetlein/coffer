@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.kramerlab.cfpminer.appdomain.ADPrediction;
 import org.kramerlab.cfpminer.appdomain.CFPAppDomain;
 import org.kramerlab.cfpminer.weka.eval2.CFPtoArff;
 import org.kramerlab.cfpservice.api.ModelService;
@@ -35,7 +36,7 @@ import weka.core.Instances;
 public abstract class AbstractPrediction extends AbstractServiceObject
 		implements Prediction, HTMLOwner, Serializable
 {
-	private static final long serialVersionUID = 11L;
+	private static final long serialVersionUID = 12L;
 
 	protected String id;
 	protected String smiles;
@@ -44,8 +45,7 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 	protected double predictedDistribution[];
 	protected String trainingActivity;
 	protected List<SubgraphPredictionAttribute> predictionAttributes;
-	protected boolean insideAppDomain;
-	protected double appDomainPValue;
+	protected ADPrediction insideAppDomain;
 
 	protected transient HideFragments hideFragments;
 	protected transient int maxNumFragments;
@@ -93,20 +93,19 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 	}
 
 	@Override
-	public boolean isInsideAppDomain()
+	public ADPrediction getADPrediction()
 	{
 		return insideAppDomain;
-	}
-
-	@Override
-	public double getAppDomainPValue()
-	{
-		return appDomainPValue;
 	}
 
 	//	public void setPredictionAttributes(List<SubgraphPredictionAttribute> predictionAttributes)
 	//	{
 	//		this.predictionAttributes = predictionAttributes;
+	//	}
+
+	//	public boolean arePredictionAttributesComputed()
+	//	{
+	//		return predictionAttributes != null;
 	//	}
 
 	public List<SubgraphPredictionAttribute> getPredictionAttributes()
@@ -219,7 +218,6 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 			CFPAppDomain ad = ((AbstractModel) m).getAppDomain();
 			ad.setCFPMiner(miner);
 			insideAppDomain = ad.isInsideAppdomain(smiles);
-			appDomainPValue = ad.pValue(smiles);
 
 			if (createPredictionAttributes)
 			{

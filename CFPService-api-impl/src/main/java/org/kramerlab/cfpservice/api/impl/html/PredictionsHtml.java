@@ -1,11 +1,12 @@
 package org.kramerlab.cfpservice.api.impl.html;
 
-import java.util.Comparator;
-
+import org.kramerlab.cfpminer.appdomain.ADPrediction;
 import org.kramerlab.cfpservice.api.impl.objects.AbstractModel;
 import org.kramerlab.cfpservice.api.objects.Model;
 import org.kramerlab.cfpservice.api.objects.Prediction;
 import org.mg.javalib.datamining.ResultSet;
+import org.mg.javalib.util.DefaultComparator;
+import org.mg.javalib.util.ListUtil;
 
 public class PredictionsHtml extends DefaultHtml
 {
@@ -40,10 +41,14 @@ public class PredictionsHtml extends DefaultHtml
 			String endpoint = p.getTrainingActivity();
 			if (endpoint != null)
 				res.setResultValue(idx, text("model.measured"), encodeLink(url, endpoint));
-			res.setResultValue(idx, "Prediction",
-					PredictionHtml.getPrediction(p, m.getClassValues(), true, url));
-			res.setResultValue(idx, "App-Domain", getInsideAppDomain(p));
+
+			//res.setResultValue(idx, " ", getImage("/depictActiveIcon?probability="
+			//+ p.getPredictedDistribution()[m.getActiveClassIdx()]));
+
+			res.setResultValue(idx, "Prediction", PredictionHtml.getPredictionWithIcon(p, m, url));
+			res.setResultValue(idx, "App-Domain", getInsideAppDomainCheck(p, url));
 			res.setResultValue(idx, "p", p.getPredictedDistribution()[m.getActiveClassIdx()]);
+			res.setResultValue(idx, "a", p.getADPrediction());
 			//							HTMLReport.encodeLink("/" + m.getId() + "/prediction/" + predictionId,
 			//									p.getPredictedClass())
 			count++;
@@ -51,20 +56,18 @@ public class PredictionsHtml extends DefaultHtml
 		if (count < predictions.length)
 			setRefresh(10);
 
+		res.sortProperties(
+				ListUtil.createList("Dataset", "Target", "Measured", "Prediction", "App-Domain"));
 		setHeaderHelp("Prediction",
 				text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
 		setHeaderHelp("App-Domain",
 				text("appdomain.help.general") + " " + moreLink(DocHtml.APP_DOMAIN));
 		setHeaderHelp(text("model.measured"), text("model.measured.tip.single"));
 
-		res.sortResults("p", new Comparator<Object>()
-		{
-			public int compare(Object o1, Object o2)
-			{
-				return ((Double) o2).compareTo((Double) o1);
-			}
-		});
+		res.sortResults("p", new DefaultComparator<Double>(false));
 		res.removePropery("p");
+		res.sortResults("a", new DefaultComparator<ADPrediction>());
+		res.removePropery("a");
 
 		setPageTitle("Prediction of compound " + smiles);
 		newSection("Predicted compound");
@@ -88,8 +91,9 @@ public class PredictionsHtml extends DefaultHtml
 			stopColumns();
 		}
 
-		newSection("Predictions (select to show fragments)");
 		//newSubsection("Select a target to list fragments that explain each prediction:");
+
+		newSection("Predictions (select to show fragments)");
 		addTable(res);
 
 		return close();

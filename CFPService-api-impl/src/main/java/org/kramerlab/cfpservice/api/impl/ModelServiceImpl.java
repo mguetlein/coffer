@@ -238,4 +238,10 @@ public class ModelServiceImpl implements ModelService
 		return DepictService.depictAppDomain(AbstractModel.find(modelId), smiles);
 	}
 
+	@Override
+	public InputStream depictActiveIcon(String probability, String drawHelp)
+	{
+		return DepictService.depictActiveIcon(Double.valueOf(probability),
+				drawHelp != null && Boolean.valueOf(drawHelp));
+	}
 }

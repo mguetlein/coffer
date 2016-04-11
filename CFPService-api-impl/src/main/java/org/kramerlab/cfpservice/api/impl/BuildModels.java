@@ -26,6 +26,10 @@ public class BuildModels
 	{
 		//buildModelFromNestedCV(true);
 
+		//		for (String dataset : DataLoader.INSTANCE.allDatasetsSorted())
+		//			if (PersistanceAdapter.INSTANCE.modelExists(dataset))
+		//				PersistanceAdapter.INSTANCE.deleteModel(dataset);
+
 		for (String dataset : DataLoader.INSTANCE.allDatasetsSorted())
 			if (new Random().nextDouble() < 0.1)
 				buildModelFromNestedCV(false, dataset);
@@ -151,8 +155,7 @@ public class BuildModels
 				model.setActiveClassIdx(model.getCFPMiner().getActiveIdx());
 				model.setClassValues(model.getCFPMiner().getClassValues());
 
-				KNNTanimotoCFPAppDomainModel appDomain = new KNNTanimotoCFPAppDomainModel(3, 0.001,
-						true);
+				KNNTanimotoCFPAppDomainModel appDomain = new KNNTanimotoCFPAppDomainModel(3, true);
 				appDomain.setCFPMiner(model.getCFPMiner());
 				appDomain.build();
 				model.setAppDomain(appDomain);

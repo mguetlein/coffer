@@ -2,6 +2,8 @@ package org.kramerlab.cfpservice.api.objects;
 
 import java.util.List;
 
+import org.kramerlab.cfpminer.appdomain.ADPrediction;
+
 public interface Prediction extends ServiceResource
 {
 	public String getId();
@@ -12,13 +14,14 @@ public interface Prediction extends ServiceResource
 
 	public int getPredictedIdx();
 
+	//	public boolean arePredictionAttributesComputed();
+
 	public double[] getPredictedDistribution();
 
 	public String getTrainingActivity();
 
 	public List<SubgraphPredictionAttribute> getPredictionAttributes();
 
-	public boolean isInsideAppDomain();
+	public ADPrediction getADPrediction();
 
-	public double getAppDomainPValue();
 }

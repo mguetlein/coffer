@@ -115,9 +115,8 @@ public class ModelHtml extends DefaultHtml
 				String endpoint = p.getTrainingActivity();
 				if (endpoint != null)
 					res.setResultValue(idx, text("model.measured"), encodeLink(url, endpoint));
-				res.setResultValue(rIdx, "Prediction",
-						PredictionHtml.getPrediction(p, m.getClassValues(), true, url));
-				res.setResultValue(rIdx, "App-Domain", getInsideAppDomain(p));
+				res.setResultValue(rIdx, "Prediction", getPredictionWithIcon(p, m, url));
+				res.setResultValue(rIdx, "App-Domain", getInsideAppDomainCheck(p, url));
 				//				res.setResultValue(rIdx, "Date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(p.getDate()));
 			}
 			if (res.getNumResults() > 0)
