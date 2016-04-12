@@ -28,8 +28,8 @@ public class DefaultHtml extends HTMLReport
 	{
 		//return "<a class='a_header' href=\"/\"><h1>" + ModelService.SERVICE_TITLE + "</h1></a>";
 		return "<a class='a_header' href=\"/\"><h1><h1large>CoFFer</h1large><br>Co<h1small>llision-free</h1small>"
-				+ " F<h1small>iltered circular</h1small>"
-				+ " F<h1small>ing</h1small>er<h1small>print-based</h1small> QSARS</h1></a>";
+				+ " F<h1small>iltered Circular</h1small>"
+				+ " F<h1small>ing</h1small>er<h1small>print-based QSARS</h1small></h1></a>";
 	}
 
 	public static String css = "/css/styles.css";

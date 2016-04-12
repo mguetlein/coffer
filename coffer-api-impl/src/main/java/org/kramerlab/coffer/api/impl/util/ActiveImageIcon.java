@@ -8,6 +8,7 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.File;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -32,8 +33,12 @@ public class ActiveImageIcon extends ImageIcon
 		this.col = new ColorGradient(DepictService.ACTIVE_BRIGHT, DepictService.NEUTRAL_BRIGHT,
 				DepictService.INACTIVE_BRIGHT).getColor(probability);
 		if (drawHelp)
-			img = new ImageIcon(
-					"/home/martin/workspace/coffer/coffer-webapp/src/main/webapp/img/help14.png");
+		{
+			String prefix = "";
+			if (!new File("img").exists())
+				prefix = "coffer-webapp/src/main/webapp/";
+			img = new ImageIcon(prefix + "img/help14.png");
+		}
 	}
 
 	@Override
