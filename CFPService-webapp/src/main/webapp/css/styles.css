@@ -71,15 +71,18 @@ footer {
 
 
 h1{
-	font-size: 1.6rem;
+	font-size: 1.3rem;
 }
 
 h1large {
-	font-size: 2.2rem;
+	font-size: 1.8rem;
 }
 
 h1small {
-	font-size: 0.8rem;
+	/* font-size: 0.8rem; */
+	color: #8B99AB;
+	/* opacity: 0.33; */
+/* 	font-weight: normal; */
 }
 
 
