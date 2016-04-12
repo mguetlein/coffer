@@ -98,16 +98,16 @@ public class DepictService
 		try
 		{
 			String pngFile = FOLDER + StringUtil.getMD5(smiles) + "_" + model + "_" + size + ".png";
-			//			if (!new File(pngFile).exists())
-			//			{
-
-			int s = -1;
-			if (size != null)
-				s = Integer.parseInt(size);
-			Model m = AbstractModel.find(model);
-			Prediction p = AbstractPrediction.createPrediction(m, smiles, true);
-			CFPDepictUtil.depictMultiMatchToPNG(pngFile, CDKConverter.parseSmiles(smiles), p, m, s);
-			//			}
+			if (!new File(pngFile).exists())
+			{
+				int s = -1;
+				if (size != null)
+					s = Integer.parseInt(size);
+				Model m = AbstractModel.find(model);
+				Prediction p = AbstractPrediction.createPrediction(m, smiles, true);
+				CFPDepictUtil.depictMultiMatchToPNG(pngFile, CDKConverter.parseSmiles(smiles), p, m,
+						s);
+			}
 			return new FileInputStream(pngFile);
 		}
 		catch (Exception e)
@@ -148,11 +148,15 @@ public class DepictService
 		try
 		{
 			String pngFile = FOLDER + "appDomain" + "_" + model.getId() + ".png";
-			if (smiles != null)
-				((AbstractModel) model).getAppDomain()
-						.setCFPMiner(((AbstractModel) model).getCFPMiner());
-			FreeChartUtil.toPNGFile(pngFile, ((AbstractModel) model).getAppDomain().getPlot(smiles),
-					new Dimension(400 * 16 / 9, 400));
+			if (!new File(pngFile).exists())
+			{
+				if (smiles != null)
+					((AbstractModel) model).getAppDomain()
+							.setCFPMiner(((AbstractModel) model).getCFPMiner());
+				FreeChartUtil.toPNGFile(pngFile,
+						((AbstractModel) model).getAppDomain().getPlot(smiles),
+						new Dimension(400 * 16 / 9, 400));
+			}
 			return new FileInputStream(pngFile);
 		}
 		catch (IOException e)
