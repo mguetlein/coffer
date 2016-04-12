@@ -19,8 +19,8 @@
 --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.kramerlab.cfpservice</groupId>
-  <artifactId>CFPService</artifactId>
+  <groupId>org.kramerlab.coffer</groupId>
+  <artifactId>coffer</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
@@ -93,7 +93,7 @@
         	<sourceFileIncludes>
       			<include>ModelService.java</include>
       		</sourceFileIncludes>
-    		<sourcepath>${basedir}/src/main/java/org/kramerlab/cfpservice/api</sourcepath>
+    		<sourcepath>${basedir}/src/main/java/org/kramerlab/coffer/api</sourcepath>
             <additionalparam>-Xdoclint:none</additionalparam>
           </configuration>
       </plugin>      
@@ -104,18 +104,18 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.kramerlab.cfpservice</groupId>
-        <artifactId>CFPService-api</artifactId>
+        <groupId>org.kramerlab.coffer</groupId>
+        <artifactId>coffer-api</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.kramerlab.cfpservice</groupId>
-        <artifactId>CFPService-api-impl</artifactId>
+        <groupId>org.kramerlab.coffer</groupId>
+        <artifactId>coffer-api-impl</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.kramerlab.cfpservice</groupId>
-        <artifactId>CFPService-webapp</artifactId>
+        <groupId>org.kramerlab.coffer</groupId>
+        <artifactId>coffer-webapp</artifactId>
         <version>${project.version}</version>
         <type>war</type>
       </dependency>
@@ -245,10 +245,10 @@
   </pluginRepositories>
 
   <modules>
-    <module>CFPService-api</module>
-    <module>CFPService-api-impl</module>
-    <module>CFPService-webapp</module>
-    <module>CFPService-webapp-exec</module>
-    <module>CFPService-webapp-it</module>
+    <module>coffer-api</module>
+    <module>coffer-api-impl</module>
+    <module>coffer-webapp</module>
+    <module>coffer-webapp-exec</module>
+    <module>coffer-webapp-it</module>
   </modules>
 </project>

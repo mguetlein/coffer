@@ -1,4 +1,4 @@
 #!/bin/bash
 
 mvn javadoc:javadoc
-rsync -ruv CFPService-api/target/site/apidocs/* CFPService-webapp/src/main/webapp/api/
+rsync -ruv coffer-api/target/site/apidocs/* coffer-webapp/src/main/webapp/api/
