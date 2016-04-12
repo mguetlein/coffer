@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 
 import org.kramerlab.coffer.api.impl.objects.AbstractModel;
 import org.kramerlab.coffer.api.impl.objects.AbstractPrediction;
@@ -165,15 +166,17 @@ public class DepictService
 		}
 	}
 
-	public static InputStream depictActiveIcon(double probability, boolean drawHelp)
+	public static InputStream depictActiveIcon(double probability, ImageIcon helpIcon)
 	{
 		try
 		{
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
-			ImageIO.write(
-					(RenderedImage) new ActiveImageIcon(drawHelp ? 14 : 12, probability, drawHelp)
-							.getImage(),
-					"png", os);
+			ImageIcon ic;
+			if (helpIcon != null)
+				ic = new ActiveImageIcon(helpIcon, probability);
+			else
+				ic = new ActiveImageIcon(14, probability);
+			ImageIO.write((RenderedImage) ic.getImage(), "png", os);
 			return new ByteArrayInputStream(os.toByteArray());
 		}
 		catch (IOException e)

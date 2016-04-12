@@ -8,7 +8,6 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.File;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -27,18 +26,24 @@ public class ActiveImageIcon extends ImageIcon
 	Color col;
 	ImageIcon img;
 
-	public ActiveImageIcon(int size, double probability, boolean drawHelp)
+	public ActiveImageIcon(ImageIcon icon, double probability)
+	{
+		this.col = getCol(probability);
+		this.img = icon;
+		this.size = Math.max(img.getIconWidth(), img.getIconHeight());
+	}
+
+	public ActiveImageIcon(int size, double probability)
 	{
 		this.size = size;
-		this.col = new ColorGradient(DepictService.ACTIVE_BRIGHT, DepictService.NEUTRAL_BRIGHT,
+		this.col = getCol(probability);
+		this.img = null;
+	}
+
+	private static Color getCol(double probability)
+	{
+		return new ColorGradient(DepictService.ACTIVE_BRIGHT, DepictService.NEUTRAL_BRIGHT,
 				DepictService.INACTIVE_BRIGHT).getColor(probability);
-		if (drawHelp)
-		{
-			String prefix = "";
-			if (!new File("img").exists())
-				prefix = "coffer-webapp/src/main/webapp/";
-			img = new ImageIcon(prefix + "img/help14.png");
-		}
 	}
 
 	@Override
@@ -83,13 +88,16 @@ public class ActiveImageIcon extends ImageIcon
 
 	public static void main(String[] args)
 	{
+		ImageIcon icon = new ImageIcon(
+				"/home/martin/workspace/coffer/coffer-webapp/src/main/webapp/img/help14.png");
+
 		JPanel p = new JPanel(new GridLayout(11, 1));
 		p.setBackground(Color.WHITE);
 		for (int i = 0; i < 11; i++)
 		{
 			double prob = 0 + 0.1 * i;
 			JLabel l = new JLabel("prob " + StringUtil.formatDouble(prob));
-			l.setIcon(new ActiveImageIcon(14, prob, true));
+			l.setIcon(new ActiveImageIcon(icon, prob));
 			p.add(l);
 		}
 		SwingUtil.showInFrame(p);

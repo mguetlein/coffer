@@ -2,11 +2,15 @@ package org.kramerlab.coffer.api.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Locale;
 
+import javax.servlet.ServletContext;
+import javax.swing.ImageIcon;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 import org.codehaus.jettison.json.JSONException;
@@ -238,10 +242,22 @@ public class ModelServiceImpl implements ModelService
 		return DepictService.depictAppDomain(AbstractModel.find(modelId), smiles);
 	}
 
+	@Context
+	ServletContext context;
+
 	@Override
 	public InputStream depictActiveIcon(String probability, String drawHelp)
 	{
-		return DepictService.depictActiveIcon(Double.valueOf(probability),
-				drawHelp != null && Boolean.valueOf(drawHelp));
+		try
+		{
+			ImageIcon icon = null;
+			if (drawHelp != null && Boolean.valueOf(drawHelp))
+				icon = new ImageIcon(context.getResource("img/help14.png"));
+			return DepictService.depictActiveIcon(Double.valueOf(probability), icon);
+		}
+		catch (MalformedURLException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 }
