@@ -114,7 +114,7 @@
     
     	<dependency>
 	  <groupId>org.kramerlab.cfpminer</groupId>
-	  <artifactId>CFPMiner</artifactId>
+	  <artifactId>cfp-miner</artifactId>
   	<version>0.0.1-SNAPSHOT</version>
 	  </dependency>
 	  

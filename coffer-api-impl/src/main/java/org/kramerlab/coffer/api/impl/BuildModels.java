@@ -26,12 +26,12 @@ public class BuildModels
 	{
 		//buildModelFromNestedCV(true);
 
-		for (String dataset : DataLoader.INSTANCE.allDatasetsSorted())
-			if (PersistanceAdapter.INSTANCE.modelExists(dataset))
-				PersistanceAdapter.INSTANCE.deleteModel(dataset);
+		//		for (String dataset : DataLoader.INSTANCE.allDatasetsSorted())
+		//			if (PersistanceAdapter.INSTANCE.modelExists(dataset))
+		//				PersistanceAdapter.INSTANCE.deleteModel(dataset);
 
-		for (String dataset : DataLoader.INSTANCE.balancedDatasets())//allDatasetsSorted())
-			//if (new Random().nextDouble() < 0.1)
+		for (String dataset : DataLoader.INSTANCE.allDatasetsSorted())
+			//			//if (new Random().nextDouble() < 0.1)
 			buildModelFromNestedCV(false, dataset);
 
 		//		buildModelFromNestedCV(true, "CPDBAS_Mouse");
