@@ -36,7 +36,7 @@
   <import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
 
   <context:annotation-config />
-  <context:component-scan base-package="org.kramerlab.cfpservice"/>
+  <context:component-scan base-package="org.kramerlab.coffer"/>
 
    <jaxrs:server id="defaultServices" address="/">
    
@@ -50,11 +50,11 @@
         <property name="supportUnwrapped" value="true" />
 	</bean> -->
 
-	<bean class="org.kramerlab.cfpservice.api.impl.provider.ErrorHandler"></bean>
-	<bean class="org.kramerlab.cfpservice.api.impl.provider.JsonProvider"></bean>
-    <bean class="org.kramerlab.cfpservice.api.impl.provider.HTMLProvider"></bean>
-    <bean class="org.kramerlab.cfpservice.api.impl.provider.SMILESProvider"></bean>
-    <bean class="org.kramerlab.cfpservice.api.impl.provider.URIListProvider"></bean> 
+	<bean class="org.kramerlab.coffer.api.impl.provider.ErrorHandler"></bean>
+	<bean class="org.kramerlab.coffer.api.impl.provider.JsonProvider"></bean>
+    <bean class="org.kramerlab.coffer.api.impl.provider.HTMLProvider"></bean>
+    <bean class="org.kramerlab.coffer.api.impl.provider.SMILESProvider"></bean>
+    <bean class="org.kramerlab.coffer.api.impl.provider.URIListProvider"></bean> 
 	</jaxrs:providers>
 
    </jaxrs:server>

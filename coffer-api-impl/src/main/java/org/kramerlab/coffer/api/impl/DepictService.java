@@ -38,7 +38,7 @@ public class DepictService
 	public static Color NEUTRAL_MODERATE = ColorUtil.transparent(Color.GRAY, 200);
 
 	private static String FOLDER = System.getProperty("user.home")
-			+ "/results/cfpservice/persistance/img/";
+			+ "/results/coffer/persistance/img/";
 
 	public static InputStream depict(String smiles, String size)
 	{

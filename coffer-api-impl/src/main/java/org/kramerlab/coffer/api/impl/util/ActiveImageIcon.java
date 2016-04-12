@@ -33,7 +33,7 @@ public class ActiveImageIcon extends ImageIcon
 				DepictService.INACTIVE_BRIGHT).getColor(probability);
 		if (drawHelp)
 			img = new ImageIcon(
-					"/home/martin/workspace/CFPService/CFPService-webapp/src/main/webapp/img/help14.png");
+					"/home/martin/workspace/coffer/coffer-webapp/src/main/webapp/img/help14.png");
 	}
 
 	@Override

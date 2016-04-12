@@ -33,7 +33,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 {
 	DataLoader dataLoader = DataLoader.INSTANCE;
 	private static final String FOLDER = System.getProperty("user.home")
-			+ "/results/cfpservice/persistance";
+			+ "/results/coffer/persistance";
 
 	private static String getModelFile(String id)
 	{
