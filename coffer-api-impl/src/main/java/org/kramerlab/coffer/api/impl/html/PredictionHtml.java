@@ -1,6 +1,8 @@
 package org.kramerlab.coffer.api.impl.html;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.kramerlab.coffer.api.ModelService;
 import org.kramerlab.coffer.api.impl.objects.AbstractModel;
@@ -79,22 +81,35 @@ public class PredictionHtml extends DefaultHtml
 	//	}
 
 	public static void setAdditionalInfo(HTMLReport rep, ResultSet tableSet, int rIdx,
-			final String smiles)
+			String smiles)
 	{
 		rep.setHeaderHelp("Info", text("compound.info.tip"));
-		final String smi = StringUtil.urlEncodeUTF8(smiles);
+		final String origSmiles = smiles;
+
+		final String[] partitioned = smiles.split("\\.");
+		final List<String> encoded = new ArrayList<>();
+		for (String s : partitioned)
+			encoded.add(StringUtil.urlEncodeUTF8(s));
+
 		//		System.out.println(smi);
 		tableSet.setResultValue(rIdx, "Info", new Renderable()
 		{
 			public void renderOn(HtmlCanvas html) throws IOException
 			{
 				html.div(HtmlAttributesFactory.class_("small"));
-				html.write("Smiles: " + smiles);
+				html.write("Smiles: " + origSmiles);
 				html._div();
 
-				html.object(HtmlAttributesFactory.data("/info/all/" + smi))._object();//.width("300")
-				//html.object(HtmlAttributesFactory.data("/info/pubchem/" + smi).width("300"))._object();
-				//html.object(HtmlAttributesFactory.data("/info/chembl/" + smi).width("300"))._object();
+				// due to lack of space, fetch info only for first connected compound in mixture
+				int i = 0;
+				if (partitioned.length > 1)
+				{
+					html.br();
+					html.div(HtmlAttributesFactory.class_("small"));
+					html.write("#" + (i + 1) + ": " + partitioned[i]);
+					html._div();
+				}
+				html.object(HtmlAttributesFactory.data("/info/all/" + encoded.get(i)))._object();//.width("300")
 			}
 		});
 	}
@@ -135,7 +150,8 @@ public class PredictionHtml extends DefaultHtml
 				set.setResultValue(rIdx, text("model.measured"), endpoint);
 
 			set.setResultValue(rIdx, "Prediction", getPrediction(p, m, null));
-			set.setResultValue(rIdx, "App-Domain", getInsideAppDomain(p, null));
+			if (ModelService.APP_DOMAIN_VISIBLE)
+				set.setResultValue(rIdx, "App-Domain", getInsideAppDomain(p, null));
 			set.setResultValue(rIdx, " ", " ");
 
 			String url = "/" + p.getModelId();
@@ -150,7 +166,7 @@ public class PredictionHtml extends DefaultHtml
 			setHeaderHelp("Prediction",
 					text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
 			setHeaderHelp("App-Domain",
-					text("appdomain.help.general") + " " + moreLink(DocHtml.APP_DOMAIN));
+					AppDomainHtml.getGeneralInfo() + " " + moreLink(DocHtml.APP_DOMAIN));
 			setHeaderHelp(text("model.measured"), text("model.measured.tip.single"));
 
 			setTableRowsAlternating(false);

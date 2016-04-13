@@ -148,7 +148,11 @@ public class DepictService
 	{
 		try
 		{
-			String pngFile = FOLDER + "appDomain" + "_" + model.getId() + ".png";
+			String smi = "";
+			if (smiles != null)
+				smi = "_" + StringUtil.getMD5(smiles);
+			String pngFile = FOLDER + "appDomain" + "_" + model.getId() + smi + ".png";
+
 			if (!new File(pngFile).exists())
 			{
 				if (smiles != null)

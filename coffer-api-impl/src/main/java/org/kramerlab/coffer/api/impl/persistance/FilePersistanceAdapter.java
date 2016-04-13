@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.kramerlab.cfpminer.appdomain.CFPAppDomain;
+import org.kramerlab.cfpminer.appdomain.ADInfoModel;
 import org.kramerlab.coffer.api.impl.DepictService;
 import org.kramerlab.coffer.api.impl.objects.AbstractModel;
 import org.kramerlab.coffer.api.impl.objects.AbstractPrediction;
@@ -165,13 +165,13 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 	}
 
 	@Override
-	public CFPAppDomain readAppDomain(String modelId)
+	public ADInfoModel readAppDomain(String modelId)
 	{
 		try
 		{
 			ObjectInputStream ois = new ObjectInputStream(
 					new FileInputStream(getModelAppDomainFile(modelId)));
-			CFPAppDomain ad = (CFPAppDomain) ois.readObject();
+			ADInfoModel ad = (ADInfoModel) ois.readObject();
 			ois.close();
 			return ad;
 		}

@@ -265,8 +265,8 @@ public abstract class CompoundInfo implements Renderable
 
 	public static void main(String[] args) throws MalformedURLException, JSONException, IOException
 	{
-		String smiles = "CC1(C2CCC(O1)(CC2)C)CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC";
-		//		System.out.println(new PubChemCompoundInfo(smiles).getHTML());
-		System.out.println(new ChEMBLCompoundInfo(smiles).getHTML());
+		String smiles = "C1=CC(=CC=C1NC(=O)C2=CSC(=C2)[N+](=O)[O-])Cl.O";
+		System.out.println(new PubChemCompoundInfo(smiles).getHTML());
+		//System.out.println(new ChEMBLCompoundInfo(smiles).getHTML());
 	}
 }

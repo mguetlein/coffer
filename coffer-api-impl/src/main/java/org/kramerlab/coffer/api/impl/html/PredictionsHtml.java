@@ -1,6 +1,7 @@
 package org.kramerlab.coffer.api.impl.html;
 
 import org.kramerlab.cfpminer.appdomain.ADPrediction;
+import org.kramerlab.coffer.api.ModelService;
 import org.kramerlab.coffer.api.impl.objects.AbstractModel;
 import org.kramerlab.coffer.api.objects.Model;
 import org.kramerlab.coffer.api.objects.Prediction;
@@ -46,9 +47,13 @@ public class PredictionsHtml extends DefaultHtml
 			//+ p.getPredictedDistribution()[m.getActiveClassIdx()]));
 
 			res.setResultValue(idx, "Prediction", PredictionHtml.getPredictionWithIcon(p, m, url));
-			res.setResultValue(idx, "App-Domain", getInsideAppDomainCheck(p, url));
 			res.setResultValue(idx, "p", p.getPredictedDistribution()[m.getActiveClassIdx()]);
-			res.setResultValue(idx, "a", p.getADPrediction());
+			if (ModelService.APP_DOMAIN_VISIBLE)
+			{
+				res.setResultValue(idx, "App-Domain", getInsideAppDomainCheck(p, url));
+				res.setResultValue(idx, "a", p.getADPrediction());
+			}
+
 			//							HTMLReport.encodeLink("/" + m.getId() + "/prediction/" + predictionId,
 			//									p.getPredictedClass())
 			count++;
@@ -56,19 +61,21 @@ public class PredictionsHtml extends DefaultHtml
 		if (count < predictions.length)
 			setRefresh(5);
 
-		res.sortProperties(
-				ListUtil.createList("Dataset", "Target", "Measured", "Prediction", "App-Domain"));
+		res.sortProperties(ListUtil.createList("Dataset", "Target", text("model.measured"),
+				"Prediction", "App-Domain"));
 		setHeaderHelp("Prediction",
 				text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
 		setHeaderHelp("App-Domain",
-				text("appdomain.help.general") + " " + moreLink(DocHtml.APP_DOMAIN));
+				AppDomainHtml.getGeneralInfo() + " " + moreLink(DocHtml.APP_DOMAIN));
 		setHeaderHelp(text("model.measured"), text("model.measured.tip.single"));
 
 		res.sortResults("p", new DefaultComparator<Double>(false));
 		res.removePropery("p");
-		res.sortResults("a", new DefaultComparator<ADPrediction>());
-		res.removePropery("a");
-
+		if (ModelService.APP_DOMAIN_VISIBLE)
+		{
+			res.sortResults("a", new DefaultComparator<ADPrediction>());
+			res.removePropery("a");
+		}
 		setPageTitle("Prediction of compound " + smiles);
 		newSection("Predicted compound");
 		Image img = getImage(depict(smiles, maxMolPicSize), depict(smiles, -1), false);

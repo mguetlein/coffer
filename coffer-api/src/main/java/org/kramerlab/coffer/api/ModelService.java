@@ -60,6 +60,8 @@ public interface ModelService
 	public static final String MEDIA_TYPE_TEXT_URI_LIST = "text/uri-list";
 	public static final String MEDIA_TYPE_HTML_UTF8 = "text/html; charset=UTF-8";
 
+	public static final boolean APP_DOMAIN_VISIBLE = true;
+
 	/**
 	 * <b>request:</b> GET {@value SERVICE_HOME}/<br>
 	 * <b>content-type:</b> application/json, text/html, {@value MEDIA_TYPE_TEXT_URI_LIST}<br>

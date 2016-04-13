@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.kramerlab.cfpminer.appdomain.CFPAppDomain;
+import org.kramerlab.cfpminer.appdomain.ADInfoModel;
 import org.kramerlab.cfpminer.experiments.validation.InnerValidationResults;
 import org.kramerlab.coffer.api.impl.html.ModelHtml;
 import org.kramerlab.coffer.api.impl.html.ModelsHtml;
@@ -93,7 +93,7 @@ public abstract class AbstractModel extends AbstractServiceObject
 
 	protected transient CFPMiner miner;
 	protected transient Classifier classifier;
-	protected transient CFPAppDomain appDomain;
+	protected transient ADInfoModel appDomain;
 	protected transient List<String> datasetWarnings;
 
 	public AbstractModel()
@@ -114,12 +114,12 @@ public abstract class AbstractModel extends AbstractServiceObject
 		return PersistanceAdapter.INSTANCE.readModel(id);
 	}
 
-	public void setAppDomain(CFPAppDomain appDomain)
+	public void setAppDomain(ADInfoModel appDomain)
 	{
 		this.appDomain = appDomain;
 	}
 
-	public CFPAppDomain getAppDomain()
+	public ADInfoModel getAppDomain()
 	{
 		if (appDomain == null)
 			appDomain = PersistanceAdapter.INSTANCE.readAppDomain(id);

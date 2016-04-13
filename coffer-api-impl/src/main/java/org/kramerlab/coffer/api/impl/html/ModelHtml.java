@@ -10,6 +10,8 @@ import org.kramerlab.coffer.api.objects.Fragment;
 import org.kramerlab.coffer.api.objects.Model;
 import org.kramerlab.coffer.api.objects.Prediction;
 import org.mg.javalib.datamining.ResultSet;
+import org.mg.javalib.util.ListUtil;
+import org.rendersnake.HtmlAttributesFactory;
 import org.rendersnake.HtmlCanvas;
 import org.rendersnake.Renderable;
 
@@ -68,8 +70,10 @@ public class ModelHtml extends DefaultHtml
 			{
 				html.write(m.getNumFragments() + " ");
 				Fragment f = AbstractFragment.find(m.getId(), "1");
+				html.div(HtmlAttributesFactory.class_("smallGrey").style("display: inline;"));
 				new TextWithLinks(encodeLink(f.getLocalURI(), "(inspect fragments)"), true, false)
 						.renderOn(html);
+				html._div();
 				//html.write("bla");
 			}
 		});
@@ -116,7 +120,8 @@ public class ModelHtml extends DefaultHtml
 				if (endpoint != null)
 					res.setResultValue(idx, text("model.measured"), encodeLink(url, endpoint));
 				res.setResultValue(rIdx, "Prediction", getPredictionWithIcon(p, m, url));
-				res.setResultValue(rIdx, "App-Domain", getInsideAppDomainCheck(p, url));
+				if (ModelService.APP_DOMAIN_VISIBLE)
+					res.setResultValue(rIdx, "App-Domain", getInsideAppDomainCheck(p, url));
 				//				res.setResultValue(rIdx, "Date", new SimpleDateFormat("yyyy-MM-dd HH:mm").format(p.getDate()));
 			}
 			if (res.getNumResults() > 0)
@@ -127,8 +132,12 @@ public class ModelHtml extends DefaultHtml
 				setHeaderHelp("Prediction",
 						text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
 				setHeaderHelp("App-Domain",
-						text("appdomain.help.general") + " " + moreLink(DocHtml.APP_DOMAIN));
+						AppDomainHtml.getGeneralInfo() + " " + moreLink(DocHtml.APP_DOMAIN));
 				setHeaderHelp(text("model.measured"), text("model.measured.tip.single"));
+
+				res.sortProperties(ListUtil.createList("Compound", text("model.measured"),
+						"Prediction", "App-Domain"));
+
 				addTable(res);
 			}
 		}

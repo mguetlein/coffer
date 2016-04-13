@@ -1,14 +1,13 @@
 package org.kramerlab.coffer.api.impl.html;
 
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
 
 import org.kramerlab.cfpminer.appdomain.ADPrediction;
 import org.kramerlab.coffer.api.ModelService;
 import org.kramerlab.coffer.api.objects.Model;
 import org.kramerlab.coffer.api.objects.Prediction;
 import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.ResourceBundleOwner;
 import org.mg.javalib.util.StringUtil;
 import org.mg.wekalib.attribute_ranking.PredictionAttribute;
 import org.rendersnake.HtmlAttributesFactory;
@@ -62,25 +61,16 @@ public class DefaultHtml extends HTMLReport
 		setExternalLinkImg("/img/iconExternalLink.gif");
 	}
 
-	private static ResourceBundle bundle;
-
-	private static ResourceBundle bundle()
-	{
-		if (bundle == null)
-			bundle = ResourceBundle.getBundle("coffer");
-		//		ResourceBundle.clearCache();
-		//		bundle = ResourceBundle.getBundle("coffer");
-		return bundle;
-	}
+	private static ResourceBundleOwner bundle = new ResourceBundleOwner("coffer");
 
 	public static String text(String key)
 	{
-		return bundle().getString(key);
+		return bundle.text(key);
 	}
 
 	public static String text(String key, Object... params)
 	{
-		return MessageFormat.format(bundle.getString(key), params);
+		return bundle.text(key, params);
 	}
 
 	public String moreLink(String docSection)
@@ -124,7 +114,7 @@ public class DefaultHtml extends HTMLReport
 				+ sizeStr;
 	}
 
-	protected static Renderable getInsideAppDomain(Prediction p, String url)
+	protected Renderable getInsideAppDomain(Prediction p, String url)
 	{
 		return getInsideAppDomain(p.getADPrediction(),
 				url != null ? url
@@ -133,7 +123,7 @@ public class DefaultHtml extends HTMLReport
 				false);
 	}
 
-	protected static Renderable getInsideAppDomainCheck(Prediction p, String url)
+	protected Renderable getInsideAppDomainCheck(Prediction p, String url)
 	{
 		return getInsideAppDomain(p.getADPrediction(),
 				url != null ? url
@@ -142,18 +132,17 @@ public class DefaultHtml extends HTMLReport
 				true);
 	}
 
-	private static Renderable getInsideAppDomain(final ADPrediction prediction, final String url,
+	private Renderable getInsideAppDomain(final ADPrediction prediction, final String url,
 			final boolean onlyCheckIcon)
 	{
 		return new Renderable()
 		{
 			public void renderOn(HtmlCanvas html) throws IOException
 			{
-				if (url != null)
-					html.a(HtmlAttributesFactory.href(url));
-
 				if (onlyCheckIcon)
 				{
+					if (url != null)
+						html.a(HtmlAttributesFactory.href(url));
 					switch (prediction)
 					{
 						case Inside:
@@ -165,6 +154,8 @@ public class DefaultHtml extends HTMLReport
 						default:
 							html.write("-");
 					}
+					if (url != null)
+						html._a();
 				}
 				else
 				{
@@ -172,13 +163,17 @@ public class DefaultHtml extends HTMLReport
 						html.write("\u26A0 ");
 					html.write(prediction.toNiceString());
 					html.br();
-					//					html.div(HtmlAttributesFactory.class_("smallGrey"));
-					//					html.write("p-Value: " + StringUtil.formatSmallDoubles(pValue));
-					//					html._div();
+
+					if (url != null)
+					{
+						html.div(HtmlAttributesFactory.class_("smallGrey"));
+						new TextWithLinks(encodeLink(url, "(inspect App-Domain)"), true, false)
+								.renderOn(html);
+						html._div();
+						//html.write("p-Value: " + StringUtil.formatSmallDoubles(pValue));
+					}
 				}
 
-				if (url != null)
-					html._a();
 			}
 		};
 	}

@@ -205,7 +205,7 @@ public class HTMLReport
 		}
 		catch (Exception e)
 		{
-			throw new Error(e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -246,8 +246,8 @@ public class HTMLReport
 		return new JSmolPlugin(url);
 	}
 
-	private static String LINK_START = "[";
-	private static String LINK_END = "]";
+	private static String LINK_START = "{";
+	private static String LINK_END = "}";
 	private static String LINK_SEP = " ";
 
 	public static Image getImage(String src)
@@ -669,13 +669,35 @@ public class HTMLReport
 		}
 		catch (IOException e)
 		{
-			throw new Error(e);
+			throw new RuntimeException(e);
 		}
 	}
 
 	public void addParagraph(String text)
 	{
 		addParagraph(new TextWithLinks(text, true, false));
+	}
+
+	public void addParagraphNoLinks(final String text)
+	{
+		try
+		{
+			getHtml().div();
+			boolean first = true;
+			for (String t : text.split("<br>"))
+			{
+				if (first)
+					first = false;
+				else if (!t.isEmpty())
+					getHtml().br();
+				getHtml().write(t);
+			}
+			getHtml()._div();
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	public void addParagraph(Renderable r)
@@ -686,7 +708,7 @@ public class HTMLReport
 		}
 		catch (IOException e)
 		{
-			throw new Error(e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -714,7 +736,7 @@ public class HTMLReport
 		}
 		catch (IOException e)
 		{
-			throw new Error(e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -726,7 +748,7 @@ public class HTMLReport
 		}
 		catch (IOException e)
 		{
-			throw new Error(e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -738,7 +760,7 @@ public class HTMLReport
 		}
 		catch (IOException e)
 		{
-			throw new Error(e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -764,7 +786,7 @@ public class HTMLReport
 		}
 		catch (IOException e)
 		{
-			throw new Error(e);
+			throw new RuntimeException(e);
 		}
 
 	}
@@ -1030,7 +1052,7 @@ public class HTMLReport
 			}
 			catch (IOException e)
 			{
-				throw new Error(e);
+				throw new RuntimeException(e);
 			}
 		}
 
@@ -1093,7 +1115,7 @@ public class HTMLReport
 		}
 		catch (Exception e)
 		{
-			throw new Error(e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -1153,7 +1175,7 @@ public class HTMLReport
 		}
 		catch (IOException e)
 		{
-			throw new Error(e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -1165,7 +1187,7 @@ public class HTMLReport
 		}
 		catch (IOException e)
 		{
-			throw new Error(e);
+			throw new RuntimeException(e);
 		}
 	}
 

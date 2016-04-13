@@ -30,12 +30,12 @@ public class BuildModels
 		//			if (PersistanceAdapter.INSTANCE.modelExists(dataset))
 		//				PersistanceAdapter.INSTANCE.deleteModel(dataset);
 
+		//		buildModelFromNestedCV(true, "CPDBAS_Mouse");
+		//		buildModelFromNestedCV(true, "NCTRER");
+
 		for (String dataset : DataLoader.INSTANCE.allDatasetsSorted())
 			//			//if (new Random().nextDouble() < 0.1)
 			buildModelFromNestedCV(false, dataset);
-
-		//		buildModelFromNestedCV(true, "CPDBAS_Mouse");
-		//		buildModelFromNestedCV(true, "NCTRER");
 
 		//buildModelFromNestedCV("NCTRER");
 		//		buildModel("REID-3", false);

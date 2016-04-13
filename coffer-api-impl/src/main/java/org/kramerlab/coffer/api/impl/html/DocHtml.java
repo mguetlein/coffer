@@ -2,6 +2,7 @@ package org.kramerlab.coffer.api.impl.html;
 
 import java.io.IOException;
 
+import org.kramerlab.coffer.api.ModelService;
 import org.kramerlab.coffer.api.impl.ModelServiceImpl;
 import org.rendersnake.HtmlAttributesFactory;
 
@@ -55,9 +56,12 @@ public class DocHtml extends DefaultHtml
 		addParagraphExternal(text("doc.validation"));
 		addGap();
 
-		newSection(APP_DOMAIN);
-		addParagraphExternal(text("doc.appdomain"));
-		addGap();
+		if (ModelService.APP_DOMAIN_VISIBLE)
+		{
+			newSection(APP_DOMAIN);
+			addParagraphExternal(AppDomainHtml.getDocumentation());
+			addGap();
+		}
 
 		newSection("Source Code");
 		addParagraphExternal(text("doc.source"));
@@ -87,7 +91,7 @@ public class DocHtml extends DefaultHtml
 
 				html.h5().write("Result")._h5();
 				html.div(HtmlAttributesFactory.class_("small"));
-				addParagraph(text("rest." + i + ".res", ModelServiceImpl.HOST));
+				addParagraphNoLinks(text("rest." + i + ".res", ModelServiceImpl.HOST));
 				html._div();
 			}
 			catch (IOException e)

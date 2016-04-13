@@ -2,9 +2,9 @@ package org.kramerlab.coffer.api.impl.html;
 
 import java.util.List;
 
-import org.kramerlab.cfpminer.appdomain.ADPrediction;
-import org.kramerlab.cfpminer.appdomain.CFPAppDomain;
-import org.kramerlab.cfpminer.appdomain.CFPAppDomain.Neighbor;
+import org.kramerlab.cfpminer.appdomain.ADInfoModel;
+import org.kramerlab.cfpminer.appdomain.ADNeighbor;
+import org.kramerlab.cfpminer.appdomain.KNNTanimotoCFPAppDomainModel;
 import org.kramerlab.coffer.api.ModelService;
 import org.kramerlab.coffer.api.impl.objects.AbstractModel;
 import org.kramerlab.coffer.api.objects.Model;
@@ -17,6 +17,18 @@ public class AppDomainHtml extends DefaultHtml
 	Model m;
 	String smiles;
 	int maxNumNeighbors;
+
+	private static ADInfoModel DEFAULT_AD_MODEL = new KNNTanimotoCFPAppDomainModel(3, true);
+
+	public static String getDocumentation()
+	{
+		return DEFAULT_AD_MODEL.getDocumentation();
+	}
+
+	public static String getGeneralInfo()
+	{
+		return DEFAULT_AD_MODEL.getGeneralInfo(true);
+	}
 
 	public AppDomainHtml(Model m, String smiles, int maxNumNeighbors)
 	{
@@ -33,25 +45,17 @@ public class AppDomainHtml extends DefaultHtml
 		//		setHidePageTitle(true);
 		//		newSection("Occurence of " + fragment + " in dataset " + Model.getName(modelId));
 
-		CFPAppDomain a = ((AbstractModel) m).getAppDomain();
-		int k = a.getNumNeighbors();
-		String avgMeasure = a.getAveragingScheme();
-		String helpTextGeneral = text("appdomain.help.general") + " "
-				+ moreLink(DocHtml.APP_DOMAIN);
-		String helpTextDistance = text("appdomain.help.distance", avgMeasure, k) + " "
-				+ moreLink(DocHtml.APP_DOMAIN);
-
-		addMouseoverHelp(helpTextGeneral, text("appdomain.intro.general"));
+		ADInfoModel a = ((AbstractModel) m).getAppDomain();
+		addMouseoverHelp(a.getGeneralInfo(true) + " " + moreLink(DocHtml.APP_DOMAIN),
+				a.getGeneralInfo(false));
 		addGap();
 		addGap();
-		addMouseoverHelp(helpTextDistance, text("appdomain.intro.distance"));
+		addMouseoverHelp(a.getDistanceInfo(true) + " " + moreLink(DocHtml.APP_DOMAIN),
+				a.getDistanceInfo(false));
 		addGap();
 
 		if (smiles == null)
 		{
-			addGap();
-			addParagraph(text("appdomain.dist.training",
-					StringUtil.formatDouble(a.getMeanTrainingDistance())));
 			addGap();
 
 			//, "/doc#" + DocHtml.getAnker(DocHtml.APP_DOMAIN),
@@ -68,39 +72,28 @@ public class AppDomainHtml extends DefaultHtml
 			CFPMiner miner = ((AbstractModel) m).getCFPMiner();
 			a.setCFPMiner(miner);
 
-			ADPrediction adPrediction = a.isInsideAppdomain(smiles);
-			double dist = a.getDistance(smiles);
-			double prob = a.getCumulativeProbability(smiles);
-
-			String helpTextStats = text("appdomain.help.statistics",
-					StringUtil.formatSmallDoubles(dist), StringUtil.formatSmallDoubles(prob),
-					a.getPThreshold(ADPrediction.PossiblyOutside),
-					ADPrediction.PossiblyOutside.toNiceString(),
-					a.getPThreshold(ADPrediction.Outside), ADPrediction.Outside.toNiceString())
-					+ " " + moreLink(DocHtml.APP_DOMAIN);
 			//			newSubsection("Query compound is " + (inside ? "INSIDE" : "OUTSIDE"));
 
 			addGap();
 			ResultSet rs = new ResultSet();
 			rs.addResult();
 			rs.setResultValue(0, "Query compound", getImage(depict(smiles, maxMolPicSize)));
-			rs.setResultValue(0, "Applicability Domain", adPrediction.toNiceString().toUpperCase());
+			rs.setResultValue(0, "Applicability Domain",
+					a.isInsideAppdomain(smiles).toNiceString().toUpperCase());
 			//						rs.setResultValue(0, "App-Domain",
 			//								getInsideAppDomain(a.isInsideAppdomain(smiles), a.pValue(smiles), null));
 			addTable(rs);
 
 			addGap();
-			String msg = text("appdomain.dist.training",
-					StringUtil.formatDouble(a.getMeanTrainingDistance())) + " ";
-			msg += text("appdomain.dist.query", StringUtil.formatDouble(dist));
-			addMouseoverHelp(helpTextDistance, msg);
+			addMouseoverHelp(
+					a.getPredictionDistanceInfo(smiles, true) + " " + moreLink(DocHtml.APP_DOMAIN),
+					a.getPredictionDistanceInfo(smiles, false));
 			addGap();
 			addGap();
 
-			msg = "The query compound is " + adPrediction.toNiceString()
-					+ " the applicability domain, ";
-			msg += text("appdomain.reason." + adPrediction);
-			addMouseoverHelp(helpTextStats, msg);
+			addMouseoverHelp(
+					a.getPredictionRationalInfo(smiles, true) + " " + moreLink(DocHtml.APP_DOMAIN),
+					a.getPredictionRationalInfo(smiles, false));
 			addGap();
 			addGap();
 
@@ -108,10 +101,11 @@ public class AppDomainHtml extends DefaultHtml
 					+ StringUtil.urlEncodeUTF8(smiles)));
 
 			newSubsection("Nearest neigbors");
-			addMouseoverHelp(helpTextDistance, text("appdomain.neigbors", k));
+			addMouseoverHelp(a.getNeighborInfo(true) + " " + moreLink(DocHtml.APP_DOMAIN),
+					a.getNeighborInfo(false));
 			addGap();
 			addGap();
-			List<Neighbor> l = a.getNeighbors(smiles);
+			List<ADNeighbor> l = a.getNeighbors(smiles);
 			int nIdx = 0;
 			ResultSet set = new ResultSet();
 			for (; nIdx < l.size(); nIdx++)
@@ -120,11 +114,11 @@ public class AppDomainHtml extends DefaultHtml
 					continue;
 				int rIdx = set.addResult();
 				set.setResultValue(rIdx, "", (rIdx + 1));
-				String smiles = l.get(nIdx).smiles;
+				String smiles = l.get(nIdx).getSmiles();
 				String img = depict(smiles, maxMolPicSize);
 				//String href = depict(smiles, -1);
 				String href = "/compound/" + StringUtil.urlEncodeUTF8(smiles);
-				set.setResultValue(rIdx, "Distance", l.get(nIdx).distance);
+				set.setResultValue(rIdx, "Distance", l.get(nIdx).getDistance());
 				set.setResultValue(rIdx, "Neighbors", getImage(img, href, false));
 			}
 			if (l.size() > maxNumNeighbors)

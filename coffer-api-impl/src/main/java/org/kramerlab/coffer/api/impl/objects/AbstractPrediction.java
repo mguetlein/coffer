@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.kramerlab.cfpminer.appdomain.ADPrediction;
-import org.kramerlab.cfpminer.appdomain.CFPAppDomain;
+import org.kramerlab.cfpminer.appdomain.ADInfoModel;
 import org.kramerlab.cfpminer.weka.eval2.CFPtoArff;
 import org.kramerlab.coffer.api.ModelService;
 import org.kramerlab.coffer.api.impl.html.PredictionHtml;
@@ -214,7 +214,7 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 			predictedDistribution = dist;
 			trainingActivity = miner.getTrainingActivity(smiles);
 
-			CFPAppDomain ad = ((AbstractModel) m).getAppDomain();
+			ADInfoModel ad = ((AbstractModel) m).getAppDomain();
 			ad.setCFPMiner(miner);
 			insideAppDomain = ad.isInsideAppdomain(smiles);
 
