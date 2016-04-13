@@ -300,11 +300,11 @@ public class HTMLReport
 			if (underline)
 				attr.class_("underline");
 			html.a(attr);
-			if (text != null && text.length() > 1)
+			if (text != null && text.length() > 0)
 				html.write(text);
 			if (external)
 			{
-				if (text != null && text.length() > 1)
+				if (text != null && text.length() > 0)
 					html.write(" ");
 				html.img(HtmlAttributesFactory.src(externalLinkImg));
 			}
