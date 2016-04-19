@@ -10,6 +10,7 @@ import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.ResourceBundleOwner;
 import org.mg.javalib.util.StringUtil;
 import org.mg.wekalib.attribute_ranking.PredictionAttribute;
+import org.rendersnake.HtmlAttributes;
 import org.rendersnake.HtmlAttributesFactory;
 import org.rendersnake.HtmlCanvas;
 import org.rendersnake.Renderable;
@@ -59,6 +60,29 @@ public class DefaultHtml extends HTMLReport
 		setTitles(ModelService.SERVICE_TITLE, serviceHeader(), css, footer());
 		setHelpImg("/img/help14.png");
 		setExternalLinkImg("/img/iconExternalLink.gif");
+	}
+
+	public static Renderable doubleText(final String mainText, final String greyText,
+			final String url)
+	{
+		return new Renderable()
+		{
+			public void renderOn(HtmlCanvas html) throws IOException
+			{
+				if (url != null)
+					html.a(HtmlAttributesFactory.href(url));
+
+				html.write(mainText + " ");
+				HtmlAttributes atts = HtmlAttributesFactory.class_("smallGrey")
+						.style("display: inline;");
+				html.div(atts);
+				html.write(greyText);
+				html._div();
+
+				if (url != null)
+					html._a();
+			}
+		};
 	}
 
 	private static ResourceBundleOwner bundle = new ResourceBundleOwner("coffer");

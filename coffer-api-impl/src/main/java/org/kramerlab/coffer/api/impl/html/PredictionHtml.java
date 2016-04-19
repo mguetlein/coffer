@@ -180,12 +180,10 @@ public class PredictionHtml extends DefaultHtml
 
 		//addParagraph("The compound ");
 
-		//		addGap();
-
-		newSection("Fragments", true);
-
 		if (p.getPredictionAttributes() == null)
 		{
+			newSection("Fragments");
+
 			Thread th = new Thread(new Runnable()
 			{
 				@Override
@@ -213,18 +211,21 @@ public class PredictionHtml extends DefaultHtml
 					h = encodeLink(p.getId() + "?hideFragments=" + hide.stringKey(), h);
 				hideTxt += h + " ";
 			}
-			try
+			final String fHideTxt = hideTxt;
+
+			newSection("Fragments", new Renderable()
 			{
-				getHtml().div();//HtmlAttributesFactory.align("right"));
-				getHtml().render(new TextWithLinks(hideTxt, true, false));
-				getHtml().render(getMouseoverHelp(text("fragment.hide"), null));
-				getHtml()._div();
-			}
-			catch (IOException e1)
-			{
-				throw new RuntimeException(e1);
-			}
-			addGap();
+				@Override
+				public void renderOn(HtmlCanvas html) throws IOException
+				{
+					//html.div();//HtmlAttributesFactory.align("right"));
+					html.write("&nbsp;&nbsp;", false);
+					html.render(new TextWithLinks(fHideTxt, true, false));
+					html.render(getMouseoverHelp(text("fragment.hide"), null));
+					//html._div();
+				}
+			});
+			//			addGap();
 
 			for (final boolean match : new Boolean[] { true, false })
 			{

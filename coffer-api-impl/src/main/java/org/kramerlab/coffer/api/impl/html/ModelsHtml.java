@@ -18,11 +18,10 @@ public class ModelsHtml extends DefaultHtml
 
 	public String build()
 	{
-		newSection("Welcome");
-		addParagraph(text("home.welcome") + " " + encodeLink("/doc", "Documentation"));
-		addGap();
+		newSection("CoFFer", new TextWithLinks(
+				text("home.welcome") + " " + encodeLink("/doc", "Documentation"), true, false));
 
-		newSection("Make prediction");
+		//newSection("Make prediction");
 		addForm("/", ModelService.PREDICT_PARAM_COMPOUND_SMILES, "Predict",
 				"Please insert SMILES string");
 		addGap();

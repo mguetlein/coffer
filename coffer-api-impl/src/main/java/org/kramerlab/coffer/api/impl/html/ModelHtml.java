@@ -98,7 +98,7 @@ public class ModelHtml extends DefaultHtml
 		setTableColWidthLimited(false);
 
 		addGap();
-		newSection("Make prediction");
+		//		newSection("Make prediction");
 		addForm("/" + m.getId(), ModelService.PREDICT_PARAM_COMPOUND_SMILES, "Predict",
 				"Please insert SMILES string");
 

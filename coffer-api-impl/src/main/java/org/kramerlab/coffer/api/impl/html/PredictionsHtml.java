@@ -81,7 +81,7 @@ public class PredictionsHtml extends DefaultHtml
 		Image img = getImage(depict(smiles, maxMolPicSize), depict(smiles, -1), false);
 		ResultSet set = new ResultSet();
 		int rIdx = set.addResult();
-		set.setResultValue(rIdx, "Test compound", img);
+		set.setResultValue(rIdx, "Structure", img);
 		PredictionHtml.setAdditionalInfo(this, set, rIdx, smiles);
 
 		addTable(set);
@@ -100,7 +100,7 @@ public class PredictionsHtml extends DefaultHtml
 
 		//newSubsection("Select a target to list fragments that explain each prediction:");
 
-		newSection("Predictions (select to show fragments)");
+		newSection("Predictions", "(select to inspect fragments)");
 		addTable(res);
 
 		return close();

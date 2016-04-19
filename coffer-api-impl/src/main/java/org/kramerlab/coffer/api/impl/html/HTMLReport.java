@@ -655,17 +655,31 @@ public class HTMLReport
 
 	public void newSection(String title)
 	{
-		newSection(title, true);
+		newSection(title, (Renderable) null);
 	}
 
-	public void newSection(String title, boolean addNormalSpace)
+	public void newSection(String title, String inlineText)
+	{
+		newSection(title, new TextWithLinks(inlineText));
+	}
+
+	public void newSection(String title, Renderable inline)
 	{
 		try
 		{
+			if (inline != null)
+				getHtml().br();
 			HtmlAttributes att = getAnker(title);
-			if (!addNormalSpace)
+			if (inline != null)
 				att.class_("inline");
-			getHtml().h2(att).content(title);
+			getHtml().h2(att).write(title)._h2();
+			if (inline != null)
+			{
+				getHtml().write(" ");
+				getHtml().render(inline);
+				getHtml().br();
+				getHtml().br();
+			}
 		}
 		catch (IOException e)
 		{
