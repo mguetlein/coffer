@@ -833,11 +833,14 @@ public class HTMLReport
 	private class TableHeader extends TableData
 	{
 
-		public TableHeader(String prop, Object val, boolean format, boolean transpose)
+		public TableHeader(String prop, Object val, boolean format, boolean transpose,
+				boolean largeHeader)
 		{
-			super(prop, val, format);
+			super(prop, val /*+ (transpose ? ":" : "")*/, format);
 			if (transpose)
 				attr = HtmlAttributesFactory.class_("transpose");
+			if (largeHeader)
+				attr = HtmlAttributesFactory.class_("largeHeader");
 		}
 
 		protected void init(HtmlCanvas html) throws IOException
@@ -1089,7 +1092,7 @@ public class HTMLReport
 					String niceP = rs.getNiceProperty(p);
 					table.tr(tableColWidthLimited ? HtmlAttributesFactory.class_("slim") : null);
 					table.render(new TableHeader(niceP, niceP, format,
-							(transpose != null && transpose)));
+							(transpose != null && transpose), false));
 					for (int i = 0; i < rs.getNumResults(); i++)
 					{
 						Object val = rs.getResultValue(i, p);
@@ -1106,7 +1109,7 @@ public class HTMLReport
 				{
 					String niceP = rs.getNiceProperty(p);
 					table.render(new TableHeader(niceP, niceP, format,
-							(transpose != null && transpose)));
+							(transpose != null && transpose), rs.getProperties().size() == 1));
 				}
 				table._tr();
 				for (int i = 0; i < rs.getNumResults(); i++)

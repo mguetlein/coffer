@@ -32,8 +32,8 @@ public class AppDomainHtml extends DefaultHtml
 
 	public AppDomainHtml(Model m, String smiles, int maxNumNeighbors)
 	{
-		super("Applicability domain of prediction model " + m.getName(), m.getId(), m.getName(),
-				"appdomain", "AppDomain");
+		super("Applicability domain for " + m.getTarget() + " \u2500 " + m.getName(), m.getId(),
+				m.getName(), "appdomain", "AppDomain");
 		//		System.out.println(miner.getFragmentViaIdx(selectedAttributeIdx));
 		this.m = m;
 		this.smiles = smiles;

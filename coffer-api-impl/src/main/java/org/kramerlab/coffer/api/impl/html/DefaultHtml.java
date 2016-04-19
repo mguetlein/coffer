@@ -65,6 +65,12 @@ public class DefaultHtml extends HTMLReport
 	public static Renderable doubleText(final String mainText, final String greyText,
 			final String url)
 	{
+		return doubleText(mainText, greyText, url, false);
+	}
+
+	public static Renderable doubleText(final String mainText, final String greyText,
+			final String url, final boolean lineBreak)
+	{
 		return new Renderable()
 		{
 			public void renderOn(HtmlCanvas html) throws IOException
@@ -72,9 +78,12 @@ public class DefaultHtml extends HTMLReport
 				if (url != null)
 					html.a(HtmlAttributesFactory.href(url));
 
-				html.write(mainText + " ");
-				HtmlAttributes atts = HtmlAttributesFactory.class_("smallGrey")
-						.style("display: inline;");
+				html.write(mainText + (lineBreak ? "" : " "));
+				if (lineBreak)
+					html.br();
+				HtmlAttributes atts = HtmlAttributesFactory.class_("smallGrey");
+				if (!lineBreak)
+					atts = atts.style("display: inline;");
 				html.div(atts);
 				html.write(greyText);
 				html._div();

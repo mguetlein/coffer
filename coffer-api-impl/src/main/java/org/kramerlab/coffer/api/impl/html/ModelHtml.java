@@ -21,7 +21,7 @@ public class ModelHtml extends DefaultHtml
 
 	public ModelHtml(Model m)
 	{
-		super("Prediction model", m.getId(), m.getName(), null, null);
+		super(m.getTarget() + " \u2500 " + m.getName(), m.getId(), m.getName(), null, null);
 		this.m = m;
 	}
 
@@ -31,8 +31,8 @@ public class ModelHtml extends DefaultHtml
 
 		int idx = set.addResult();
 
-		set.setResultValue(idx, "Dataset name", m.getName());
-		set.setResultValue(idx, "Target", m.getTarget());
+		//		set.setResultValue(idx, "Dataset name", m.getName());
+		//		set.setResultValue(idx, "Target", m.getTarget());
 
 		Renderable citations = null;
 		for (String key : m.getDatasetCitations().keySet())
@@ -99,7 +99,7 @@ public class ModelHtml extends DefaultHtml
 
 		addGap();
 		//		newSection("Make prediction");
-		addForm("/" + m.getId(), ModelService.PREDICT_PARAM_COMPOUND_SMILES, "Predict",
+		addForm("/" + m.getId(), ModelService.PREDICT_PARAM_COMPOUND_SMILES, "Predict compound",
 				"Please insert SMILES string");
 
 		//			ValidationResultsProvider val = new ValidationResultsProvider(
@@ -118,7 +118,8 @@ public class ModelHtml extends DefaultHtml
 				res.setResultValue(rIdx, "Compound", encodeLink(url, p.getSmiles()));
 				String endpoint = p.getTrainingActivity();
 				if (endpoint != null)
-					res.setResultValue(idx, text("model.measured"), encodeLink(url, endpoint));
+					res.setResultValue(rIdx, text("model.measured"), encodeLink(url, endpoint));
+
 				res.setResultValue(rIdx, "Prediction", getPredictionWithIcon(p, m, url));
 				if (ModelService.APP_DOMAIN_VISIBLE)
 					res.setResultValue(rIdx, "App-Domain", getInsideAppDomainCheck(p, url));

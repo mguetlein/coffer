@@ -19,10 +19,10 @@ public class ModelsHtml extends DefaultHtml
 	public String build()
 	{
 		newSection("CoFFer", new TextWithLinks(
-				text("home.welcome") + " " + encodeLink("/doc", "Documentation"), true, false));
+				text("home.welcome") + " " + encodeLink("/doc", "Learn more >>"), true, false));
 
 		//newSection("Make prediction");
-		addForm("/", ModelService.PREDICT_PARAM_COMPOUND_SMILES, "Predict",
+		addForm("/", ModelService.PREDICT_PARAM_COMPOUND_SMILES, "Predict compound",
 				"Please insert SMILES string");
 		addGap();
 		ResultSet set = new ResultSet();
@@ -30,8 +30,11 @@ public class ModelsHtml extends DefaultHtml
 		for (Model m : models)
 		{
 			int idx = set.addResult();
-			set.setResultValue(idx, "Dataset", encodeLink("/" + m.getId(), m.getName()));
-			set.setResultValue(idx, "Target", encodeLink("/" + m.getId(), m.getTarget()));
+			//			set.setResultValue(idx, "Prediction model", encodeLink("/" + m.getId(), m.getName()));
+			//			set.setResultValue(idx, "Target", encodeLink("/" + m.getId(), m.getTarget()));
+
+			set.setResultValue(idx, "Prediction models",
+					doubleText(m.getTarget(), m.getName(), "/" + m.getId()));
 		}
 
 		String[] modelIds = new String[models.length];
@@ -41,7 +44,7 @@ public class ModelsHtml extends DefaultHtml
 		if (predIds.length > 0)
 			startLeftColumn();
 
-		newSection("Prediction models");
+		//		newSection("Prediction models");
 		setTableColWidthLimited(false);
 		addTable(set);
 
@@ -54,14 +57,14 @@ public class ModelsHtml extends DefaultHtml
 				Prediction p = AbstractPrediction.find(modelIds[0], predIds[i]);
 				int rIdx = res.addResult();
 				String url = "/prediction/" + predIds[i];
-				res.setResultValue(rIdx, "Compounds", encodeLink(url, p.getSmiles()));
+				res.setResultValue(rIdx, "Recent predictions", encodeLink(url, p.getSmiles()));
 				//				res.setResultValue(rIdx, "Date",
 				//						HTMLReport.encodeLink(url, new SimpleDateFormat("yyyy-MM-dd HH:mm").format(p.getDate())));
 				//					res.setResultValue(rIdx, "Prediction", HTMLReport.getHTMLCode(PredictionReport.getPredictionString(
 				//							p.getPredictedDistribution(), getClassValues(), p.getPredictedIdx(), true)));
 			}
 
-			newSection("Recent predictions");
+			//			newSection("Recent predictions");
 			addTable(res);
 			stopColumns();
 		}

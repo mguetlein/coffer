@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.kramerlab.cfpminer.appdomain.ADInfoModel;
 import org.kramerlab.cfpminer.experiments.validation.InnerValidationResults;
 import org.kramerlab.coffer.api.impl.html.ModelHtml;
@@ -244,7 +245,7 @@ public abstract class AbstractModel extends AbstractServiceObject
 
 	public String getTarget()
 	{
-		return getTarget(id);
+		return StringUtils.capitalize(getTarget(id));
 	}
 
 	public String getName()

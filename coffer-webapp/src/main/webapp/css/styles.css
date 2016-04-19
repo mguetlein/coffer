@@ -163,6 +163,7 @@ th {
 
 th.transpose {
 	background-color: inherit;
+	text-align: right;
 }
 
 
@@ -175,6 +176,14 @@ table, th, td{
   	word-wrap:break-word;
 	border: 1px solid #98AFC7;
     border-collapse: collapse;
+}
+
+th.largeHeader{
+	font-size: 1.15rem;
+	text-align: left;
+	background-color: inherit;
+	/* border: 0px; */
+	/* background-color: white; */
 }
 
 table.noBorder{

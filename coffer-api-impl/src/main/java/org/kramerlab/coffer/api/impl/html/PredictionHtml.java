@@ -155,8 +155,10 @@ public class PredictionHtml extends DefaultHtml
 			set.setResultValue(rIdx, " ", " ");
 
 			String url = "/" + p.getModelId();
-			set.setResultValue(rIdx, "Dataset", encodeLink(url, m.getName()));
-			set.setResultValue(rIdx, "Target", encodeLink(url, m.getTarget()));
+			//			set.setResultValue(rIdx, "Dataset", encodeLink(url, m.getName()));
+			//			set.setResultValue(rIdx, "Target", encodeLink(url, m.getTarget()));
+
+			set.setResultValue(rIdx, "Target", doubleText(m.getTarget(), m.getName(), url, true));
 
 			//			String name = m.getClassifierName().replaceAll(" \\(.*", "");
 			//			set.setResultValue(rIdx, "Classifier", encodeLink(url, name));

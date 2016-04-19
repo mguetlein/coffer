@@ -37,8 +37,11 @@ public class PredictionsHtml extends DefaultHtml
 			//				res.setResultValue(idx, "Model", HTMLReport.encodeLink(url /*"/" + m.getId()*/, m.getId()));
 			smiles = p.getSmiles();
 			Model m = AbstractModel.find(p.getModelId());
-			res.setResultValue(idx, "Dataset", encodeLink(url, m.getName()));
-			res.setResultValue(idx, "Target", encodeLink(url, m.getTarget()));
+			//			res.setResultValue(idx, "Dataset", encodeLink(url, m.getName()));
+			//			res.setResultValue(idx, "Target", encodeLink(url, m.getTarget()));
+
+			res.setResultValue(idx, "Target", doubleText(m.getTarget(), m.getName(), url));
+
 			String endpoint = p.getTrainingActivity();
 			if (endpoint != null)
 				res.setResultValue(idx, text("model.measured"), encodeLink(url, endpoint));
@@ -61,7 +64,7 @@ public class PredictionsHtml extends DefaultHtml
 		if (count < predictions.length)
 			setRefresh(5);
 
-		res.sortProperties(ListUtil.createList("Dataset", "Target", text("model.measured"),
+		res.sortProperties(ListUtil.createList(/*"Dataset",*/ "Target", text("model.measured"),
 				"Prediction", "App-Domain"));
 		setHeaderHelp("Prediction",
 				text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
