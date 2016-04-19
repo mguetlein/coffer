@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.kramerlab.coffer</groupId>
     <artifactId>coffer</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
   </parent>
 
   <artifactId>coffer-api-impl</artifactId>
@@ -123,7 +123,7 @@
     	<dependency>
 	  <groupId>org.kramerlab.cfpminer</groupId>
 	  <artifactId>cfp-miner</artifactId>
-  	<version>0.0.1-SNAPSHOT</version>
+  	<version>1.0.0</version>
 	  </dependency>
 	  
 <dependency>
