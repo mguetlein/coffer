@@ -71,15 +71,15 @@ public class ModelServiceImpl implements ModelService
 			CDKConverter.validateSmiles(smiles);
 			final Model models[] = AbstractModel.listModels();
 			AbstractPrediction.createPrediction(models[0], smiles, false);
-			Thread th = new Thread(new Runnable()
+			Runnable r = new Runnable()
 			{
 				public void run()
 				{
 					for (int i = 1; i < models.length; i++)
 						AbstractPrediction.createPrediction(models[i], smiles, false);
 				}
-			});
-			th.start();
+			};
+			ModelServiceTasks.addTask("Predict with all models: " + smiles, r);
 			return Response
 					.seeOther(new URI(
 							"/prediction/" + StringUtil.getMD5(smiles) + "?wait=" + models.length))

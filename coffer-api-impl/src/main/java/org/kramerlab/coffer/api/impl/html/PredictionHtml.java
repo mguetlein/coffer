@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.kramerlab.coffer.api.ModelService;
+import org.kramerlab.coffer.api.impl.ModelServiceTasks;
 import org.kramerlab.coffer.api.impl.objects.AbstractModel;
 import org.kramerlab.coffer.api.objects.Model;
 import org.kramerlab.coffer.api.objects.Prediction;
@@ -186,15 +187,15 @@ public class PredictionHtml extends DefaultHtml
 		{
 			newSection("Fragments");
 
-			Thread th = new Thread(new Runnable()
+			Runnable r = new Runnable()
 			{
 				@Override
 				public void run()
 				{
 					p.computePredictionAttributesComputed();
 				}
-			});
-			th.start();
+			};
+			ModelServiceTasks.addTask("compute fragments for " + p.getLocalURI(), r);
 
 			startLeftColumn();
 			addImage("/img/wait.gif");
@@ -325,7 +326,7 @@ public class PredictionHtml extends DefaultHtml
 												+ "?smiles="
 												+ StringUtil.urlEncodeUTF8(p.getSmiles()),
 										true));
-										//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
+						//					set.setResultValue(rIdx, "Value", renderer.renderAttributeValue(att, attIdx));
 
 						//					String hideTxt = "";
 						//					hideTxt = text("fragment.hide." + hideFragments);
@@ -422,11 +423,9 @@ public class PredictionHtml extends DefaultHtml
 			if (!testInstanceContains(attIdx))
 				//		if (testInstance.stringValue(attr).equals("0"))
 				if (fallbackToTraining)
-					m = miner.getTrainingDataSmiles()
-							.get(miner.getCompoundsForFragment(miner.getFragmentViaIdx(attIdx))
-									.iterator().next());
+				m = miner.getTrainingDataSmiles().get(miner.getCompoundsForFragment(miner.getFragmentViaIdx(attIdx)).iterator().next());
 				else
-					crop = false;
+				crop = false;
 			if (miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)) == null)
 				throw new IllegalStateException("no atoms in " + m + " for att-idx " + attIdx
 						+ ", hashcode: " + miner.getFragmentViaIdx(attIdx));
