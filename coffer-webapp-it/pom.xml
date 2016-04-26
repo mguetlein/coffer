@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.kramerlab.coffer</groupId>
     <artifactId>coffer</artifactId>
-    <version>${coffer.version}</version>
+    <version>1.0.1</version>
   </parent>
 
   <artifactId>coffer-webapp-it</artifactId>
