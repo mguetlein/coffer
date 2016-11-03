@@ -11,12 +11,16 @@ import org.kramerlab.cfpminer.weka.eval2.CFPtoArff;
 import org.kramerlab.coffer.api.impl.ot.ModelImpl;
 import org.kramerlab.coffer.api.impl.persistance.PersistanceAdapter;
 import org.mg.cdklib.cfp.CFPMiner;
+import org.mg.cdklib.cfp.CFPType;
+import org.mg.cdklib.cfp.FeatureSelection;
 import org.mg.cdklib.data.DataLoader;
 import org.mg.javalib.datamining.ResultSetIO;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.ListUtil;
 import org.mg.wekalib.eval2.model.FeatureModel;
 
+import weka.classifiers.Classifier;
+import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 
 public class BuildModels
@@ -33,9 +37,11 @@ public class BuildModels
 		//		buildModelFromNestedCV(true, "CPDBAS_Mouse");
 		//		buildModelFromNestedCV(true, "NCTRER");
 
-		for (String dataset : DataLoader.INSTANCE.allDatasetsSorted())
-			//			//if (new Random().nextDouble() < 0.1)
-			buildModelFromNestedCV(false, dataset);
+		//		for (String dataset : DataLoader.INSTANCE.allDatasetsSorted())
+		//			//			//if (new Random().nextDouble() < 0.1)
+		//			buildModelFromNestedCV(false, dataset);
+
+		buildModelWithoutValidation("LTKB");
 
 		//buildModelFromNestedCV("NCTRER");
 		//		buildModel("REID-3", false);
@@ -110,57 +116,16 @@ public class BuildModels
 				System.out.println("model already exists: " + dataset);
 			else
 			{
-				ModelImpl model = new ModelImpl();
-				model.setId(dataset);
-
-				List<String> endpoints = PersistanceAdapter.INSTANCE.readDatasetEndpoints(dataset);
-				List<String> smiles = PersistanceAdapter.INSTANCE.readDatasetSmiles(dataset);
-				ListUtil.scramble(new Random(1), smiles, endpoints);
-				model.setCFPMiner(new CFPMiner(endpoints));
-
 				FeatureModel featureModel = val.getSelectedModel(dataset);
 				CFPFeatureProvider featureSetting = (CFPFeatureProvider) featureModel
 						.getFeatureProvider();
 				org.mg.wekalib.eval2.model.Model algorithmSetting = featureModel.getModel();
-
-				System.out.println("\nMining selected features: " + featureSetting.getName());
-				model.getCFPMiner().setHashfoldsize(featureSetting.getHashfoldSize());
-				model.getCFPMiner().setType(featureSetting.getType());
-				model.getCFPMiner().setFeatureSelection(featureSetting.getFeatureSelection());
-				model.getCFPMiner().mine(smiles);
-				model.getCFPMiner().applyFilter();
-				System.out.println(model.getCFPMiner());
-				if (model.getCFPMiner().getNumCompounds() != endpoints.size())
-					throw new IllegalStateException();
-
-				Instances inst = CFPtoArff.getTrainingDataset(model.getCFPMiner(), dataset);
-				inst.setClassIndex(inst.numAttributes() - 1);
-				if (inst.size() != smiles.size())
-					throw new IllegalStateException();
-				if (inst.numAttributes() != model.getCFPMiner().getNumFragments() + 1)
-					throw new IllegalStateException();
-				if (!model.getCFPMiner().getClassValues()[0].equals(inst.classAttribute().value(0)))
-					throw new IllegalArgumentException();
-				if (!model.getCFPMiner().getClassValues()[1].equals(inst.classAttribute().value(1)))
-					throw new IllegalArgumentException();
-
-				System.out.println("Building selected algorithm: " + algorithmSetting.getName());
-				model.setClassifier(((org.mg.wekalib.eval2.model.AbstractModel) algorithmSetting)
-						.getWekaClassifer());
-				//		int seed = 1;
-				//		if (model.classifier instanceof Randomizable)
-				//			((Randomizable) model.classifier).setSeed(seed);
-				model.getClassifier().buildClassifier(inst);
-
-				model.setActiveClassIdx(model.getCFPMiner().getActiveIdx());
-				model.setClassValues(model.getCFPMiner().getClassValues());
-
-				KNNTanimotoCFPAppDomainModel appDomain = new KNNTanimotoCFPAppDomainModel(3, true);
-				appDomain.setCFPMiner(model.getCFPMiner());
-				appDomain.build();
-				model.setAppDomain(appDomain);
-
-				model.saveModel();
+				System.out.println("\nBuilding model with features: " + featureSetting.getName());
+				System.out.println("and algorithm: " + algorithmSetting.getName());
+				buildModel(dataset, featureSetting.getHashfoldSize(), featureSetting.getType(),
+						featureSetting.getFeatureSelection(),
+						((org.mg.wekalib.eval2.model.AbstractModel) algorithmSetting)
+								.getWekaClassifer());
 			}
 
 			System.out.println("\nStoring validation results");
@@ -169,6 +134,61 @@ public class BuildModels
 
 			//		CFPNestedCV.plotValidationResult(dataset, null);
 		}
+	}
+
+	public static void buildModelWithoutValidation(String dataset) throws Exception
+	{
+		if (PersistanceAdapter.INSTANCE.modelExists(dataset))
+			PersistanceAdapter.INSTANCE.deleteModel(dataset);
+
+		buildModel(dataset, 2048, CFPType.ecfp4, FeatureSelection.filt, new RandomForest());
+	}
+
+	public static void buildModel(String dataset, int hashfoldSize, CFPType type,
+			FeatureSelection feats, Classifier classifier) throws Exception
+	{
+		ModelImpl model = new ModelImpl();
+		model.setId(dataset);
+
+		List<String> endpoints = PersistanceAdapter.INSTANCE.readDatasetEndpoints(dataset);
+		List<String> smiles = PersistanceAdapter.INSTANCE.readDatasetSmiles(dataset);
+		ListUtil.scramble(new Random(1), smiles, endpoints);
+		model.setCFPMiner(new CFPMiner(endpoints));
+
+		System.out.println("\nMining features " + hashfoldSize + " " + type + " " + feats);
+		model.getCFPMiner().setHashfoldsize(hashfoldSize);
+		model.getCFPMiner().setType(CFPType.ecfp4);
+		model.getCFPMiner().setFeatureSelection(FeatureSelection.filt);
+		model.getCFPMiner().mine(smiles);
+		model.getCFPMiner().applyFilter();
+		System.out.println(model.getCFPMiner());
+		if (model.getCFPMiner().getNumCompounds() != endpoints.size())
+			throw new IllegalStateException();
+
+		Instances inst = CFPtoArff.getTrainingDataset(model.getCFPMiner(), dataset);
+		inst.setClassIndex(inst.numAttributes() - 1);
+		if (inst.size() != smiles.size())
+			throw new IllegalStateException();
+		if (inst.numAttributes() != model.getCFPMiner().getNumFragments() + 1)
+			throw new IllegalStateException();
+		if (!model.getCFPMiner().getClassValues()[0].equals(inst.classAttribute().value(0)))
+			throw new IllegalArgumentException();
+		if (!model.getCFPMiner().getClassValues()[1].equals(inst.classAttribute().value(1)))
+			throw new IllegalArgumentException();
+
+		System.out.println("Building algorithm " + classifier.getClass().getSimpleName());
+		model.setClassifier(classifier);
+		model.getClassifier().buildClassifier(inst);
+
+		model.setActiveClassIdx(model.getCFPMiner().getActiveIdx());
+		model.setClassValues(model.getCFPMiner().getClassValues());
+
+		KNNTanimotoCFPAppDomainModel appDomain = new KNNTanimotoCFPAppDomainModel(3, true);
+		appDomain.setCFPMiner(model.getCFPMiner());
+		appDomain.build();
+		model.setAppDomain(appDomain);
+
+		model.saveModel();
 	}
 
 	//	public static void trainModel(String dataset) throws Exception
