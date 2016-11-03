@@ -22,7 +22,7 @@ public class ModelsHtml extends DefaultHtml
 				text("home.welcome") + " " + encodeLink("/doc", "Learn more >>"), true, false));
 
 		//newSection("Make prediction");
-		addForm("/", ModelService.PREDICT_PARAM_COMPOUND_SMILES, "Predict compound",
+		addForm("", ModelService.PREDICT_PARAM_COMPOUND_SMILES, "Predict compound",
 				"Please insert SMILES string");
 		addGap();
 		ResultSet set = new ResultSet();

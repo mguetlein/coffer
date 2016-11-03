@@ -99,7 +99,7 @@ public class ModelHtml extends DefaultHtml
 
 		addGap();
 		//		newSection("Make prediction");
-		addForm("/" + m.getId(), ModelService.PREDICT_PARAM_COMPOUND_SMILES, "Predict compound",
+		addForm("" + m.getId(), ModelService.PREDICT_PARAM_COMPOUND_SMILES, "Predict compound",
 				"Please insert SMILES string");
 
 		//			ValidationResultsProvider val = new ValidationResultsProvider(
