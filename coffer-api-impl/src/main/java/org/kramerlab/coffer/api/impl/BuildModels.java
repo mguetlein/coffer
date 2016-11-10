@@ -28,7 +28,7 @@ public class BuildModels
 
 	public static void main(String[] args) throws Exception
 	{
-		//buildModelFromNestedCV(true);
+		buildModelFromNestedCV(false);
 
 		//		for (String dataset : DataLoader.INSTANCE.allDatasetsSorted())
 		//			if (PersistanceAdapter.INSTANCE.modelExists(dataset))
@@ -41,7 +41,7 @@ public class BuildModels
 		//			//			//if (new Random().nextDouble() < 0.1)
 		//			buildModelFromNestedCV(false, dataset);
 
-		buildModelWithoutValidation("LTKB");
+		//buildModelWithoutValidation("LTKB");
 
 		//buildModelFromNestedCV("NCTRER");
 		//		buildModel("REID-3", false);

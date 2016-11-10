@@ -8,13 +8,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.kramerlab.cfpminer.appdomain.ADPrediction;
 import org.kramerlab.cfpminer.appdomain.ADInfoModel;
+import org.kramerlab.cfpminer.appdomain.ADPrediction;
 import org.kramerlab.cfpminer.weka.eval2.CFPtoArff;
 import org.kramerlab.coffer.api.ModelService;
 import org.kramerlab.coffer.api.impl.html.PredictionHtml;
-import org.kramerlab.coffer.api.impl.html.PredictionsHtml;
 import org.kramerlab.coffer.api.impl.html.PredictionHtml.HideFragments;
+import org.kramerlab.coffer.api.impl.html.PredictionsHtml;
 import org.kramerlab.coffer.api.impl.ot.PredictionImpl;
 import org.kramerlab.coffer.api.impl.persistance.PersistanceAdapter;
 import org.kramerlab.coffer.api.impl.provider.HTMLOwner;
@@ -25,6 +25,7 @@ import org.mg.cdklib.CDKConverter;
 import org.mg.cdklib.cfp.CFPFragment;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.ListUtil;
 import org.mg.javalib.util.StringUtil;
 import org.mg.wekalib.attribute_ranking.PredictionAttributeComputation;
 import org.mg.wekalib.attribute_ranking.PredictionAttributeImpl;
@@ -308,7 +309,7 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 		return new PredictionHtml(this, hideFragments, maxNumFragments).build();
 	}
 
-	public static void main(String[] args)
+	public static void main(String[] args) throws Exception
 	{
 		//		String modelId = "AMES";
 		//		String smiles[] = { "C1=CC(=CC=C1NC(=O)C2=CSC(=C2)[N+](=O)[O-])Cl",
@@ -321,24 +322,45 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 		//		//				.split("\n");
 		//		//List<String> smiles = new DataLoader("data").getDataset("NCTRER").getSmiles();
 
-		String modelIds[] = { "AMES", "ChEMBL_93", "MUV_733" };
-		String smiles[] = { "CC1(C2CCC(O1)(CC2)C)C" };
+		String modelIds[] = { "AMES", "CPDBAS_Mouse", "NCTRER", "ChEMBL_93", "MUV_733",
+				"ChEMBL_100", "MUV_644", "DUD_vegfr2" };
+		//String smiles[] = { "CC1(C2CCC(O1)(CC2)C)C" };
+		List<String> smiles = ListUtil.createList("c1ccccc1", "c1cccnc1", "c1cccnc1", "CCC",
+				"CCCC=O", "CCCCCCC", "Br", "Cl", "CCCC");
 
 		for (String modelId : modelIds)
 		{
 			Model m = AbstractModel.find(modelId);
+
+			//SerializationTest.test((AbstractClassifier) ((AbstractModel) m).getClassifier());
+			//SerializationTest.test(((AbstractModel) m).getCFPMiner());
+			//			SerializationTest
+			//					.test((KNNTanimotoCFPAppDomainModel) ((AbstractModel) m).getAppDomain());
+
+			//				CFPMiner miner = ((AbstractModel) m).getCFPMiner();
+			//				StopWatchUtil.start("read-ad");
+			//				ADInfoModel ad = ((AbstractModel) m).getAppDomain();
+			//				ad.setCFPMiner(miner);
+			//				StopWatchUtil.stop("read-ad");
+
 			for (String smi : smiles)
 			{
+				//					StopWatchUtil.start("predict-ad");
+				//					ad.isInsideAppdomain(smi);
+				//					StopWatchUtil.stop("predict-ad");
+
 				String predictionId = StringUtil.getMD5(smi);
 				if (exists(m.getId(), predictionId))
 					PersistanceAdapter.INSTANCE.deletePrediction(m.getId(), predictionId);
 
-				Prediction p = AbstractPrediction.createPrediction(m, smi, true);
+				Prediction p = AbstractPrediction.createPrediction(m, smi, false);
 				System.out.println(
 						p.getSmiles() + " " + ArrayUtil.toString(p.getPredictedDistribution()));
 			}
-		}
 
+			//				System.out.println();
+			//				StopWatchUtil.print();
+		}
 	}
 
 }

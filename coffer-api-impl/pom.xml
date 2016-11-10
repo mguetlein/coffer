@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.kramerlab.coffer</groupId>
     <artifactId>coffer</artifactId>
-    <version>1.0.2</version>
+    <version>1.1.0</version>
   </parent>
 
   <artifactId>coffer-api-impl</artifactId>
@@ -144,6 +144,11 @@
 	<version>4.5.2</version>
 </dependency>
 
+<dependency>
+    <groupId>de.ruedigermoeller</groupId>
+    <artifactId>fst</artifactId>
+    <version>2.47</version>
+</dependency>
 
 	
   </dependencies>

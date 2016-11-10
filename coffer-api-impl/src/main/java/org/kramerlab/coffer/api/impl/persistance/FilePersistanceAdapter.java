@@ -1,16 +1,16 @@
 package org.kramerlab.coffer.api.impl.persistance;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +26,8 @@ import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.cdklib.data.DataLoader;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.FileUtil;
+import org.nustaq.serialization.FSTObjectInput;
+import org.nustaq.serialization.FSTObjectOutput;
 
 import weka.classifiers.Classifier;
 
@@ -116,15 +118,28 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		}
 	}
 
-	public AbstractModel readModel(String modelId)
+	Map<String, byte[]> cache = new HashMap<>();
+
+	/**
+	 * limit hard-drive access by caching raw data (could get potentially large!) 
+	 * serialization is done with FST which is a faster implementation of java serialization
+	 * 
+	 * @param file
+	 * @return
+	 */
+	private Object readFile(String file)
 	{
 		try
 		{
-			ObjectInputStream ois = new ObjectInputStream(
-					new FileInputStream(getModelFile(modelId)));
-			AbstractModel m = (AbstractModel) ois.readObject();
-			ois.close();
-			return m;
+			synchronized (file)
+			{
+				if (!cache.containsKey(file))
+					cache.put(file, IOUtils.toByteArray(new FileInputStream(file)));
+			}
+			FSTObjectInput in = new FSTObjectInput(new ByteArrayInputStream(cache.get(file)));
+			Object o = in.readObject();
+			in.close();
+			return o;
 		}
 		catch (Exception e)
 		{
@@ -132,31 +147,17 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		}
 	}
 
-	public Classifier readClassifier(String modelId)
+	private void writeFile(Object o, String file)
 	{
 		try
 		{
-			ObjectInputStream ois = new ObjectInputStream(
-					new FileInputStream(getModelClassifierFile(modelId)));
-			Classifier classi = (Classifier) ois.readObject();
-			ois.close();
-			return classi;
-		}
-		catch (Exception e)
-		{
-			throw new PersistanceException(e);
-		}
-	}
-
-	public CFPMiner readCFPMiner(String modelId)
-	{
-		try
-		{
-			ObjectInputStream ois = new ObjectInputStream(
-					new FileInputStream(getModelCFPFile(modelId)));
-			CFPMiner miner = (CFPMiner) ois.readObject();
-			ois.close();
-			return miner;
+			synchronized (file)
+			{
+				cache.remove(file);
+			}
+			FSTObjectOutput out = new FSTObjectOutput(new FileOutputStream(file));
+			out.writeObject(o);
+			out.close();
 		}
 		catch (Exception e)
 		{
@@ -165,20 +166,27 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 	}
 
 	@Override
+	public AbstractModel readModel(String modelId)
+	{
+		return (AbstractModel) readFile(getModelFile(modelId));
+	}
+
+	@Override
+	public Classifier readClassifier(String modelId)
+	{
+		return (Classifier) readFile(getModelClassifierFile(modelId));
+	}
+
+	@Override
+	public CFPMiner readCFPMiner(String modelId)
+	{
+		return (CFPMiner) readFile(getModelCFPFile(modelId));
+	}
+
+	@Override
 	public ADInfoModel readAppDomain(String modelId)
 	{
-		try
-		{
-			ObjectInputStream ois = new ObjectInputStream(
-					new FileInputStream(getModelAppDomainFile(modelId)));
-			ADInfoModel ad = (ADInfoModel) ois.readObject();
-			ois.close();
-			return ad;
-		}
-		catch (Exception e)
-		{
-			throw new PersistanceException(e);
-		}
+		return (ADInfoModel) readFile(getModelAppDomainFile(modelId));
 	}
 
 	public Model[] readModels()
@@ -215,18 +223,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 
 	public AbstractPrediction readPrediction(String modelId, String predictionId)
 	{
-		try
-		{
-			ObjectInputStream ois = new ObjectInputStream(
-					new FileInputStream(getPredictionFile(modelId, predictionId)));
-			AbstractPrediction pred = (AbstractPrediction) ois.readObject();
-			ois.close();
-			return pred;
-		}
-		catch (Exception e)
-		{
-			throw new PersistanceException(e);
-		}
+		return (AbstractPrediction) readFile(getPredictionFile(modelId, predictionId));
 	}
 
 	public String[] findAllPredictions(final String... modelIds)
@@ -263,19 +260,9 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 
 	public void savePrediction(AbstractPrediction prediction)
 	{
-		try
-		{
-			String file = getPredictionFile(prediction.getModelId(), prediction.getId());
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
-			oos.writeObject(prediction);
-			oos.flush();
-			oos.close();
-			System.out.println("prediction written to " + file);
-		}
-		catch (Exception e)
-		{
-			throw new PersistanceException(e);
-		}
+		String file = getPredictionFile(prediction.getModelId(), prediction.getId());
+		writeFile(prediction, file);
+		System.out.println("prediction written to " + file);
 	}
 
 	public void deleteModel(String id)
@@ -301,42 +288,23 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 
 	public void saveModel(AbstractModel model)
 	{
-		try
-		{
-			String file = getModelFile(model.getId());
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
-			oos.writeObject(model);
-			oos.flush();
-			oos.close();
-			System.out.println("model written to " + file);
+		String file = getModelFile(model.getId());
+		writeFile(model, file);
+		System.out.println("model written to " + file);
 
-			file = getModelClassifierFile(model.getId());
-			oos = new ObjectOutputStream(new FileOutputStream(file));
-			oos.writeObject(model.getClassifier());
-			oos.flush();
-			oos.close();
-			System.out.println("classifier written to " + file);
+		file = getModelClassifierFile(model.getId());
+		writeFile(model.getClassifier(), file);
+		System.out.println("classifier written to " + file);
 
-			file = getModelCFPFile(model.getId());
-			oos = new ObjectOutputStream(new FileOutputStream(file));
-			oos.writeObject(model.getCFPMiner());
-			oos.flush();
-			oos.close();
-			System.out.println("cfps written to " + file);
+		file = getModelCFPFile(model.getId());
+		writeFile(model.getCFPMiner(), file);
+		System.out.println("cfps written to " + file);
 
-			file = getModelAppDomainFile(model.getId());
-			oos = new ObjectOutputStream(new FileOutputStream(file));
-			oos.writeObject(model.getAppDomain());
-			oos.flush();
-			oos.close();
-			System.out.println("appDomain written to " + file);
+		file = getModelAppDomainFile(model.getId());
+		writeFile(model.getAppDomain(), file);
+		System.out.println("appDomain written to " + file);
 
-			readModelDatasetWarnings(model.getId());
-		}
-		catch (Exception e)
-		{
-			throw new PersistanceException(e);
-		}
+		readModelDatasetWarnings(model.getId());
 	}
 
 	public String getModelEndpoint(String modelId)
