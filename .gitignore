@@ -18,3 +18,4 @@ persistance/model/*.classifier
 */.classpath
 persistance/model/*.res
 target
+pom.xml.versionsBackup
