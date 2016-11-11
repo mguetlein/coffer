@@ -21,7 +21,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.kramerlab.coffer</groupId>
   <artifactId>coffer</artifactId>
-  <version>1.0.2</version>
+  <version>1.1.0</version>
   <packaging>pom</packaging>
 
   <properties>
@@ -97,6 +97,26 @@
             <additionalparam>-Xdoclint:none</additionalparam>
           </configuration>
       </plugin>      
+      
+      
+      	<plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.3</version>
+        <configuration>
+        	<sourceFileIncludes>
+      			<include>ModelService.java</include>
+      		</sourceFileIncludes>
+    		<sourcepath>${basedir}/src/main/java/org/kramerlab/coffer/api</sourcepath>
+            <additionalparam>-Xdoclint:none</additionalparam>
+          </configuration>
+      </plugin> 
+      
+          <plugin>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>versions-maven-plugin</artifactId>
+      <version>2.3</version>
+      </plugin> 
       
     </plugins>
   </build>
