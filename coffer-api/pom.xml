@@ -51,7 +51,7 @@
         	<dependency>
 	  <groupId>org.kramerlab.cfpminer</groupId>
 	  <artifactId>cfp-miner</artifactId>
-  	<version>1.0.0</version>
+  	<version>${cfp.version}</version>
 	  </dependency>
     
   </dependencies>

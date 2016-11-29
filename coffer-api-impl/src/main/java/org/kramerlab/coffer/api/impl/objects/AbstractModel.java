@@ -24,7 +24,7 @@ import org.mg.javalib.util.CountedSet;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;
-import weka.classifiers.functions.SMO;
+import weka.classifiers.functions.SMO_ridgeAdjustable;
 import weka.classifiers.functions.supportVector.PolyKernel;
 import weka.classifiers.functions.supportVector.RBFKernel;
 import weka.classifiers.trees.RandomForest;
@@ -144,9 +144,9 @@ public abstract class AbstractModel extends AbstractServiceObject
 			return "Naive Bayes";
 		else if (getClassifier() instanceof RandomForest)
 			return "Random Forest (trees: " + ((RandomForest) getClassifier()).getNumTrees() + ")";
-		else if (getClassifier() instanceof SMO)
+		else if (getClassifier() instanceof SMO_ridgeAdjustable)
 		{
-			SMO smo = (SMO) getClassifier();
+			SMO_ridgeAdjustable smo = (SMO_ridgeAdjustable) getClassifier();
 			String name = "Support Vector Machine (c:";
 			if (smo.getC() % 1.0 == 0)
 				name += (int) smo.getC();
