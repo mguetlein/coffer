@@ -23,7 +23,8 @@ import org.kramerlab.coffer.api.impl.objects.AbstractModel;
 import org.kramerlab.coffer.api.impl.objects.AbstractPrediction;
 import org.kramerlab.coffer.api.objects.Model;
 import org.mg.cdklib.cfp.CFPMiner;
-import org.mg.cdklib.data.DataLoader;
+import org.mg.cdklib.data.DataProvider;
+import org.mg.cdklib.data.DataProvider.DataID;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.FileUtil;
 import org.nustaq.serialization.FSTObjectInput;
@@ -33,7 +34,6 @@ import weka.classifiers.Classifier;
 
 public class FilePersistanceAdapter implements PersistanceAdapter
 {
-	DataLoader dataLoader = DataLoader.INSTANCE;
 	private static final String FOLDER = System.getProperty("user.home")
 			+ "/results/coffer/persistance";
 
@@ -67,7 +67,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		return FOLDER + "/img/" + id + ".png";
 	}
 
-	public String getWarningFile(String id)
+	private String getDatasetWarningFile(DataID id)
 	{
 		return FOLDER + "/warn/" + id + ".warn";
 	}
@@ -87,24 +87,24 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		return new File(getModelFile(modelId)).exists();
 	}
 
-	public List<String> readDatasetEndpoints(String modelId)
+	public List<String> readDatasetEndpoints(DataID dataID)
 	{
-		return new ArrayList<String>(dataLoader.getDataset(modelId).getEndpoints());
+		return new ArrayList<String>(DataProvider.getDataset(dataID).getEndpoints());
 	}
 
-	public List<String> readDatasetSmiles(String modelId)
+	public List<String> readDatasetSmiles(DataID dataID)
 	{
-		return new ArrayList<String>(dataLoader.getDataset(modelId).getSmiles());
+		return new ArrayList<String>(DataProvider.getDataset(dataID).getSmiles());
 	}
 
-	public List<String> readModelDatasetWarnings(String modelId)
+	public List<String> readModelDatasetWarnings(DataID dataID)
 	{
 		try
 		{
-			String f = getWarningFile(modelId);
+			String f = getDatasetWarningFile(dataID);
 			if (!new File(f).exists())
 			{
-				List<String> warnings = dataLoader.getDataset(modelId).getWarnings();
+				List<String> warnings = DataProvider.getDataset(dataID).getWarnings();
 				System.out.println("Write warnings to " + f);
 				IOUtils.writeLines(warnings, null, new FileOutputStream(f));
 				return warnings;
@@ -205,7 +205,7 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		{
 			public int compare(Model o1, Model o2)
 			{
-				return DataLoader.CFPDataComparator.compare(o1.getId(), o2.getId());
+				return DataProvider.CFPDataComparator.compare(o1.getId(), o2.getId());
 			}
 		});
 		return res;
@@ -304,21 +304,21 @@ public class FilePersistanceAdapter implements PersistanceAdapter
 		writeFile(model.getAppDomain(), file);
 		System.out.println("appDomain written to " + file);
 
-		readModelDatasetWarnings(model.getId());
+		readModelDatasetWarnings(model.getDatasetID());
 	}
 
-	public String getModelEndpoint(String modelId)
+	public String getModelDatasetEndpoint(DataID dataID)
 	{
-		return dataLoader.getDatasetEndpoint(modelId);
+		return DataProvider.getDatasetEndpoint(dataID);
 	}
 
-	public Set<String> getModelDatasetURLs(String modelId)
+	public Set<String> getModelDatasetURLs(DataID dataID)
 	{
-		return dataLoader.getDatasetURLs(modelId);
+		return DataProvider.getDatasetURLs(dataID);
 	}
 
-	public Map<String, String> getModelDatasetCitations(String modelId)
+	public Map<String, String> getModelDatasetCitations(DataID dataID)
 	{
-		return dataLoader.getModelDatasetCitations(modelId);
+		return DataProvider.getModelDatasetCitations(dataID);
 	}
 }

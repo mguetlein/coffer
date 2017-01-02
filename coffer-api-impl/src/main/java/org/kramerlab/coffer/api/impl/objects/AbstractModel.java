@@ -18,6 +18,7 @@ import org.kramerlab.coffer.api.impl.provider.HTMLOwner;
 import org.kramerlab.coffer.api.objects.Model;
 import org.kramerlab.coffer.api.objects.Prediction;
 import org.mg.cdklib.cfp.CFPMiner;
+import org.mg.cdklib.data.DataProvider.DataID;
 import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.datamining.ResultSetIO;
 import org.mg.javalib.util.CountedSet;
@@ -32,7 +33,7 @@ import weka.classifiers.trees.RandomForest;
 public abstract class AbstractModel extends AbstractServiceObject
 		implements Model, HTMLOwner, Serializable
 {
-	private static final long serialVersionUID = 10L;
+	private static final long serialVersionUID = 11L;
 
 	protected String id;
 	protected int activeClassIdx;
@@ -185,7 +186,7 @@ public abstract class AbstractModel extends AbstractServiceObject
 	public List<String> getDatasetWarnings()
 	{
 		if (datasetWarnings == null)
-			datasetWarnings = PersistanceAdapter.INSTANCE.readModelDatasetWarnings(id);
+			datasetWarnings = PersistanceAdapter.INSTANCE.readModelDatasetWarnings(getDatasetID());
 		return datasetWarnings;
 	}
 
@@ -260,17 +261,18 @@ public abstract class AbstractModel extends AbstractServiceObject
 
 	public Map<String, String> getDatasetCitations()
 	{
-		return PersistanceAdapter.INSTANCE.getModelDatasetCitations(id);
+		return PersistanceAdapter.INSTANCE.getModelDatasetCitations(getDatasetID());
 	}
 
 	public static String getTarget(String modelId)
 	{
-		return PersistanceAdapter.INSTANCE.getModelEndpoint(modelId) + "";
+		return PersistanceAdapter.INSTANCE.getModelDatasetEndpoint(getDataIDFromModelID(modelId))
+				+ "";
 	}
 
 	public static Set<String> getDatasetURLs(String modelId)
 	{
-		return PersistanceAdapter.INSTANCE.getModelDatasetURLs(modelId);
+		return PersistanceAdapter.INSTANCE.getModelDatasetURLs(getDataIDFromModelID(modelId));
 	}
 
 	public static void deleteAllModels() throws Exception
@@ -285,6 +287,16 @@ public abstract class AbstractModel extends AbstractServiceObject
 		Prediction p = AbstractPrediction.createPrediction(model, smiles,
 				createPredictionAttributes);
 		System.out.println(p.getPredictedDistribution()[model.getActiveClassIdx()]);
+	}
+
+	public DataID getDatasetID()
+	{
+		return getDataIDFromModelID(id);
+	}
+
+	private static DataID getDataIDFromModelID(String modelID)
+	{
+		return DataID.valueOf(modelID);
 	}
 
 }

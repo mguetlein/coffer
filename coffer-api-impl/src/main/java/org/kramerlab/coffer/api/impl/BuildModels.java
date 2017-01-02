@@ -13,7 +13,8 @@ import org.kramerlab.coffer.api.impl.persistance.PersistanceAdapter;
 import org.mg.cdklib.cfp.CFPMiner;
 import org.mg.cdklib.cfp.CFPType;
 import org.mg.cdklib.cfp.FeatureSelection;
-import org.mg.cdklib.data.DataLoader;
+import org.mg.cdklib.data.DataProvider;
+import org.mg.cdklib.data.DataProvider.DataID;
 import org.mg.javalib.datamining.ResultSetIO;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.ListUtil;
@@ -98,22 +99,24 @@ public class BuildModels
 
 	}
 
-	public static void buildModelFromNestedCV(boolean replaceExisting, String... datasets)
+	public static void buildModelFromNestedCV(boolean replaceExisting, DataID... datasets)
 			throws Exception
 	{
 		InnerValidationResults val = new InnerValidationResults();
 
-		for (String dataset : DataLoader.INSTANCE.allDatasetsSorted())
+		for (DataID dataset : DataProvider.cfpDatasetsSorted())
 		{
+			String modelID = modelID(dataset);
+
 			if (datasets != null && datasets.length > 0
 					&& ArrayUtil.indexOf(datasets, dataset) == -1)
 				continue;
 
-			if (PersistanceAdapter.INSTANCE.modelExists(dataset) && replaceExisting)
-				PersistanceAdapter.INSTANCE.deleteModel(dataset);
+			if (PersistanceAdapter.INSTANCE.modelExists(modelID) && replaceExisting)
+				PersistanceAdapter.INSTANCE.deleteModel(modelID);
 
-			if (PersistanceAdapter.INSTANCE.modelExists(dataset))
-				System.out.println("model already exists: " + dataset);
+			if (PersistanceAdapter.INSTANCE.modelExists(modelID))
+				System.out.println("model already exists: " + modelID);
 			else
 			{
 				FeatureModel featureModel = val.getSelectedModel(dataset);
@@ -129,26 +132,35 @@ public class BuildModels
 			}
 
 			System.out.println("\nStoring validation results");
-			String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(dataset);
+			String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(modelID);
 			ResultSetIO.writeToFile(new File(outfile), val.getValidationResults(dataset));
 
-			//		CFPNestedCV.plotValidationResult(dataset, null);
+			//		CFPNestedCV.plotValidationResult(modelId, null);
 		}
 	}
 
-	public static void buildModelWithoutValidation(String dataset) throws Exception
+	public static void buildModelWithoutValidation(DataID dataset) throws Exception
 	{
-		if (PersistanceAdapter.INSTANCE.modelExists(dataset))
-			PersistanceAdapter.INSTANCE.deleteModel(dataset);
+		String modelID = modelID(dataset);
+
+		if (PersistanceAdapter.INSTANCE.modelExists(modelID))
+			PersistanceAdapter.INSTANCE.deleteModel(modelID);
 
 		buildModel(dataset, 2048, CFPType.ecfp4, FeatureSelection.filt, new RandomForest());
 	}
 
-	public static void buildModel(String dataset, int hashfoldSize, CFPType type,
+	private static String modelID(DataID dataset)
+	{
+		return dataset.toString();
+	}
+
+	public static void buildModel(DataID dataset, int hashfoldSize, CFPType type,
 			FeatureSelection feats, Classifier classifier) throws Exception
 	{
+		String modelID = modelID(dataset);
+
 		ModelImpl model = new ModelImpl();
-		model.setId(dataset);
+		model.setId(modelID);
 
 		List<String> endpoints = PersistanceAdapter.INSTANCE.readDatasetEndpoints(dataset);
 		List<String> smiles = PersistanceAdapter.INSTANCE.readDatasetSmiles(dataset);
@@ -165,7 +177,7 @@ public class BuildModels
 		if (model.getCFPMiner().getNumCompounds() != endpoints.size())
 			throw new IllegalStateException();
 
-		Instances inst = CFPtoArff.getTrainingDataset(model.getCFPMiner(), dataset);
+		Instances inst = CFPtoArff.getTrainingDataset(model.getCFPMiner(), modelID);
 		inst.setClassIndex(inst.numAttributes() - 1);
 		if (inst.size() != smiles.size())
 			throw new IllegalStateException();

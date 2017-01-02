@@ -11,6 +11,7 @@ import org.kramerlab.coffer.api.impl.objects.AbstractPrediction;
 import org.kramerlab.coffer.api.objects.Model;
 import org.kramerlab.coffer.api.objects.Prediction;
 import org.mg.cdklib.cfp.CFPMiner;
+import org.mg.cdklib.data.DataProvider.DataID;
 
 import weka.classifiers.Classifier;
 
@@ -25,12 +26,6 @@ public interface PersistanceAdapter
 	public CFPMiner readCFPMiner(String modelId);
 
 	public Model[] readModels();
-
-	public List<String> readDatasetSmiles(String modelId);
-
-	public List<String> readModelDatasetWarnings(String id);
-
-	public List<String> readDatasetEndpoints(String modelId);
 
 	public void saveModel(AbstractModel model);
 
@@ -52,11 +47,17 @@ public interface PersistanceAdapter
 
 	public Date getPredictionDate(String modelId, String id);
 
-	public String getModelEndpoint(String modelId);
+	public List<String> readDatasetSmiles(DataID dataID);
 
-	public Set<String> getModelDatasetURLs(String modelId);
+	public List<String> readModelDatasetWarnings(DataID dataID);
 
-	public Map<String, String> getModelDatasetCitations(String modelId);
+	public List<String> readDatasetEndpoints(DataID dataID);
+
+	public String getModelDatasetEndpoint(DataID dataID);
+
+	public Set<String> getModelDatasetURLs(DataID dataID);
+
+	public Map<String, String> getModelDatasetCitations(DataID dataID);
 
 	public void deleteModel(String modelId);
 

@@ -21,13 +21,13 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.kramerlab.coffer</groupId>
   <artifactId>coffer</artifactId>
-  <version>1.1.1</version>
+  <version>1.2.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring.version>4.1.5.RELEASE</spring.version>
-    <cfp.version>1.1.0</cfp.version>
+    <cfp.version>1.2.0-SNAPSHOT</cfp.version>
   </properties>
 
   <build>
