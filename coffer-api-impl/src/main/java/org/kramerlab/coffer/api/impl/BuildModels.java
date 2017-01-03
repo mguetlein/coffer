@@ -1,11 +1,14 @@
 package org.kramerlab.coffer.api.impl;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import org.kramerlab.cfpminer.appdomain.KNNTanimotoCFPAppDomainModel;
+import org.kramerlab.cfpminer.experiments.validation.CFPCrossValidation;
 import org.kramerlab.cfpminer.experiments.validation.InnerValidationResults;
+import org.kramerlab.cfpminer.experiments.validation.RunCV;
 import org.kramerlab.cfpminer.weka.eval2.CFPFeatureProvider;
 import org.kramerlab.cfpminer.weka.eval2.CFPtoArff;
 import org.kramerlab.coffer.api.impl.ot.ModelImpl;
@@ -15,10 +18,12 @@ import org.mg.cdklib.cfp.CFPType;
 import org.mg.cdklib.cfp.FeatureSelection;
 import org.mg.cdklib.data.DataProvider;
 import org.mg.cdklib.data.DataProvider.DataID;
+import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.datamining.ResultSetIO;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.ListUtil;
 import org.mg.wekalib.eval2.model.FeatureModel;
+import org.mg.wekalib.evaluation.PredictionUtil.ClassificationMeasure;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.trees.RandomForest;
@@ -29,7 +34,9 @@ public class BuildModels
 
 	public static void main(String[] args) throws Exception
 	{
-		buildModelFromNestedCV(false);
+		//buildModelFromNestedCV(true, DataProvider.DataID.CPDBAS_Mouse);
+		//buildAndValidateModel(DataProvider.DataID.LTKB, true);
+		buildAndValidateModel(DataProvider.DataID.LTKB, true);
 
 		//		for (String dataset : DataLoader.INSTANCE.allDatasetsSorted())
 		//			if (PersistanceAdapter.INSTANCE.modelExists(dataset))
@@ -42,7 +49,7 @@ public class BuildModels
 		//			//			//if (new Random().nextDouble() < 0.1)
 		//			buildModelFromNestedCV(false, dataset);
 
-		//buildModelWithoutValidation("LTKB");
+		//
 
 		//buildModelFromNestedCV("NCTRER");
 		//		buildModel("REID-3", false);
@@ -142,11 +149,47 @@ public class BuildModels
 	public static void buildModelWithoutValidation(DataID dataset) throws Exception
 	{
 		String modelID = modelID(dataset);
+		if (PersistanceAdapter.INSTANCE.modelExists(modelID))
+			PersistanceAdapter.INSTANCE.deleteModel(modelID);
+		buildModel(dataset, 2048, CFPType.ecfp4, FeatureSelection.filt, new RandomForest());
+	}
 
+	/**
+	 * onlyRandomForest is vastly faster, because no model-selection and thus no internal-validation has to be done
+	 * 
+	 * @param dataset
+	 * @param onlyRandomForest
+	 * @throws Exception
+	 */
+	public static void buildAndValidateModel(DataID dataset, boolean onlyRandomForest)
+			throws Exception
+	{
+		RunCV.initDB(false, null);
+
+		String modelID = modelID(dataset);
 		if (PersistanceAdapter.INSTANCE.modelExists(modelID))
 			PersistanceAdapter.INSTANCE.deleteModel(modelID);
 
-		buildModel(dataset, 2048, CFPType.ecfp4, FeatureSelection.filt, new RandomForest());
+		CFPCrossValidation cv;
+		if (onlyRandomForest)
+			cv = CFPCrossValidation.randomForest();
+		else
+			cv = CFPCrossValidation.paramOptimize();
+		cv.datasets = Arrays.asList(dataset);
+
+		FeatureModel featureModel = cv.selectBestModel().values().iterator().next();
+		CFPFeatureProvider featureSetting = (CFPFeatureProvider) featureModel.getFeatureProvider();
+		org.mg.wekalib.eval2.model.Model algorithmSetting = featureModel.getModel();
+		System.out.println("\nBuilding model with features: " + featureSetting.getName());
+		System.out.println("and algorithm: " + algorithmSetting.getName());
+		buildModel(dataset, featureSetting.getHashfoldSize(), featureSetting.getType(),
+				featureSetting.getFeatureSelection(),
+				((org.mg.wekalib.eval2.model.AbstractModel) algorithmSetting).getWekaClassifer());
+
+		System.out.println("\nStoring validation results");
+		String outfile = PersistanceAdapter.INSTANCE.getModelValidationResultsFile(modelID);
+		ResultSet rs = cv.validateModelResultsPerRepetition(ClassificationMeasure.SELECTION);
+		ResultSetIO.writeToFile(new File(outfile), rs);
 	}
 
 	private static String modelID(DataID dataset)
