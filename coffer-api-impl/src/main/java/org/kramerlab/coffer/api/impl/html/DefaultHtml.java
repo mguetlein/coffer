@@ -1,7 +1,10 @@
 package org.kramerlab.coffer.api.impl.html;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
+import org.apache.commons.io.IOUtils;
 import org.kramerlab.cfpminer.appdomain.ADPrediction;
 import org.kramerlab.coffer.api.ModelService;
 import org.kramerlab.coffer.api.objects.Model;
@@ -37,6 +40,24 @@ public class DefaultHtml extends HTMLReport
 	protected int maxMolPicSize = 300;
 	protected int croppedPicSize = 150;
 
+	private static final String trackingCode;
+
+	static
+	{
+		String s = "";
+		try
+		{
+			File f = new File(System.getProperty("user.home") + "/results/coffer/trackingCode");
+			if (f.exists())
+				s = IOUtils.toString(new FileInputStream(f));
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		trackingCode = s;
+	}
+
 	public DefaultHtml(String id, String name, String subId, String subName)
 	{
 		this(null, id, name, subId, subName);
@@ -60,6 +81,7 @@ public class DefaultHtml extends HTMLReport
 		setTitles(ModelService.SERVICE_TITLE, serviceHeader(), css, footer());
 		setHelpImg("/img/help14.png");
 		setExternalLinkImg("/img/iconExternalLink.gif");
+		setTrackingCode(trackingCode);
 	}
 
 	public static Renderable doubleText(final String mainText, final String greyText,

@@ -32,6 +32,7 @@ public class HTMLReport
 	String cssFile = "css/styles.css";
 	String breadCrumpUrls[];
 	String breadCrumpNames[];
+	String trackingCode = "";
 	int refresh = -1;
 
 	protected String helpImg = "/home/martin/workspace/HTMLReporting/src/main/resources/help.png";
@@ -65,6 +66,11 @@ public class HTMLReport
 		this.breadCrumpNames = breadCrumpNames;
 	}
 
+	public void setTrackingCode(String trackingCode)
+	{
+		this.trackingCode = trackingCode;
+	}
+
 	public void setPreTitleText(String preTitleText)
 	{
 		this.preTitleText = preTitleText;
@@ -95,6 +101,7 @@ public class HTMLReport
 			html.title().content(pageTitleStr);
 			if (refresh > 0)
 				html.meta(HtmlAttributesFactory.http_equiv("refresh").content(refresh + ""));
+			html.write(trackingCode, false);
 			html._head();
 			html.body();
 			html.div(HtmlAttributesFactory.id("header")).write(portalHeader, HtmlCanvas.NO_ESCAPE);
