@@ -70,7 +70,7 @@ public class PredictionsHtml extends DefaultHtml
 				text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
 		setHeaderHelp("App-Domain",
 				AppDomainHtml.getGeneralInfo() + " " + moreLink(DocHtml.APP_DOMAIN));
-		setHeaderHelp(text("model.measured"), text("model.measured.tip.some"));
+		setHeaderHelp(text("model.measured"), text("model.measured.tip.one.compound.n.models"));
 
 		res.sortResults("p", new DefaultComparator<Double>(false));
 		res.removePropery("p");

@@ -170,7 +170,8 @@ public class PredictionHtml extends DefaultHtml
 					text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
 			setHeaderHelp("App-Domain",
 					AppDomainHtml.getGeneralInfo() + " " + moreLink(DocHtml.APP_DOMAIN));
-			setHeaderHelp(text("model.measured"), text("model.measured.tip.single"));
+			setHeaderHelp(text("model.measured"),
+					text("model.measured.tip.one.compound.one.model"));
 
 			setTableRowsAlternating(false);
 			setTableColWidthLimited(false);

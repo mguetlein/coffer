@@ -134,7 +134,8 @@ public class ModelHtml extends DefaultHtml
 						text("model.prediction.tip") + " " + moreLink(DocHtml.CLASSIFIERS));
 				setHeaderHelp("App-Domain",
 						AppDomainHtml.getGeneralInfo() + " " + moreLink(DocHtml.APP_DOMAIN));
-				setHeaderHelp(text("model.measured"), text("model.measured.tip.single"));
+				setHeaderHelp(text("model.measured"),
+						text("model.measured.tip.n.compounds.one.model"));
 
 				res.sortProperties(ListUtil.createList("Compound", text("model.measured"),
 						"Prediction", "App-Domain"));
