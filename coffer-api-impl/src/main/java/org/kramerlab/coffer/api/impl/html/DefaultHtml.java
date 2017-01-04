@@ -50,10 +50,13 @@ public class DefaultHtml extends HTMLReport
 			File f = new File(System.getProperty("user.home") + "/results/coffer/trackingCode");
 			if (f.exists())
 				s = IOUtils.toString(new FileInputStream(f));
+			else
+				s = "<!-- file not found: " + f.getAbsolutePath() + " -->";
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
+			s = "<!-- sth went wrong: " + e.getMessage() + " -->";
 		}
 		trackingCode = s;
 	}
