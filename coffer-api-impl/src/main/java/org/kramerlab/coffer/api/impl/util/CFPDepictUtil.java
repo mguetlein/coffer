@@ -33,12 +33,12 @@ public class CFPDepictUtil
 
 	static void depictMultiMatchToPNG(String pngFile, IAtomContainer mol, CFPMiner miner,
 			double dist[], List<? extends SubgraphPredictionAttribute> pAtt, int maxSize)
-					throws Exception
+			throws Exception
 	{
 		setAtomBondWeights(mol, miner, pAtt, dist);
 		Color cols[] = weightsToColorGradient(mol, new ColorGradient(DepictService.ACTIVE_BRIGHT,
 				DepictService.NEUTRAL_BRIGHT, DepictService.INACTIVE_BRIGHT));
-		CDKDepict.depictMatchToPNG(pngFile, mol, cols, false, maxSize);
+		CDKDepict.depictMatchToPNG(pngFile, mol, cols, false, maxSize, false);
 	}
 
 	private static String WEIGHT_PROP = "weightProp";

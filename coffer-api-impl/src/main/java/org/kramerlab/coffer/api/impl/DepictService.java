@@ -24,19 +24,19 @@ import org.mg.cdklib.CDKConverter;
 import org.mg.cdklib.depict.CDKDepict;
 import org.mg.javalib.freechart.FreeChartUtil;
 import org.mg.javalib.util.ArrayUtil;
-import org.mg.javalib.util.ColorUtil;
 import org.mg.javalib.util.StringUtil;
 import org.openscience.cdk.exception.InvalidSmilesException;
 
 public class DepictService
 {
-	public static Color ACTIVE_BRIGHT = Color.RED;
-	public static Color INACTIVE_BRIGHT = Color.BLUE;
+
+	public static Color ACTIVE_BRIGHT = new Color(255, 51, 51); // red, a less intense
+	public static Color INACTIVE_BRIGHT = new Color(51, 51, 255); // blue, a less intense
 	public static Color NEUTRAL_BRIGHT = Color.WHITE;
 
-	public static Color ACTIVE_MODERATE = ColorUtil.transparent(Color.RED, 150);
-	public static Color INACTIVE_MODERATE = ColorUtil.transparent(Color.BLUE, 150);
-	public static Color NEUTRAL_MODERATE = ColorUtil.transparent(Color.GRAY, 200);
+	public static Color ACTIVE_MODERATE = new Color(255, 102, 102); // light red
+	public static Color INACTIVE_MODERATE = new Color(102, 102, 255); // light blue
+	public static Color NEUTRAL_MODERATE = Color.LIGHT_GRAY;
 
 	private static String FOLDER = System.getProperty("user.home")
 			+ "/results/coffer/persistance/img/";
@@ -84,7 +84,7 @@ public class DepictService
 				if (size != null)
 					s = Integer.parseInt(size);
 				CDKDepict.depictMatchToPNG(pngFile, CDKConverter.parseSmiles(smiles), a, h, col, c,
-						s);
+						s, true);
 			}
 			return new FileInputStream(pngFile);
 		}
@@ -141,7 +141,9 @@ public class DepictService
 		//				new SmilesParser(SilentChemObjectBuilder.getInstance()).parseSmiles("c1c(CCCCCCCCCCCCCCCC)cccc1"),
 		//				new int[] { 1, 2 }, true, 100);
 
-		depictAppDomain(AbstractModel.find("CPDBAS_Mouse"), "CCC");
+		//depictAppDomain(AbstractModel.find("CPDBAS_Mouse"), "CCC");
+
+		depictMultiMatch("C1=CC(=CC=C1NC(=O)C2=CSC(=C2)[N+](=O)[O-])Cl", null, "AMES");
 	}
 
 	public static InputStream depictAppDomain(Model model, String smiles)
