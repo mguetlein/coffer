@@ -57,7 +57,8 @@ public class ModelsHtml extends DefaultHtml
 				Prediction p = AbstractPrediction.find(modelIds[0], predIds[i]);
 				int rIdx = res.addResult();
 				String url = "/prediction/" + predIds[i];
-				res.setResultValue(rIdx, "Recent predictions", encodeLink(url, p.getSmiles()));
+				res.setResultValue(rIdx, "Recent predictions",
+						new TextWithLinks(encodeLink(url, p.getSmiles()), false, false, true));
 				//				res.setResultValue(rIdx, "Date",
 				//						HTMLReport.encodeLink(url, new SimpleDateFormat("yyyy-MM-dd HH:mm").format(p.getDate())));
 				//					res.setResultValue(rIdx, "Prediction", HTMLReport.getHTMLCode(PredictionReport.getPredictionString(

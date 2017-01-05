@@ -282,6 +282,7 @@ public class HTMLReport
 		String text;
 		boolean underline = false;
 		boolean external = false;
+		boolean dontBreakOut = false;
 
 		public TextWithLinks(String text)
 		{
@@ -290,9 +291,15 @@ public class HTMLReport
 
 		public TextWithLinks(String text, boolean underline, boolean external)
 		{
+			this(text, underline, external, false);
+		}
+
+		public TextWithLinks(String text, boolean underline, boolean external, boolean dontBreakOut)
+		{
 			this(text);
 			this.underline = underline;
 			this.external = external;
+			this.dontBreakOut = dontBreakOut;
 		}
 
 		@Override
@@ -306,6 +313,8 @@ public class HTMLReport
 			HtmlAttributes attr = HtmlAttributesFactory.href(url);
 			if (underline)
 				attr.class_("underline");
+			if (dontBreakOut)
+				attr.class_("dontBreakOut");
 			html.a(attr);
 			if (text != null && text.length() > 0)
 				html.write(text);

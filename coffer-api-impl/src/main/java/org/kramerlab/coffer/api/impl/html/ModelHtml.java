@@ -115,7 +115,8 @@ public class ModelHtml extends DefaultHtml
 				Prediction p = AbstractPrediction.find(m.getId(), predIds[i]);
 				String url = p.getLocalURI();
 				int rIdx = res.addResult();
-				res.setResultValue(rIdx, "Compound", encodeLink(url, p.getSmiles()));
+				res.setResultValue(rIdx, "Compound",
+						new TextWithLinks(encodeLink(url, p.getSmiles()), false, false, true));
 				String endpoint = p.getTrainingActivity();
 				if (endpoint != null)
 					res.setResultValue(rIdx, text("model.measured"), encodeLink(url, endpoint));
