@@ -6,6 +6,13 @@ public class ModelServiceTasks
 {
 	private static HashSet<String> running = new HashSet<>();
 
+	/**
+	 * currently, the key is never removed,
+	 * so this is for tasks that only have to be performed once 
+	 * 
+	 * @param key
+	 * @param r
+	 */
 	public static synchronized void addTask(String key, Runnable r)
 	{
 		if (running.contains(key))

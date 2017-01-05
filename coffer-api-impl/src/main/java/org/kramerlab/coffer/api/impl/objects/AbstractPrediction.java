@@ -24,6 +24,7 @@ import org.kramerlab.coffer.api.objects.SubgraphPredictionAttribute;
 import org.mg.cdklib.CDKConverter;
 import org.mg.cdklib.cfp.CFPFragment;
 import org.mg.cdklib.cfp.CFPMiner;
+import org.mg.cdklib.depict.CDKDepict;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.javalib.util.ListUtil;
 import org.mg.javalib.util.StringUtil;
@@ -311,6 +312,15 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 
 	public static void main(String[] args) throws Exception
 	{
+		//		{
+		//			String smiles = "CCCC([C@@H]1[C@H]([C@@H]([C@H]([C@@H](O1)O/C(=C(\\CC(=O)O)/C=C\\C(=O)O)/C#N)O)O)O)O";
+		//			IAtomContainer mol = new SmilesParser(SilentChemObjectBuilder.getInstance())
+		//					.parseSmiles(smiles);
+		//			//new DepictionGenerator().depict(mol);
+		//			new CircularFingerprinter().getBitFingerprint(mol);
+		//			System.exit(1);
+		//		}
+
 		//		String modelId = "AMES";
 		//		String smiles[] = { "C1=CC(=CC=C1NC(=O)C2=CSC(=C2)[N+](=O)[O-])Cl",
 		//				"C1=CC=C(C=C1)S(=O)(=O)N(C2=CC=CC=N2)[N+](=O)[O-]",
@@ -322,11 +332,18 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 		//		//				.split("\n");
 		//		//List<String> smiles = new DataLoader("data").getDataset("NCTRER").getSmiles();
 
-		String modelIds[] = { "AMES", "CPDBAS_Mouse", "NCTRER", "ChEMBL_93", "MUV_733",
-				"ChEMBL_100", "MUV_644", "DUD_vegfr2" };
+		String modelIds[] = { //"AMES", "CPDBAS_Mouse", "NCTRER", "ChEMBL_93", "MUV_733",
+				//"ChEMBL_100", "MUV_644", "DUD_vegfr2", 
+				"ChEMBL_17045" };
 		//String smiles[] = { "CC1(C2CCC(O1)(CC2)C)C" };
-		List<String> smiles = ListUtil.createList("c1ccccc1", "c1cccnc1", "c1cccnc1", "CCC",
-				"CCCC=O", "CCCCCCC", "Br", "Cl", "CCCC");
+		List<String> smiles = ListUtil.createList(//"c1ccccc1", "c1cccnc1", "c1cccnc1", "CCC",
+				//"CCCC=O", "CCCCCCC", "Br", "Cl", "CCCC", 
+				//"C1=CC(=CC=C1C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O[C@H]4[C@@H]([C@H]([C@@H]([C@H](O4)CO)O)O)O)O",
+				//"C[C@H]1CC[C@@]2([C@H]([C@H]3[C@@H](O2)C[C@@H]4[C@@]3(CC[C@H]5[C@H]4CC[C@H]6[C@@]5(CC[C@@H](C6)O[C@H]7[C@@H]([C@H]([C@@H]([C@H](O7)CO)O[C@H]8[C@@H]([C@@H]([C@H]([C@@H](O8)C)O)O)O)O)O[C@H]9[C@@H]([C@H]([C@@H]([C@H](O9)CO)O)O)O)C)C)C)OC1",
+				"C([C@@H]1[C@H]([C@@H]([C@H]([C@@H](O1)O/C(=C(\\CC(=O)O)/C=C\\C(=O)O)/C#N)O)O)O)O",
+				"CC([C@@H]1[C@H]([C@@H]([C@H]([C@@H](O1)O/C(=C(\\CC(=O)O)/C=C\\C(=O)O)/C#N)O)O)O)O",
+				"CCC([C@@H]1[C@H]([C@@H]([C@H]([C@@H](O1)O/C(=C(\\CC(=O)O)/C=C\\C(=O)O)/C#N)O)O)O)O",
+				"CCCC([C@@H]1[C@H]([C@@H]([C@H]([C@@H](O1)O/C(=C(\\CC(=O)O)/C=C\\C(=O)O)/C#N)O)O)O)O");
 
 		for (String modelId : modelIds)
 		{
@@ -349,13 +366,30 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 				//					ad.isInsideAppdomain(smi);
 				//					StopWatchUtil.stop("predict-ad");
 
+				for (int i = 0; i < CDKConverter.parseSmiles(smi).getAtomCount(); i++)
+				{
+					System.out.println(CDKConverter.parseSmiles(smi).getAtom(i).getPoint2d());
+				}
+				CDKDepict.depict(CDKConverter.parseSmiles(smi), 10);
+				for (int i = 0; i < CDKConverter.parseSmiles(smi).getAtomCount(); i++)
+				{
+					System.out.println(CDKConverter.parseSmiles(smi).getAtom(i).getPoint2d());
+				}
+
 				String predictionId = StringUtil.getMD5(smi);
 				if (exists(m.getId(), predictionId))
 					PersistanceAdapter.INSTANCE.deletePrediction(m.getId(), predictionId);
-
-				Prediction p = AbstractPrediction.createPrediction(m, smi, false);
-				System.out.println(
-						p.getSmiles() + " " + ArrayUtil.toString(p.getPredictedDistribution()));
+				{
+					Prediction p = AbstractPrediction.createPrediction(m, smi, false);
+					System.out.println(
+							p.getSmiles() + " " + ArrayUtil.toString(p.getPredictedDistribution()));
+				}
+				{
+					Prediction p = AbstractPrediction.find(m.getId(), predictionId);
+					p.computePredictionAttributesComputed();
+					System.out.println(
+							p.getSmiles() + " " + ArrayUtil.toString(p.getPredictedDistribution()));
+				}
 			}
 
 			//				System.out.println();
