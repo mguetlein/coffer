@@ -30,6 +30,9 @@ import org.openscience.cdk.exception.InvalidSmilesException;
 public class DepictService
 {
 
+	public static String ACTIVE_AS_TEXT = "red";
+	public static String INACTIVE_AS_TEXT = "blue";
+
 	public static Color ACTIVE_BRIGHT = new Color(255, 51, 51); // red, a less intense
 	public static Color INACTIVE_BRIGHT = new Color(51, 51, 255); // blue, a less intense
 	public static Color NEUTRAL_BRIGHT = Color.WHITE;

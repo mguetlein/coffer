@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.kramerlab.coffer.api.ModelService;
+import org.kramerlab.coffer.api.impl.DepictService;
 import org.kramerlab.coffer.api.impl.ModelServiceTasks;
 import org.kramerlab.coffer.api.impl.objects.AbstractModel;
 import org.kramerlab.coffer.api.objects.Model;
@@ -126,9 +127,15 @@ public class PredictionHtml extends DefaultHtml
 			//			set.setResultValue(rIdx, "Smiles", p.getSmiles());
 
 			if (p.getPredictionAttributes() != null)
+			{
 				set.setResultValue(rIdx, "Structure",
 						getImage(depictMultiMatch(p.getSmiles(), p.getModelId(), maxMolPicSize),
 								depictMultiMatch(p.getSmiles(), p.getModelId(), -1), false));
+				setHeaderHelp("Structure",
+						text("fragment.coloringQueryCompound.tip", DepictService.ACTIVE_AS_TEXT,
+								DepictService.INACTIVE_AS_TEXT) + " "
+								+ moreLink(DocHtml.COLORING_QUERY_COMPOUND));
+			}
 			else
 				set.setResultValue(rIdx, "Structure", getImage(depict(p.getSmiles(), maxMolPicSize),
 						depict(p.getSmiles(), -1), false));

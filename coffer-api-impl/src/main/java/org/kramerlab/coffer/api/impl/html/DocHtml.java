@@ -12,6 +12,8 @@ public class DocHtml extends DefaultHtml
 
 	public static String RANKING_FRAGMENTS = "Ranking of Fragments";
 
+	public static String COLORING_QUERY_COMPOUND = "Coloring of Predicted Compounds";
+
 	public static String FILTERED_FRAGMENTS = "Filtering of Circular Fingerprint Fragments";
 
 	public static String VALIDATION = "Validation";
@@ -50,6 +52,10 @@ public class DocHtml extends DefaultHtml
 
 		newSection(RANKING_FRAGMENTS);
 		addParagraphExternal(text("doc.rankingFragments"));
+		addGap();
+
+		newSection(COLORING_QUERY_COMPOUND);
+		addParagraphExternal(text("doc.coloringQueryCompound"));
 		addGap();
 
 		newSection(VALIDATION);
