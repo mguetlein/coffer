@@ -18,8 +18,10 @@ public class ModelsHtml extends DefaultHtml
 
 	public String build()
 	{
-		newSection("CoFFer", new TextWithLinks(
-				text("home.welcome") + " " + encodeLink("/doc", "Learn more >>"), true, false));
+		newSection("CoFFer",
+				new TextWithLinks(text("home.welcome") + " " + encodeLink("/doc", "Learn more >>"),
+						true, false),
+				true);
 
 		//newSection("Make prediction");
 		addForm("", ModelService.PREDICT_PARAM_COMPOUND_SMILES, "Predict compound",

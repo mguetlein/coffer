@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.kramerlab.cfpminer.appdomain.ADPrediction;
 import org.kramerlab.coffer.api.ModelService;
@@ -29,10 +30,20 @@ public class DefaultHtml extends HTMLReport
 
 	private String serviceHeader()
 	{
-		//return "<a class='a_header' href=\"/\"><h1>" + ModelService.SERVICE_TITLE + "</h1></a>";
-		return "<a class='a_header' href=\"/\"><h1><h1large>CoFFer</h1large><br>Co<h1small>llision-free</h1small>"
+		String first = "<a href=\"/\"><img src=\"/img/logo.png\" /></a>";
+		String second = "<a href=\"/\"><h1><h1large>CoFFer</h1large><br>Co<h1small>llision-free</h1small>"
 				+ " F<h1small>iltered Circular</h1small>"
 				+ " F<h1small>ing</h1small>er<h1small>print-based QSARS</h1small></h1></a>";
+		String third = "";
+		if (headerLinkTxt != null)
+		{
+			third = "<a style='text-align:right;float:right;' href=\"" + headerLinkUrl + "\">"
+					+ headerLinkTxt + " <img src=\"/img/iconExternalLink.gif\" /></a>";
+		}
+
+		String table = "<table class='header'><tr><td>" + first + "</td><td>" + second + "</td><td>"
+				+ third + "</td></tr></table>";
+		return table;
 	}
 
 	public static String css = "/css/styles.css";
@@ -41,6 +52,8 @@ public class DefaultHtml extends HTMLReport
 	protected int croppedPicSize = 150;
 
 	private static final String trackingCode;
+	private static final String headerLinkTxt;
+	private static final String headerLinkUrl;
 
 	static
 	{
@@ -59,6 +72,25 @@ public class DefaultHtml extends HTMLReport
 			s = "<!-- sth went wrong: " + e.getMessage() + " -->";
 		}
 		trackingCode = s;
+
+		String s1 = null;
+		String s2 = null;
+		try
+		{
+			File f = new File(System.getProperty("user.home") + "/results/coffer/headerLink");
+			if (f.exists())
+			{
+				String content[] = FileUtils.readFileToString(f).split("\n");
+				s1 = content[0];
+				s2 = content[1];
+			}
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		headerLinkTxt = s1;
+		headerLinkUrl = s2;
 	}
 
 	public DefaultHtml(String id, String name, String subId, String subName)

@@ -671,19 +671,29 @@ public class HTMLReport
 
 	public void newSection(String title)
 	{
-		newSection(title, (Renderable) null);
+		newSection(title, (Renderable) null, false);
 	}
 
 	public void newSection(String title, String inlineText)
 	{
-		newSection(title, new TextWithLinks(inlineText));
+		newSection(title, inlineText, false);
+	}
+
+	public void newSection(String title, String inlineText, boolean avoidExtraBrForInline)
+	{
+		newSection(title, new TextWithLinks(inlineText), avoidExtraBrForInline);
 	}
 
 	public void newSection(String title, Renderable inline)
 	{
+		newSection(title, inline, false);
+	}
+
+	public void newSection(String title, Renderable inline, boolean avoidExtraBrForInline)
+	{
 		try
 		{
-			if (inline != null)
+			if (inline != null && !avoidExtraBrForInline)
 				getHtml().br();
 			HtmlAttributes att = getAnker(title);
 			if (inline != null)
