@@ -5,5 +5,7 @@ for s in "JavaLib" "cdk-lib" "weka-lib" "cfp-miner"; do
     mvn clean install
     cd -
 done
+mvn clean install
+
 export MAVEN_OPTS=-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
 mvn tomcat7:run
