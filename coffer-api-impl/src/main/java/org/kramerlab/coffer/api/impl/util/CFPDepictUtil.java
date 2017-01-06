@@ -1,6 +1,7 @@
 package org.kramerlab.coffer.api.impl.util;
 
 import java.awt.Color;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -17,6 +18,7 @@ import org.mg.cdklib.depict.CDKDepict;
 import org.mg.javalib.gui.property.ColorGradient;
 import org.mg.javalib.util.ArrayUtil;
 import org.mg.wekalib.attribute_ranking.PredictionAttribute;
+import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IBond;
@@ -31,10 +33,18 @@ public class CFPDepictUtil
 				p.getPredictedDistribution(), p.getPredictionAttributes(), maxSize);
 	}
 
-	static void depictMultiMatchToPNG(String pngFile, IAtomContainer mol, CFPMiner miner,
+	private static void depictMultiMatchToPNG(String pngFile, IAtomContainer mol, CFPMiner miner,
 			double dist[], List<? extends SubgraphPredictionAttribute> pAtt, int maxSize)
-			throws Exception
+			throws CDKException, IOException
 	{
+		try
+		{
+			mol = mol.clone();
+		}
+		catch (CloneNotSupportedException e)
+		{
+			throw new RuntimeException(e);
+		}
 		setAtomBondWeights(mol, miner, pAtt, dist);
 		Color cols[] = weightsToColorGradient(mol, new ColorGradient(DepictService.ACTIVE_BRIGHT,
 				DepictService.NEUTRAL_BRIGHT, DepictService.INACTIVE_BRIGHT));

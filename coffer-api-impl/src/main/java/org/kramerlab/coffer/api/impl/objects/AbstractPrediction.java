@@ -205,7 +205,7 @@ public abstract class AbstractPrediction extends AbstractServiceObject
 			Model m = AbstractModel.find(modelId);
 			CFPMiner miner = ((AbstractModel) m).getCFPMiner();
 
-			Instances data = CFPtoArff.getTestDataset(miner, "DUD_vegfr2", getMolecule());
+			Instances data = CFPtoArff.getTestDataset(miner, "cfp test data", getMolecule());
 			Instance inst = data.get(0);
 			data.setClassIndex(data.numAttributes() - 1);
 
