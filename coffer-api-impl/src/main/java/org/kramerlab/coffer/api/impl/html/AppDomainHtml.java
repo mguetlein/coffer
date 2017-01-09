@@ -77,7 +77,7 @@ public class AppDomainHtml extends DefaultHtml
 			addGap();
 			ResultSet rs = new ResultSet();
 			rs.addResult();
-			rs.setResultValue(0, "Query compound", getImage(depict(smiles, maxMolPicSize)));
+			rs.setResultValue(0, "Query compound", getImage(depict(smiles, maxMolSizeLarge)));
 			rs.setResultValue(0, "Applicability Domain",
 					a.isInsideAppdomain(smiles).toNiceString().toUpperCase());
 			//						rs.setResultValue(0, "App-Domain",
@@ -115,7 +115,7 @@ public class AppDomainHtml extends DefaultHtml
 				int rIdx = set.addResult();
 				set.setResultValue(rIdx, "", (rIdx + 1));
 				String smiles = l.get(nIdx).getSmiles();
-				String img = depict(smiles, maxMolPicSize);
+				String img = depict(smiles, maxMolSizeMedium);
 				//String href = depict(smiles, -1);
 				String href = "/compound/" + StringUtil.urlEncodeUTF8(smiles);
 				set.setResultValue(rIdx, "Distance", l.get(nIdx).getDistance());
@@ -125,9 +125,13 @@ public class AppDomainHtml extends DefaultHtml
 			{
 				int rIdx = set.addResult();
 				set.setResultValue(rIdx, "Neighbors",
-						encodeLink("?smiles=" + StringUtil.urlEncodeUTF8(smiles) + "&size="
-								+ Math.min(maxNumNeighbors + ModelService.DEFAULT_NUM_ENTRIES, nIdx)
-								+ "#" + (rIdx + 1), "More neighbors"));
+						encodeLink(
+								"?smiles=" + StringUtil.urlEncodeUTF8(smiles) + "&size="
+										+ Math.min(
+												maxNumNeighbors + ModelService.DEFAULT_NUM_ENTRIES,
+												nIdx)
+										+ "#" + (rIdx + 1),
+								"More neighbors"));
 			}
 			addTable(set);
 		}

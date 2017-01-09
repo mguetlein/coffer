@@ -106,7 +106,7 @@ public class FragmentHtml extends DefaultHtml
 						int atoms[] = miner.getAtoms(smiles,
 								miner.getFragmentViaIdx(selectedAttributeIdx));
 						String img = depictMatch(smiles, atoms, miner.getCFPType().isECFP(), null,
-								false, maxMolPicSize);
+								false, maxMolSizeMedium);
 						//						String href = depictMatch(smiles, atoms, miner.getCFPType().isECFP(), null,
 						//								false, -1);
 						String href = "/compound/" + StringUtil.urlEncodeUTF8(smiles);
@@ -150,9 +150,9 @@ public class FragmentHtml extends DefaultHtml
 				Image img;
 				if (atoms != null)
 					img = getImage(depictMatch(smiles, atoms, miner.getCFPType().isECFP(), null,
-							false, maxMolPicSize));
+							false, maxMolSizeLarge));
 				else
-					img = getImage(depict(smiles, maxMolPicSize), depict(smiles, -1), false);
+					img = getImage(depict(smiles, maxMolSizeLarge), depict(smiles, -1), false);
 				set = new ResultSet();
 				rIdx = set.addResult();
 				set.setResultValue(rIdx, "Match",
@@ -248,7 +248,6 @@ public class FragmentHtml extends DefaultHtml
 					}
 				}
 
-				setTableColWidthLimited(true);
 				if (sub)
 					startLeftColumn();
 				else

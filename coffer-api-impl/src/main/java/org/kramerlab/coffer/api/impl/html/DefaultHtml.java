@@ -48,7 +48,8 @@ public class DefaultHtml extends HTMLReport
 
 	public static String css = "/css/styles.css";
 
-	protected int maxMolPicSize = 300;
+	protected int maxMolSizeLarge = 500;
+	protected int maxMolSizeMedium = 350;
 	protected int croppedPicSize = 150;
 
 	private static final String trackingCode;

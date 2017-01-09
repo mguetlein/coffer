@@ -81,7 +81,7 @@ public class PredictionsHtml extends DefaultHtml
 		}
 		setPageTitle("Prediction of compound " + smiles);
 		newSection("Predicted compound");
-		Image img = getImage(depict(smiles, maxMolPicSize), depict(smiles, -1), false);
+		Image img = getImage(depict(smiles, maxMolSizeLarge), depict(smiles, -1), false);
 		ResultSet set = new ResultSet();
 		int rIdx = set.addResult();
 		set.setResultValue(rIdx, "Structure", img);

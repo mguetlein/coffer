@@ -234,7 +234,7 @@ table.alternate tr:nth-child(even){
 }
 
 th.slim, td.slim{
-	max-width:300px;
+	max-width:300px; 
 }
 
 table.table_footer, th, td {

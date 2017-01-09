@@ -47,7 +47,6 @@ public class ModelsHtml extends DefaultHtml
 			startLeftColumn();
 
 		//		newSection("Prediction models");
-		setTableColWidthLimited(false);
 		addTable(set);
 
 		if (predIds.length > 0)

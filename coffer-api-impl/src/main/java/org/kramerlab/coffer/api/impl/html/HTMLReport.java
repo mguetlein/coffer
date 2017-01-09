@@ -997,7 +997,7 @@ public class HTMLReport
 
 	//	boolean inlineTable = false;
 	boolean tableRowsAlternating = true;
-	boolean tableColWidthLimited = true;
+	boolean tableColWidthLimited = false;
 
 	public void setHideTableBorder(boolean b)
 	{

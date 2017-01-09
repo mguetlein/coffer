@@ -129,7 +129,7 @@ public class PredictionHtml extends DefaultHtml
 			if (p.getPredictionAttributes() != null)
 			{
 				set.setResultValue(rIdx, "Structure",
-						getImage(depictMultiMatch(p.getSmiles(), p.getModelId(), maxMolPicSize),
+						getImage(depictMultiMatch(p.getSmiles(), p.getModelId(), maxMolSizeLarge),
 								depictMultiMatch(p.getSmiles(), p.getModelId(), -1), false));
 				setHeaderHelp("Structure",
 						text("fragment.coloringQueryCompound.tip", DepictService.ACTIVE_AS_TEXT,
@@ -137,12 +137,11 @@ public class PredictionHtml extends DefaultHtml
 								+ moreLink(DocHtml.COLORING_QUERY_COMPOUND));
 			}
 			else
-				set.setResultValue(rIdx, "Structure", getImage(depict(p.getSmiles(), maxMolPicSize),
-						depict(p.getSmiles(), -1), false));
+				set.setResultValue(rIdx, "Structure", getImage(
+						depict(p.getSmiles(), maxMolSizeLarge), depict(p.getSmiles(), -1), false));
 			setAdditionalInfo(this, set, rIdx, p.getSmiles());
 
 			setTableRowsAlternating(false);
-			setTableColWidthLimited(true);
 			addTable(set, false);
 			setTableRowsAlternating(true);
 		}
@@ -181,7 +180,6 @@ public class PredictionHtml extends DefaultHtml
 					text("model.measured.tip.one.compound.one.model"));
 
 			setTableRowsAlternating(false);
-			setTableColWidthLimited(false);
 			addTable(set);//, true);
 			setTableRowsAlternating(true);
 		}
@@ -329,7 +327,7 @@ public class PredictionHtml extends DefaultHtml
 						}
 
 						set.setResultValue(rIdx, fragmentCol,
-								getImage(depictMatch(attIdx, true, activating, true),
+								getImage(depictMatch(attIdx, activating),
 										"/" + p.getModelId() + "/fragment/" + (attIdx + 1)
 												+ "?smiles="
 												+ StringUtil.urlEncodeUTF8(p.getSmiles()),
@@ -383,8 +381,6 @@ public class PredictionHtml extends DefaultHtml
 					}
 				}
 				//			addParagraph((match ? "Matching" : "Not matching") + " attributes");
-				setTableColWidthLimited(true);
-
 				if (match)
 					startLeftColumn();
 				else
@@ -422,24 +418,21 @@ public class PredictionHtml extends DefaultHtml
 		}
 	}
 
-	private String depictMatch(int attIdx, boolean fallbackToTraining, Boolean activating,
-			boolean crop)
+	private String depictMatch(int attIdx, Boolean activating)
 	{
 		try
 		{
 			String m = p.getSmiles();
 			if (!testInstanceContains(attIdx))
 				//		if (testInstance.stringValue(attr).equals("0"))
-				if (fallbackToTraining)
-				m = miner.getTrainingDataSmiles().get(miner.getCompoundsForFragment(miner.getFragmentViaIdx(attIdx)).iterator().next());
-				else
-				crop = false;
+				m = miner.getTrainingDataSmiles()
+						.get(miner.getCompoundsForFragment(miner.getFragmentViaIdx(attIdx))
+								.iterator().next());
 			if (miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)) == null)
 				throw new IllegalStateException("no atoms in " + m + " for att-idx " + attIdx
 						+ ", hashcode: " + miner.getFragmentViaIdx(attIdx));
 			return depictMatch(m, miner.getAtoms(m, miner.getFragmentViaIdx(attIdx)),
-					miner.getCFPType().isECFP(), activating, crop,
-					crop ? croppedPicSize : maxMolPicSize);
+					miner.getCFPType().isECFP(), activating, true, croppedPicSize);
 		}
 		catch (CDKException e)
 		{

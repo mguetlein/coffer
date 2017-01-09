@@ -29,7 +29,7 @@ public abstract class AbstractCompound extends AbstractServiceObject implements 
 
 		public String build()
 		{
-			addImage(getImage(depict(smiles, maxMolPicSize)));
+			addImage(getImage(depict(smiles, maxMolSizeLarge)));
 			return close();
 		}
 	}
