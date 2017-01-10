@@ -140,6 +140,7 @@ public class PredictionHtml extends DefaultHtml
 				set.setResultValue(rIdx, "Structure", getImage(
 						depict(p.getSmiles(), maxMolSizeLarge), depict(p.getSmiles(), -1), false));
 			setAdditionalInfo(this, set, rIdx, p.getSmiles());
+			setTableColMaxWidth(1, 300);
 
 			setTableRowsAlternating(false);
 			addTable(set, false);

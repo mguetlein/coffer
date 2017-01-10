@@ -233,10 +233,6 @@ table.alternate tr:nth-child(even){
 	background-color:#fff;
 }
 
-th.slim, td.slim{
-	max-width:300px; 
-}
-
 table.table_footer, th, td {
   padding-top:8px;
   padding-bottom:8px;

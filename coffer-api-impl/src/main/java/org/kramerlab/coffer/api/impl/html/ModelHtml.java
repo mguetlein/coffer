@@ -82,10 +82,10 @@ public class ModelHtml extends DefaultHtml
 		//		set.concatCols(m.getCFPMiner().getSummary(true));
 		//set.setResultValue(idx, "Model", getList(setM));
 
-		setTableColWidthLimited(true);
 		setTableRowsAlternating(false);
 		setHideTableBorder(true);
 		startLeftColumn();
+		setTableColMaxWidth(1, 300);
 		addTable(set, true);
 
 		setHideTableBorder(false);
@@ -95,7 +95,6 @@ public class ModelHtml extends DefaultHtml
 				"/doc#" + DocHtml.getAnker(DocHtml.VALIDATION), false));
 
 		stopColumns();
-		setTableColWidthLimited(false);
 
 		addGap();
 		//		newSection("Make prediction");

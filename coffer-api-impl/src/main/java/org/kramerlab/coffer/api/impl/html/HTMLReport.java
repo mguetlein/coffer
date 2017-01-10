@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.mg.javalib.datamining.ResultSet;
 import org.mg.javalib.util.StringUtil;
@@ -570,9 +571,8 @@ public class HTMLReport
 		//				"/home/martin/workspace/JavaLib/data/ok.png")));
 		set.setResultValue(idx, "blub", 456);
 
-		rep.setTableColWidthLimited(true);
+		rep.setTableColMaxWidth(0, 300);
 		rep.addTable(set);
-		rep.setTableColWidthLimited(false);
 		rep.addTable(set);
 
 		rep.addParagraph("here comes # the link '" + rep.encodeLink("http://google.de", "gogle")
@@ -860,13 +860,15 @@ public class HTMLReport
 	{
 
 		public TableHeader(String prop, Object val, boolean format, boolean transpose,
-				boolean largeHeader)
+				boolean largeHeader, Integer maxSize)
 		{
-			super(prop, val /*+ (transpose ? ":" : "")*/, format);
+			super(prop, val /*+ (transpose ? ":" : "")*/, format, maxSize);
 			if (transpose)
 				attr = HtmlAttributesFactory.class_("transpose");
 			if (largeHeader)
 				attr = HtmlAttributesFactory.class_("largeHeader");
+			if (maxSize != null)
+				attr = attr.style("max-width:" + maxSize + "px");
 		}
 
 		protected void init(HtmlCanvas html) throws IOException
@@ -891,7 +893,7 @@ public class HTMLReport
 		String prop;
 		HtmlAttributes attr;
 
-		public TableData(String prop, Object val, boolean format)
+		public TableData(String prop, Object val, boolean format, Integer maxSize)
 		{
 			this.prop = prop;
 			this.val = val;
@@ -922,11 +924,11 @@ public class HTMLReport
 				else if (val != null && val.toString().matches(".*outside.*"))
 					clazz = "outside";
 			}
-			if (tableColWidthLimited)
-				clazz += " slim";
 			if (prop.equals("#"))
 				clazz += " removePaddingRight";
 			attr = HtmlAttributesFactory.class_(clazz);
+			if (maxSize != null)
+				attr = attr.style("max-width:" + maxSize + "px");
 		}
 
 		protected void init(HtmlCanvas html) throws IOException
@@ -997,7 +999,7 @@ public class HTMLReport
 
 	//	boolean inlineTable = false;
 	boolean tableRowsAlternating = true;
-	boolean tableColWidthLimited = false;
+	Map<Integer, Integer> tableColMaxWidth = new HashMap<>();
 
 	public void setHideTableBorder(boolean b)
 	{
@@ -1061,9 +1063,9 @@ public class HTMLReport
 		this.tableRowsAlternating = tableRowsAlternating;
 	}
 
-	public void setTableColWidthLimited(boolean tableColWidthLimited)
+	public void setTableColMaxWidth(int col, int size)
 	{
-		this.tableColWidthLimited = tableColWidthLimited;
+		tableColMaxWidth.put(col, size);
 	}
 
 	public void addTable(ResultSet rs)
@@ -1116,13 +1118,15 @@ public class HTMLReport
 				for (String p : rs.getProperties())
 				{
 					String niceP = rs.getNiceProperty(p);
-					table.tr(tableColWidthLimited ? HtmlAttributesFactory.class_("slim") : null);
+					int col = 0;
+					table.tr();
 					table.render(new TableHeader(niceP, niceP, format,
-							(transpose != null && transpose), false));
+							(transpose != null && transpose), false, tableColMaxWidth.get(col++)));
 					for (int i = 0; i < rs.getNumResults(); i++)
 					{
 						Object val = rs.getResultValue(i, p);
-						table.render(new TableData(niceP, val, format));
+						table.render(
+								new TableData(niceP, val, format, tableColMaxWidth.get(col++)));
 						//setCell(table, p, val);
 					}
 					table._tr();
@@ -1130,25 +1134,27 @@ public class HTMLReport
 			}
 			else
 			{
-				table.tr(tableColWidthLimited ? HtmlAttributesFactory.class_("slim") : null);
+				int col = 0;
+				table.tr();
 				for (String p : rs.getProperties())
 				{
 					String niceP = rs.getNiceProperty(p);
-					table.render(new TableHeader(niceP, niceP, format,
-							(transpose != null && transpose), rs.getProperties().size() == 1));
+					table.render(
+							new TableHeader(niceP, niceP, format, (transpose != null && transpose),
+									rs.getProperties().size() == 1, tableColMaxWidth.get(col++)));
 				}
 				table._tr();
 				for (int i = 0; i < rs.getNumResults(); i++)
 				{
+					col = 0;
 					attr = getAnker(rs.getResultValue(i, rs.getProperties().get(0)) + "");
-					if (tableColWidthLimited)
-						attr.class_("slim");
 					table.tr(attr);
 					for (String p : rs.getProperties())
 					{
 						String niceP = rs.getNiceProperty(p);
 						Object val = rs.getResultValue(i, p);
-						table.render(new TableData(niceP, val, format));
+						table.render(
+								new TableData(niceP, val, format, tableColMaxWidth.get(col++)));
 						//setCell(table, p, val);
 					}
 					table._tr();
@@ -1160,6 +1166,8 @@ public class HTMLReport
 		{
 			throw new RuntimeException(e);
 		}
+
+		tableColMaxWidth.clear();
 	}
 
 	//	public void newParagraph()

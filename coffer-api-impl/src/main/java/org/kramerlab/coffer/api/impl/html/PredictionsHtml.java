@@ -86,7 +86,7 @@ public class PredictionsHtml extends DefaultHtml
 		int rIdx = set.addResult();
 		set.setResultValue(rIdx, "Structure", img);
 		PredictionHtml.setAdditionalInfo(this, set, rIdx, smiles);
-
+		setTableColMaxWidth(1, 300);
 		addTable(set);
 		addGap();
 

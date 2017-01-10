@@ -133,6 +133,7 @@ public class AppDomainHtml extends DefaultHtml
 										+ "#" + (rIdx + 1),
 								"More neighbors"));
 			}
+			setTableRowsAlternating(false);
 			addTable(set);
 		}
 
