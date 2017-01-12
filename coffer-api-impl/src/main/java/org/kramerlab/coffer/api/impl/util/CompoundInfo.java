@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -104,17 +105,6 @@ public abstract class CompoundInfo implements Renderable
 			JSONArray props = obj.getJSONArray("props");
 			for (int i = 0; i < props.length(); i++)
 			{
-				if (props.getJSONObject(i).getJSONObject("urn").getString("label")
-						.equals("IUPAC Name"))
-				{
-					name = props.getJSONObject(i).getJSONObject("value").getString("sval");
-					if (props.getJSONObject(i).getJSONObject("urn").getString("name")
-							.equals("Traditional"))
-						break;
-				}
-			}
-			for (int i = 0; i < props.length(); i++)
-			{
 				if (props.getJSONObject(i).getJSONObject("urn").getString("label").equals("Log P"))
 					fields.put("LogP", StringUtil.formatDouble(Double.parseDouble(
 							props.getJSONObject(i).getJSONObject("value").getString("fval")), 1));
@@ -122,6 +112,31 @@ public abstract class CompoundInfo implements Renderable
 						.equals("Molecular Weight"))
 					fields.put("Molecular Weight", StringUtil.formatDouble(Double.parseDouble(
 							props.getJSONObject(i).getJSONObject("value").getString("fval")), 1));
+			}
+
+			String titleUrl = "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/" + id
+					+ "/JSON?heading=Record+Title";
+			try
+			{
+				JSONObject titleJson = new JSONObject(
+						IOUtils.toString(new URL(titleUrl), Charsets.UTF_8));
+				titleJson = titleJson.getJSONObject("Record");
+				titleJson = titleJson.getJSONArray("Section").getJSONObject(0);
+				titleJson = titleJson.getJSONArray("Section").getJSONObject(0);
+				JSONArray info = titleJson.getJSONArray("Information");
+				for (int i = 0; i < info.length(); i++)
+				{
+					if (info.getJSONObject(i).getString("Name").equals("Record Title"))
+					{
+						name = StringUtils
+								.capitalize(info.getJSONObject(i).getString("StringValue"));
+						break;
+					}
+				}
+			}
+			catch (JSONException | IOException e)
+			{
+				throw new RuntimeException(e);
 			}
 		}
 
@@ -265,7 +280,7 @@ public abstract class CompoundInfo implements Renderable
 
 	public static void main(String[] args) throws MalformedURLException, JSONException, IOException
 	{
-		String smiles = "C1=CC(=CC=C1NC(=O)C2=CSC(=C2)[N+](=O)[O-])Cl.O";
+		String smiles = "CCc1c2cc(ccc2nc-3c1Cn4c3cc5c(c4=O)COC(=O)[C@@]5(CC)O)OC(=O)N6CCC(CC6)[NH+]7CCCCC7";
 		System.out.println(new PubChemCompoundInfo(smiles).getHTML());
 		//System.out.println(new ChEMBLCompoundInfo(smiles).getHTML());
 	}
